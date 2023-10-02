@@ -76,6 +76,8 @@ echo
 
 # Copy dxvk.conf and settings.xml
 echo "Copying settings..."
+mkdir -p "temp/7th Heaven/mods"
+cp -f deps/SteamDeckSettings.iro "temp/7th Heaven/mods"
 mkdir -p "temp/7th Heaven/7thWorkshop"
 cp -f deps/settings.xml "temp/7th Heaven/7thWorkshop"
 cp -f deps/dxvk.conf "temp/7th Heaven"
