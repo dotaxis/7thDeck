@@ -1,26 +1,26 @@
 #!/bin/bash
 shopt -s expand_aliases
 alias protontricks='flatpak run com.github.Matoking.protontricks'
-WINEPATH="/home/deck/.local/share/Steam/steamapps/compatdata/39140/pfx"
+WINEPATH=$(if [ -d "${HOME}/.local/share/Steam/steamapps/compatdata/39140/pfx" ]; then echo "${HOME}/.local/share/Steam/steamapps/compatdata/39140/pfx"; else echo "/run/media/mmcblk0p1/steamapps/compatdata/39140/pfx"; fi)
 FF7_DIR=$(if [ -d "${HOME}/.local/share/Steam/steamapps/common/FINAL FANTASY VII" ]; then echo "${HOME}/.local/share/Steam/steamapps/common/FINAL FANTASY VII"; else echo "/run/media/mmcblk0p1/steamapps/common/FINAL FANTASY VII"; fi)
 mkdir temp
 
-echo -e "7thDeck v0.1 \n"
-echo -e "########################################################################"
-echo -e "#    This script will:"
-echo -e "#    1. Install protontricks from the Discover store"
-echo -e "#    2. Apply patches to FF7's protonprefix to accomodate 7th Heaven"
-echo -e "#    3. Install 7th Heaven to a folder of your choosing
-#       Default: '/home/deck/7th Heaven'"
-echo -e "#    4. Add 7th Heaven to Steam using a custom launcher script"
-echo -e "#    For support, please open an issue on GitHub,
-#    or ask in the #Steamdeck-Proton channel of the Tsunamods Discord"
-echo -e "########################################################################\n\n"
-
+echo "########################################################################"
+echo "#                             7thDeck v1.0                             #"
+echo "########################################################################"
+echo "#    This script will:                                                 #"
+echo "#    1. Install protontricks from the Discover store                   #"
+echo "#    2. Apply patches to FF7's protonprefix to accomodate 7th Heaven   #"
+echo "#    3. Install 7th Heaven to a folder of your choosing                #"
+echo "#    4. Add 7th Heaven to Steam using a custom launcher script         #"
+echo "#           For support, please open an issue on GitHub,               #"
+echo "#   or ask in the #Steamdeck-Proton channel of the Tsunamods Discord   #"
+echo "########################################################################"
+echo -e "\n\n"
 
 # Ask for install path
 while true; do
-    read -p "Where would you like to install 7th Heaven? Press enter for default: " INSTALL_PATH
+    read -p "Where would you like to install 7th Heaven? [${HOME}/7th Heaven]: " INSTALL_PATH
     if [ -z "$INSTALL_PATH" ]; then
         INSTALL_PATH="${HOME}/7th Heaven"
     fi
@@ -77,7 +77,7 @@ echo
 # Copy dxvk.conf and settings.xml
 echo "Copying settings..."
 mkdir -p "temp/7th Heaven/mods"
-cp -f deps/SteamDeckSettings.iro "temp/7th Heaven/mods"
+cp -rf deps/SteamDeckSettings "temp/7th Heaven/mods"
 mkdir -p "temp/7th Heaven/7thWorkshop"
 cp -f deps/settings.xml "temp/7th Heaven/7thWorkshop"
 cp -f deps/dxvk.conf "temp/7th Heaven"
