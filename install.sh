@@ -1,7 +1,7 @@
 #!/bin/bash
 shopt -s expand_aliases
 alias protontricks='flatpak run com.github.Matoking.protontricks'
-WINEPATH="/home/deck/.local/share/Steam/steamapps/compatdata/39140/pfx"
+WINEPATH=$(if [ -d "${HOME}/.local/share/Steam/steamapps/compatdata/39140/pfx" ]; then echo "${HOME}/.local/share/Steam/steamapps/compatdata/39140/pfx"; else echo "/run/media/mmcblk0p1/steamapps/compatdata/39140/pfx"; fi)
 FF7_DIR=$(if [ -d "${HOME}/.local/share/Steam/steamapps/common/FINAL FANTASY VII" ]; then echo "${HOME}/.local/share/Steam/steamapps/common/FINAL FANTASY VII"; else echo "/run/media/mmcblk0p1/steamapps/common/FINAL FANTASY VII"; fi)
 mkdir temp
 
@@ -13,7 +13,7 @@ echo -e "#    2. Apply patches to FF7's protonprefix to accomodate 7th Heaven"
 echo -e "#    3. Install 7th Heaven to a folder of your choosing
 #       Default: '/home/deck/7th Heaven'"
 echo -e "#    4. Add 7th Heaven to Steam using a custom launcher script"
-echo -e "#    For support, please open an issue on GitHub,
+echo -e "#        For support, please open an issue on GitHub,
 #    or ask in the #Steamdeck-Proton channel of the Tsunamods Discord"
 echo -e "########################################################################\n\n"
 
