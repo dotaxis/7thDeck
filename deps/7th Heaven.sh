@@ -17,4 +17,6 @@ SOLDIER_SD="/run/media/mmcblk0p1/steamapps/common/SteamLinuxRuntime_soldier"
 { [ -d "$SOLDIER_SD" ] && SOLDIER_DIR="$SOLDIER_SD" || \
 { echo "Soldier not found!"; exit 1; }; }
 
-${HOME}/.local/share/Steam/ubuntu12_32/reaper --filesystem /home/ SteamLaunch AppId=39140 -- "$SOLDIER_DIR/_v2-entry-point" --verb=waitforexitandrun -- "$PROTON_DIR/proton" waitforexitandrun "7th Heaven.exe" $*
+${HOME}/.local/share/Steam/ubuntu12_32/reaper SteamLaunch AppId=39140 -- \
+"$SOLDIER_DIR/_v2-entry-point" --verb=waitforexitandrun -- \
+"$PROTON_DIR/proton" waitforexitandrun "7th Heaven.exe" $*
