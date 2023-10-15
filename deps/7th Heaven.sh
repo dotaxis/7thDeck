@@ -9,15 +9,15 @@ SNIPER_SD="/run/media/mmcblk0p1/steamapps/common/SteamLinuxRuntime_sniper/_v2-en
 PROTON_HOME="${HOME}/.local/share/Steam/steamapps/common/Proton 8.0/proton"
 PROTON_SD="/run/media/mmcblk0p1/steamapps/common/Proton 8.0/proton"
 
-[ ! -f "$REAPER" ] && { echo "Reaper not found!"; exit 1; }
+[ ! -f "$REAPER" ] && { kdialog --error  "Reaper not found!"; exit 1; }
 
 [ -f "$SNIPER_HOME" ] && SNIPER="$SNIPER_HOME" || \
 { [ -f "$SNIPER_SD" ] && SNIPER="$SNIPER_SD" || \
-{ echo "Sniper not found!"; exit 1; }; }
+{ kdialog --error  "Sniper not found!"; exit 1; }; }
 
 [ -f "$PROTON_HOME" ] && PROTON="$PROTON_HOME" || \
 { [ -f "$PROTON_SD" ] && PROTON="$PROTON_SD" || \
-{ echo "Proton not found!"; exit 1; }; }
+{ kdialog --error  "Proton not found!"; exit 1; }; }
 
 "$REAPER" SteamLaunch AppId=39140 -- "$SNIPER" -- "$PROTON" waitforexitandrun \
 "7th Heaven.exe" $*
