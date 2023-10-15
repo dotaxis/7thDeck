@@ -6,7 +6,7 @@ FF7_DIR=$(if [ -d "${HOME}/.local/share/Steam/steamapps/common/FINAL FANTASY VII
 [ ! -d "temp" ] && mkdir temp
 
 echo "########################################################################"
-echo "#                             7thDeck v1.01                            #"
+echo "#                             7thDeck v1.1                             #"
 echo "########################################################################"
 echo "#    This script will:                                                 #"
 echo "#    1. Install protontricks from the Discover store                   #"
