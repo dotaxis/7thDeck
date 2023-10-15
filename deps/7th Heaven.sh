@@ -1,6 +1,6 @@
 #!/bin/bash
 export LD_LIBRARY_PATH="$PROTON_DIR/dist/lib:$PROTON_DIR/dist/lib64:$LD_LIBRARY_PATH"
-export STEAM_COMPAT_DATA_PATH="${HOME}/.local/share/Steam/steamapps/compatdata/39140"
+export STEAM_COMPAT_DATA_PATH="WINEPATH"
 export STEAM_COMPAT_CLIENT_INSTALL_PATH="${HOME}/.local/share/Steam"
 export STEAM_RUNTIME=0
 
