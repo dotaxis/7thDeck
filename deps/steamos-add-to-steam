@@ -1,0 +1,44 @@
+#! /bin/sh
+# I stole this from Valve
+
+add_to_steam() {
+    encodedUrl="steam://addnonsteamgame/$(python3 -c "import urllib.parse;print(urllib.parse.quote(\"$1\", safe=''))")"
+    touch /tmp/addnonsteamgamefile
+    xdg-open $encodedUrl
+}
+
+show_error() {
+    if [ "$show_dialog" = "1" ]; then
+        kdialog --title Error --error "$1"
+    else
+        echo "$1" >&2
+    fi
+}
+
+if [ "$1" = "-ui" ]; then
+    show_dialog=1
+    shift
+fi
+
+file=$1
+if [ ! -e "$file" ]
+then
+    echo "Usage: steamos-add-to-steam [-ui] <path>"
+    exit 1
+fi
+mime=$(xdg-mime query filetype "$file")
+case "$mime" in
+    "application/x-desktop"|"application/x-ms-dos-executable")
+        add_to_steam "$file"
+        ;;
+    "application/x-executable"|"application/vnd.appimage"|"application/x-shellscript")
+        if [ -x "$file" ]; then
+            add_to_steam "$file"
+        else
+            show_error "Unable to add non-Steam game. Is the file executable?"
+        fi
+        ;;
+    *)
+        show_error "Unsupported file type"
+        ;;
+esac

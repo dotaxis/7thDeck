@@ -1,22 +1,14 @@
 #!/bin/bash
-shopt -s expand_aliases
-alias protontricks='flatpak run com.github.Matoking.protontricks'
-WINEPATH=$(if [ -d "${HOME}/.local/share/Steam/steamapps/compatdata/39140/pfx" ]; then echo "${HOME}/.local/share/Steam/steamapps/compatdata/39140/pfx"; else echo "/run/media/mmcblk0p1/steamapps/compatdata/39140/pfx"; fi)
-FF7_DIR=$(if [ -d "${HOME}/.local/share/Steam/steamapps/common/FINAL FANTASY VII" ]; then echo "${HOME}/.local/share/Steam/steamapps/common/FINAL FANTASY VII"; else echo "/run/media/mmcblk0p1/steamapps/common/FINAL FANTASY VII"; fi)
-PROTON_HOME="${HOME}/.local/share/Steam/steamapps/common/Proton 7.0/proton"
-PROTON_SD="/run/media/mmcblk0p1/steamapps/common/Proton 7.0/proton"
-PROTON=""
-RUNTIME_HOME="${HOME}/.local/share/Steam/steamapps/common/SteamLinuxRuntime_soldier/run"
-RUNTIME_SD="/run/media/mmcblk0p1/steamapps/common/SteamLinuxRuntime_soldier/run"
-RUNTIME=""
+PROTON="${HOME}/.local/share/Steam/steamapps/common/Proton 7.0/proton"
+RUNTIME="${HOME}/.local/share/Steam/steamapps/common/SteamLinuxRuntime_soldier/run"
 
 [ ! -d "temp" ] && mkdir temp
 
 echo "########################################################################"
-echo "#                             7thDeck v1.1                             #"
+echo "#                          7thDeck v1.1 (KDE)                          #"
 echo "########################################################################"
 echo "#    This script will:                                                 #"
-echo "#    1. Install protontricks from the Discover store                   #"
+echo "#    1. Verify protontricks is installed                               #"
 echo "#    2. Apply patches to FF7's protonprefix to accomodate 7th Heaven   #"
 echo "#    3. Install 7th Heaven to a folder of your choosing                #"
 echo "#    4. Add 7th Heaven to Steam using a custom launcher script         #"
@@ -27,32 +19,29 @@ echo -e "\n"
 
 # Check for Proton 7 and SteamLinuxRuntime
 echo -n "Checking if Proton 7 is installed... "
-while [ -z "$PROTON" ]; do
-  if [ -f "$PROTON_HOME" ]; then
-    PROTON="$PROTON_HOME"
-  elif [ -f "$PROTON_SD" ]; then
-    PROTON="$PROTON_SD"
-  else
-    echo -e "\nNot found! Launching Steam to install."
-    steam steam://install/1887720
-    read -p "Press Enter when Proton 7 is done installing."
-  fi
+while [ ! -f "$PROTON" ]; do
+  echo -e "\nNot found! Launching Steam to install."
+  steam steam://install/1887720
+  read -p "Press Enter when Proton 7 is done installing."
 done
 echo "OK!"
 echo -n "Checking if SteamLinuxRuntime 2.0 is installed... "
-while [ -z "$RUNTIME" ]; do
-  if [ -f "$RUNTIME_HOME" ]; then
-    RUNTIME="$RUNTIME_HOME"
-  elif [ -f "$RUNTIME_SD" ]; then
-    RUNTIME="$RUNTIME_SD"
-  else
-    echo -e "\nNot found! Launching Steam to install."
-    steam steam steam://install/1391110
-    read -p "Press Enter when SteamLinuxRuntime 2.0 (Soldier) is done installing."
-  fi
+while [ ! -f "$RUNTIME" ]; do
+  echo -e "\nNot found! Launching Steam to install."
+  steam steam steam://install/1391110
+  read -p "Press Enter when SteamLinuxRuntime 2.0 (Soldier) is done installing."
 done
 echo "OK!"
 echo
+
+# Find FF7 and prefix
+[ -d "${HOME}/.local/share/Steam/steamapps/compatdata/39140/pfx" ] && WINEPATH="${HOME}/.local/share/Steam/steamapps/compatdata/39140/pfx" \
+|| read -p "Enter the path to FF7's proton prefix (should end in '/39140/pfx'): " WINEPATH
+[ ! -d "$WINEPATH" ] && { echo "Invalid proton prefix!"; exit 1; }
+
+[ -d "${HOME}/.local/share/Steam/steamapps/common/FINAL FANTASY VII" ] && FF7_DIR="${HOME}/.local/share/Steam/steamapps/common/FINAL FANTASY VII" \
+|| read -p "Enter the path to your FF7 installation: " FF7_DIR
+[ ! -d "$FF7_DIR" ] && { echo "Invalid FF7 path!"; exit 1; }
 
 # Downgrade FF7 prefix to Proton 7.0
 echo "Downgrading FF7 to Proton 7.0..."
@@ -76,12 +65,8 @@ done
 cd - &> /dev/null
 echo
 
-# Install protontricks and apply patches
-echo "Installing Protontricks..."
-flatpak --system install com.github.Matoking.protontricks -y
-flatpak override --user --filesystem=/home/ com.github.Matoking.protontricks
-flatpak override --user --filesystem=/run/media/mmcblk0p1 com.github.Matoking.protontricks
-echo
+# Check if protontricks is installed
+[ ! command -v protontricks &> /dev/null ] && { echo "Protontricks is not installed. Exiting."; exit 1; }
 
 # Install dependencies and patch dinput
 echo "Installing dependencies..."
@@ -119,7 +104,6 @@ echo
 # Copy dxvk.conf and settings.xml
 echo "Copying settings..."
 mkdir -p "temp/7th Heaven/mods"
-cp -rf deps/SteamDeckSettings "temp/7th Heaven/mods"
 mkdir -p "temp/7th Heaven/7thWorkshop"
 cp -f deps/settings.xml "temp/7th Heaven/7thWorkshop"
 cp -f deps/dxvk.conf "temp/7th Heaven"
@@ -172,18 +156,18 @@ Terminal=false
 Type=Application
 StartupNotify=false" > "${HOME}/Desktop/7th Heaven.desktop"
 chmod +x "${HOME}/Desktop/7th Heaven.desktop"
-update-desktop-database ~/.local/share/applications
+update-desktop-database ~/.local/share/applications &> /dev/null
 echo
 
 # Add launcher to Steam
 echo "Adding 7th Heaven to Steam..."
-steamos-add-to-steam "${HOME}/.local/share/applications/7th Heaven.desktop" &> /dev/null
+deps/steamos-add-to-steam "${HOME}/.local/share/applications/7th Heaven.desktop" &> /dev/null
 sleep 5
 echo
 
 # Force FF7 under Proton 7
 echo "Forcing Final Fantasy VII to run under Proton 7.0"
-kill $(ps aux | grep '[s]team -steamdeck' | awk '{print $2}')
+pkill steam
 sleep 10
 cp ${HOME}/.local/share/Steam/config/config.vdf ${HOME}/.local/share/Steam/config/config.vdf.bak
 perl -0777 -i -pe 's/"CompatToolMapping"\n\s+{/"CompatToolMapping"\n\t\t\t\t{\n\t\t\t\t\t"39140"\n\t\t\t\t\t{\n\t\t\t\t\t\t"name"\t\t"proton_7"\n\t\t\t\t\t\t"config"\t\t""\n\t\t\t\t\t\t"priority"\t\t"250"\n\t\t\t\t\t}/gs' \
