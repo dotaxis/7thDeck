@@ -3,10 +3,10 @@ shopt -s expand_aliases
 alias protontricks='flatpak run com.github.Matoking.protontricks'
 WINEPATH=$(if [ -d "${HOME}/.local/share/Steam/steamapps/compatdata/39140/pfx" ]; then echo "${HOME}/.local/share/Steam/steamapps/compatdata/39140/pfx"; else echo "/run/media/mmcblk0p1/steamapps/compatdata/39140/pfx"; fi)
 FF7_DIR=$(if [ -d "${HOME}/.local/share/Steam/steamapps/common/FINAL FANTASY VII" ]; then echo "${HOME}/.local/share/Steam/steamapps/common/FINAL FANTASY VII"; else echo "/run/media/mmcblk0p1/steamapps/common/FINAL FANTASY VII"; fi)
-mkdir temp
+[ ! -d "temp" ] && mkdir temp
 
 echo "########################################################################"
-echo "#                             7thDeck v1.0                             #"
+echo "#                             7thDeck v1.01                            #"
 echo "########################################################################"
 echo "#    This script will:                                                 #"
 echo "#    1. Install protontricks from the Discover store                   #"
@@ -16,23 +16,23 @@ echo "#    4. Add 7th Heaven to Steam using a custom launcher script         #"
 echo "#           For support, please open an issue on GitHub,               #"
 echo "#   or ask in the #Steamdeck-Proton channel of the Tsunamods Discord   #"
 echo "########################################################################"
-echo -e "\n\n"
+echo -e "\n"
+sleep 3
 
 # Ask for install path
+kdialog --msgbox "Choose an installation path. The folder must already exist."
+cd ${HOME}
 while true; do
-    read -p "Where would you like to install 7th Heaven? [${HOME}/7th Heaven]: " INSTALL_PATH
-    if [ -z "$INSTALL_PATH" ]; then
-        INSTALL_PATH="${HOME}/7th Heaven"
-    fi
-
-    if [ -e "$INSTALL_PATH" ]; then
-        echo "The installation path '$INSTALL_PATH' already exists."
-        echo "Please choose a different path or delete '$INSTALL_PATH'"
-    else
-        break
-    fi
+  INSTALL_PATH=$(kdialog --getexistingdirectory "Select Installation Path") || { echo "No directory selected. Exiting."; exit 1; }
+  kdialog --yesno "7th Heaven will be installed to $INSTALL_PATH. Continue?"
+  case $? in
+    0) echo "Installing to $INSTALL_PATH."; break ;;
+    1) echo "Select a different path." ;;
+    -1) echo "An unexpected error has occurred. Exiting"; exit 1 ;;
+  esac
 done
-echo -e "7th Heaven will be installed to $INSTALL_PATH\n"
+cd - &> /dev/null
+echo
 
 # Install protontricks and apply patches
 echo "Installing Protontricks..."
@@ -89,10 +89,10 @@ echo
 echo "Extracting 7th Heaven..."
 unzip $ZIPFILE -d "temp/7th Heaven/" > /dev/null
 cp -f "temp/7th Heaven/Resources/FF7_1.02_Eng_Patch/ff7.exe" "$FF7_DIR/ff7.exe"
-[ -f "$INSTALL_PATH" ] && rm "$INSTALL_PATH"
-cp -rf "temp/7th Heaven" "$INSTALL_PATH"
+cp -rf "temp/7th Heaven"/* "$INSTALL_PATH"
 cp -f "deps/7th Heaven.sh" "$INSTALL_PATH"
 sed -i "s|7th Heaven.exe|$INSTALL_PATH/7th Heaven.exe|" "$INSTALL_PATH/7th Heaven.sh"
+sed -i "s|WINEPATH|${WINEPATH%/pfx}|" "$INSTALL_PATH/7th Heaven.sh"
 cp -f "deps/timeout.exe" "$WINEPATH/drive_c/windows/system32/"
 echo
 
