@@ -57,7 +57,7 @@ echo "Please follow the installation prompts that appear."
 echo "The script may appear to hang here. Be patient."
 [ -f "$WINEPATH/drive_c/windows/syswow64/dinput.dll" ] && rm "$WINEPATH/drive_c/windows/syswow64/dinput.dll"
 [ -f "$WINEPATH/drive_c/windows/system32/dinput.dll" ] && rm "$WINEPATH/drive_c/windows/system32/dinput.dll"
-protontricks 39140 dinput dotnetdesktop7 &> /dev/null
+protontricks 39140 dinput dxvk1103 dotnetdesktop7 &> /dev/null
 echo
 
 # Download 7th Heaven from Github
@@ -145,6 +145,17 @@ echo
 echo "Adding 7th Heaven to Steam..."
 steamos-add-to-steam "${HOME}/.local/share/applications/7th Heaven.desktop" &> /dev/null
 sleep 5
+echo
+
+# Force FF7 under Proton 7
+echo "Forcing Final Fantasy VII to run under Proton 7.0"
+kill $(ps aux | grep '[s]team -steamdeck' | awk '{print $2}')
+sleep 10
+cp ${HOME}/.local/share/Steam/config/config.vdf ${HOME}/.local/share/Steam/config/config.vdf.bak
+perl -0777 -i -pe 's/"CompatToolMapping"\n\s+{/"CompatToolMapping"\n\t\t\t\t{\n\t\t\t\t\t"39140"\n\t\t\t\t\t{\n\t\t\t\t\t\t"name"\t\t"proton_7"\n\t\t\t\t\t\t"config"\t\t""\n\t\t\t\t\t\t"priority"\t\t"250"\n\t\t\t\t\t}/gs' \
+${HOME}/.local/share/Steam/config/config.vdf
+# Thanks ChatGPT
+nohup steam &> /dev/null &
 echo
 
 # Clean up files
