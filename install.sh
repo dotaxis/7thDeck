@@ -121,6 +121,7 @@ echo "#!/usr/bin/env xdg-open
 Name=7th Heaven
 Icon=7th-heaven
 Exec=\"$INSTALL_PATH/7th Heaven.sh\"
+Path=$INSTALL_PATH
 Categories=Game;
 Terminal=false
 Type=Application
@@ -133,6 +134,7 @@ echo "#!/usr/bin/env xdg-open
 Name=7th Heaven
 Icon=7th-heaven
 Exec=\"$INSTALL_PATH/7th Heaven.sh\"
+Path=$INSTALL_PATH
 Categories=Game;
 Terminal=false
 Type=Application
