@@ -19,6 +19,15 @@ echo "########################################################################"
 echo -e "\n"
 sleep 3
 
+# Downgrade FF7 prefix to Proton 7.0
+PROTON_HOME="${HOME}/.local/share/Steam/steamapps/common/Proton 7.0/proton"
+PROTON_SD="/run/media/mmcblk0p1/steamapps/common/Proton 7.0/proton"
+[ -f "$PROTON_HOME" ] && PROTON="$PROTON_HOME" || \
+{ [ -f "$PROTON_SD" ] && PROTON="$PROTON_SD" || \
+{ kdialog --error  "Proton 7.0 not found!"; exit 1; }; }
+STEAM_COMPAT_APP_ID=39140 STEAM_COMPAT_DATA_PATH="${WINEPATH%/pfx}" \
+STEAM_COMPAT_CLIENT_INSTALL_PATH=$(readlink -f "$HOME/.steam/root")"$PROTON" run
+
 # Ask for install path
 kdialog --msgbox "Choose an installation path. The folder must already exist."
 cd ${HOME}

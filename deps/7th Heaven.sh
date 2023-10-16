@@ -3,10 +3,10 @@ export STEAM_COMPAT_APP_ID=39140
 export STEAM_COMPAT_DATA_PATH="WINEPATH"
 export STEAM_COMPAT_CLIENT_INSTALL_PATH=$(readlink -f "$HOME/.steam/root")
 
-SNIPER_HOME="${HOME}/.local/share/Steam/steamapps/common/SteamLinuxRuntime_sniper/_v2-entry-point"
-SNIPER_SD="/run/media/mmcblk0p1/steamapps/common/SteamLinuxRuntime_sniper/_v2-entry-point"
-PROTON_HOME="${HOME}/.local/share/Steam/steamapps/common/Proton 8.0/proton"
-PROTON_SD="/run/media/mmcblk0p1/steamapps/common/Proton 8.0/proton"
+SNIPER_HOME="${HOME}/.local/share/Steam/steamapps/common/SteamLinuxRuntime_soldier/run"
+SNIPER_SD="/run/media/mmcblk0p1/steamapps/common/SteamLinuxRuntime_soldier/run"
+PROTON_HOME="${HOME}/.local/share/Steam/steamapps/common/Proton 7.0/proton"
+PROTON_SD="/run/media/mmcblk0p1/steamapps/common/Proton 7.0/proton"
 
 [ -f "$SNIPER_HOME" ] && SNIPER="$SNIPER_HOME" || \
 { [ -f "$SNIPER_SD" ] && SNIPER="$SNIPER_SD" || \
