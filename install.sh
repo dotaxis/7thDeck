@@ -62,10 +62,10 @@ STEAM_COMPAT_CLIENT_INSTALL_PATH=$(readlink -f "$HOME/.steam/root") "$PROTON" ru
 echo
 
 # Ask for install path
-kdialog --msgbox "Choose an installation path. The folder must already exist."
+kdialog --msgbox "Choose an installation path for 7th Heaven. The folder must already exist."
 cd ${HOME}
 while true; do
-  INSTALL_PATH=$(kdialog --getexistingdirectory "Select Installation Path") || { echo "No directory selected. Exiting."; exit 1; }
+  INSTALL_PATH=$(kdialog --getexistingdirectory "Select 7th Heaven Install Folder") || { echo "No directory selected. Exiting."; exit 1; }
   kdialog --yesno "7th Heaven will be installed to $INSTALL_PATH. Continue?"
   case $? in
     0) echo "Installing to $INSTALL_PATH."; break ;;
