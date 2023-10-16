@@ -112,6 +112,7 @@ echo "44000000" > "$WINEPATH/drive_c/.windows-serial"
 # Add shortcut to Desktop/Launcher
 echo "Adding 7th Heaven to Desktop and Launcher"
 xdg-icon-resource install deps/7th-heaven.png --size 64 --novendor
+mkdir -p "${HOME}/.local/share/applications" &> /dev/null
 # Launcher
 rm -r "${HOME}/.local/share/applications/7th Heaven.desktop" 2> /dev/null
 echo "#!/usr/bin/env xdg-open
