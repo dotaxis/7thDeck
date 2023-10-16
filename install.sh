@@ -18,14 +18,28 @@ echo "#   or ask in the #Steamdeck-Proton channel of the Tsunamods Discord   #"
 echo "########################################################################"
 echo -e "\n"
 
-# Downgrade FF7 prefix to Proton 7.0
-echo "Downgrading FF7 to Proton 7.0"
-[ ! -d $WINEPATH ] && { echo "FF7 proton prefix not found! Have you run the game before? Exiting."; exit 1; }
+# Install Proton 7
+echo "Checking if Proton 7 is installed..."
 PROTON_HOME="${HOME}/.local/share/Steam/steamapps/common/Proton 7.0/proton"
 PROTON_SD="/run/media/mmcblk0p1/steamapps/common/Proton 7.0/proton"
-[ -f "$PROTON_HOME" ] && PROTON="$PROTON_HOME" || \
-{ [ -f "$PROTON_SD" ] && PROTON="$PROTON_SD" || \
-{ kdialog --error  "Proton 7.0 not found!"; exit 1; }; }
+PROTON=""
+while [ -z "$PROTON" ]; do
+    if [ -f "$PROTON_HOME" ]; then
+        PROTON="$PROTON_HOME"
+    elif [ -f "$PROTON_SD" ]; then
+        PROTON="$PROTON_SD"
+    else
+        echo "Proton 7.0 not found! Launching Steam to install."
+        steam steam://install/1887720
+        read -p "Press Enter when Proton 7 is done installing."
+    fi
+done
+echo "Proton 7.0 found at: $PROTON"
+echo
+
+# Downgrade FF7 prefix to Proton 7.0
+echo "Downgrading FF7 to Proton 7.0..."
+[ ! -d $WINEPATH ] && { echo "FF7 proton prefix not found! Have you run the game before? Exiting."; exit 1; }
 STEAM_COMPAT_APP_ID=39140 STEAM_COMPAT_DATA_PATH="${WINEPATH%/pfx}" \
 STEAM_COMPAT_CLIENT_INSTALL_PATH=$(readlink -f "$HOME/.steam/root") "$PROTON" run &> /dev/null
 
