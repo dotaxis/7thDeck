@@ -3,6 +3,13 @@ shopt -s expand_aliases
 alias protontricks='flatpak run com.github.Matoking.protontricks'
 WINEPATH=$(if [ -d "${HOME}/.local/share/Steam/steamapps/compatdata/39140/pfx" ]; then echo "${HOME}/.local/share/Steam/steamapps/compatdata/39140/pfx"; else echo "/run/media/mmcblk0p1/steamapps/compatdata/39140/pfx"; fi)
 FF7_DIR=$(if [ -d "${HOME}/.local/share/Steam/steamapps/common/FINAL FANTASY VII" ]; then echo "${HOME}/.local/share/Steam/steamapps/common/FINAL FANTASY VII"; else echo "/run/media/mmcblk0p1/steamapps/common/FINAL FANTASY VII"; fi)
+PROTON_HOME="${HOME}/.local/share/Steam/steamapps/common/Proton 7.0/proton"
+PROTON_SD="/run/media/mmcblk0p1/steamapps/common/Proton 7.0/proton"
+PROTON=""
+RUNTIME_HOME="${HOME}/.local/share/Steam/steamapps/common/SteamLinuxRuntime_soldier/run"
+RUNTIME_SD="/run/media/mmcblk0p1/steamapps/common/SteamLinuxRuntime_soldier/run"
+RUNTIME=""
+
 [ ! -d "temp" ] && mkdir temp
 
 echo "########################################################################"
@@ -17,13 +24,48 @@ echo "#           For support, please open an issue on GitHub,               #"
 echo "#   or ask in the #Steamdeck-Proton channel of the Tsunamods Discord   #"
 echo "########################################################################"
 echo -e "\n"
-sleep 3
+
+# Check for Proton 7 and SteamLinuxRuntime
+echo -n "Checking if Proton 7 is installed... "
+while [ -z "$PROTON" ]; do
+  if [ -f "$PROTON_HOME" ]; then
+    PROTON="$PROTON_HOME"
+  elif [ -f "$PROTON_SD" ]; then
+    PROTON="$PROTON_SD"
+  else
+    echo -e "\nNot found! Launching Steam to install."
+    steam steam://install/1887720
+    read -p "Press Enter when Proton 7 is done installing."
+  fi
+done
+echo "OK!"
+echo -n "Checking if SteamLinuxRuntime 2.0 is installed... "
+while [ -z "$RUNTIME" ]; do
+  if [ -f "$RUNTIME_HOME" ]; then
+    RUNTIME="$RUNTIME_HOME"
+  elif [ -f "$RUNTIME_SD" ]; then
+    RUNTIME="$RUNTIME_SD"
+  else
+    echo -e "\nNot found! Launching Steam to install."
+    steam steam steam://install/1391110
+    read -p "Press Enter when SteamLinuxRuntime 2.0 (Soldier) is done installing."
+  fi
+done
+echo "OK!"
+echo
+
+# Downgrade FF7 prefix to Proton 7.0
+echo "Downgrading FF7 to Proton 7.0..."
+[ ! -d $WINEPATH ] && { echo "FF7 proton prefix not found! Have you run the game before? Exiting."; exit 1; }
+STEAM_COMPAT_APP_ID=39140 STEAM_COMPAT_DATA_PATH="${WINEPATH%/pfx}" \
+STEAM_COMPAT_CLIENT_INSTALL_PATH=$(readlink -f "$HOME/.steam/root") "$PROTON" run &> /dev/null
+echo
 
 # Ask for install path
-kdialog --msgbox "Choose an installation path. The folder must already exist."
+kdialog --msgbox "Choose an installation path for 7th Heaven. The folder must already exist."
 cd ${HOME}
 while true; do
-  INSTALL_PATH=$(kdialog --getexistingdirectory "Select Installation Path") || { echo "No directory selected. Exiting."; exit 1; }
+  INSTALL_PATH=$(kdialog --getexistingdirectory "Select 7th Heaven Install Folder") || { echo "No directory selected. Exiting."; exit 1; }
   kdialog --yesno "7th Heaven will be installed to $INSTALL_PATH. Continue?"
   case $? in
     0) echo "Installing to $INSTALL_PATH."; break ;;
@@ -47,7 +89,7 @@ echo "Please follow the installation prompts that appear."
 echo "The script may appear to hang here. Be patient."
 [ -f "$WINEPATH/drive_c/windows/syswow64/dinput.dll" ] && rm "$WINEPATH/drive_c/windows/syswow64/dinput.dll"
 [ -f "$WINEPATH/drive_c/windows/system32/dinput.dll" ] && rm "$WINEPATH/drive_c/windows/system32/dinput.dll"
-protontricks 39140 dinput dxvk dotnetdesktop7 &> /dev/null
+protontricks 39140 dinput dotnetdesktop7 &> /dev/null
 echo
 
 # Download 7th Heaven from Github
@@ -103,6 +145,7 @@ echo "44000000" > "$WINEPATH/drive_c/.windows-serial"
 # Add shortcut to Desktop/Launcher
 echo "Adding 7th Heaven to Desktop and Launcher"
 xdg-icon-resource install deps/7th-heaven.png --size 64 --novendor
+mkdir -p "${HOME}/.local/share/applications" &> /dev/null
 # Launcher
 rm -r "${HOME}/.local/share/applications/7th Heaven.desktop" 2> /dev/null
 echo "#!/usr/bin/env xdg-open
@@ -110,6 +153,7 @@ echo "#!/usr/bin/env xdg-open
 Name=7th Heaven
 Icon=7th-heaven
 Exec=\"$INSTALL_PATH/7th Heaven.sh\"
+Path=$INSTALL_PATH
 Categories=Game;
 Terminal=false
 Type=Application
@@ -122,6 +166,7 @@ echo "#!/usr/bin/env xdg-open
 Name=7th Heaven
 Icon=7th-heaven
 Exec=\"$INSTALL_PATH/7th Heaven.sh\"
+Path=$INSTALL_PATH
 Categories=Game;
 Terminal=false
 Type=Application
@@ -134,6 +179,17 @@ echo
 echo "Adding 7th Heaven to Steam..."
 steamos-add-to-steam "${HOME}/.local/share/applications/7th Heaven.desktop" &> /dev/null
 sleep 5
+echo
+
+# Force FF7 under Proton 7
+echo "Forcing Final Fantasy VII to run under Proton 7.0"
+kill $(ps aux | grep '[s]team -steamdeck' | awk '{print $2}')
+sleep 10
+cp ${HOME}/.local/share/Steam/config/config.vdf ${HOME}/.local/share/Steam/config/config.vdf.bak
+perl -0777 -i -pe 's/"CompatToolMapping"\n\s+{/"CompatToolMapping"\n\t\t\t\t{\n\t\t\t\t\t"39140"\n\t\t\t\t\t{\n\t\t\t\t\t\t"name"\t\t"proton_7"\n\t\t\t\t\t\t"config"\t\t""\n\t\t\t\t\t\t"priority"\t\t"250"\n\t\t\t\t\t}/gs' \
+${HOME}/.local/share/Steam/config/config.vdf
+# Thanks ChatGPT
+nohup steam &> /dev/null &
 echo
 
 # Clean up files
