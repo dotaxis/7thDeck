@@ -56,7 +56,7 @@ echo "Please follow the installation prompts that appear."
 echo "The script may appear to hang here. Be patient."
 [ -f "$WINEPATH/drive_c/windows/syswow64/dinput.dll" ] && rm "$WINEPATH/drive_c/windows/syswow64/dinput.dll"
 [ -f "$WINEPATH/drive_c/windows/system32/dinput.dll" ] && rm "$WINEPATH/drive_c/windows/system32/dinput.dll"
-protontricks 39140 dinput dxvk dotnetdesktop7 &> /dev/null
+protontricks 39140 dinput dotnetdesktop7 &> /dev/null
 echo
 
 # Download 7th Heaven from Github
