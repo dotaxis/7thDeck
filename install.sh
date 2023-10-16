@@ -17,9 +17,10 @@ echo "#           For support, please open an issue on GitHub,               #"
 echo "#   or ask in the #Steamdeck-Proton channel of the Tsunamods Discord   #"
 echo "########################################################################"
 echo -e "\n"
-sleep 3
 
 # Downgrade FF7 prefix to Proton 7.0
+echo "Downgrading FF7 to Proton 7.0"
+[ ! -d $WINEPATH ] && { echo "FF7 proton prefix not found! Have you run the game before? Exiting."; exit 1; }
 PROTON_HOME="${HOME}/.local/share/Steam/steamapps/common/Proton 7.0/proton"
 PROTON_SD="/run/media/mmcblk0p1/steamapps/common/Proton 7.0/proton"
 [ -f "$PROTON_HOME" ] && PROTON="$PROTON_HOME" || \
