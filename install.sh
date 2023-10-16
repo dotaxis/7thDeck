@@ -3,6 +3,13 @@ shopt -s expand_aliases
 alias protontricks='flatpak run com.github.Matoking.protontricks'
 WINEPATH=$(if [ -d "${HOME}/.local/share/Steam/steamapps/compatdata/39140/pfx" ]; then echo "${HOME}/.local/share/Steam/steamapps/compatdata/39140/pfx"; else echo "/run/media/mmcblk0p1/steamapps/compatdata/39140/pfx"; fi)
 FF7_DIR=$(if [ -d "${HOME}/.local/share/Steam/steamapps/common/FINAL FANTASY VII" ]; then echo "${HOME}/.local/share/Steam/steamapps/common/FINAL FANTASY VII"; else echo "/run/media/mmcblk0p1/steamapps/common/FINAL FANTASY VII"; fi)
+PROTON_HOME="${HOME}/.local/share/Steam/steamapps/common/Proton 7.0/proton"
+PROTON_SD="/run/media/mmcblk0p1/steamapps/common/Proton 7.0/proton"
+PROTON=""
+RUNTIME_HOME="${HOME}/.local/share/Steam/steamapps/common/SteamLinuxRuntime_soldier/run"
+RUNTIME_SD="/run/media/mmcblk0p1/steamapps/common/SteamLinuxRuntime_soldier/run"
+RUNTIME=""
+
 [ ! -d "temp" ] && mkdir temp
 
 echo "########################################################################"
@@ -18,23 +25,33 @@ echo "#   or ask in the #Steamdeck-Proton channel of the Tsunamods Discord   #"
 echo "########################################################################"
 echo -e "\n"
 
-# Install Proton 7
-echo "Checking if Proton 7 is installed..."
-PROTON_HOME="${HOME}/.local/share/Steam/steamapps/common/Proton 7.0/proton"
-PROTON_SD="/run/media/mmcblk0p1/steamapps/common/Proton 7.0/proton"
-PROTON=""
+# Check for Proton 7 and SteamLinuxRuntime
+echo -n "Checking if Proton 7 is installed... "
 while [ -z "$PROTON" ]; do
-    if [ -f "$PROTON_HOME" ]; then
-        PROTON="$PROTON_HOME"
-    elif [ -f "$PROTON_SD" ]; then
-        PROTON="$PROTON_SD"
-    else
-        echo "Proton 7.0 not found! Launching Steam to install."
-        steam steam://install/1887720
-        read -p "Press Enter when Proton 7 is done installing."
-    fi
+  if [ -f "$PROTON_HOME" ]; then
+    PROTON="$PROTON_HOME"
+  elif [ -f "$PROTON_SD" ]; then
+    PROTON="$PROTON_SD"
+  else
+    echo -e "\nNot found! Launching Steam to install."
+    steam steam://install/1887720
+    read -p "Press Enter when Proton 7 is done installing."
+  fi
 done
-echo "Proton 7.0 found at: $PROTON"
+echo "OK!"
+echo -n "Checking if SteamLinuxRuntime 2.0 is installed... "
+while [ -z "$RUNTIME" ]; do
+  if [ -f "$RUNTIME_HOME" ]; then
+    RUNTIME="$RUNTIME_HOME"
+  elif [ -f "$RUNTIME_SD" ]; then
+    RUNTIME="$RUNTIME_SD"
+  else
+    echo -e "\nNot found! Launching Steam to install."
+    steam steam steam://install/1391110
+    read -p "Press Enter when SteamLinuxRuntime 2.0 (Soldier) is done installing."
+  fi
+done
+echo "OK!"
 echo
 
 # Downgrade FF7 prefix to Proton 7.0
@@ -42,6 +59,7 @@ echo "Downgrading FF7 to Proton 7.0..."
 [ ! -d $WINEPATH ] && { echo "FF7 proton prefix not found! Have you run the game before? Exiting."; exit 1; }
 STEAM_COMPAT_APP_ID=39140 STEAM_COMPAT_DATA_PATH="${WINEPATH%/pfx}" \
 STEAM_COMPAT_CLIENT_INSTALL_PATH=$(readlink -f "$HOME/.steam/root") "$PROTON" run &> /dev/null
+echo
 
 # Ask for install path
 kdialog --msgbox "Choose an installation path. The folder must already exist."
