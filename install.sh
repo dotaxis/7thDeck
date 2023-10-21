@@ -1,6 +1,6 @@
 #!/bin/bash
 shopt -s expand_aliases
-alias protontricks='flatpak run com.github.Matoking.protontricks'
+alias winetricks='flatpak --command=winetricks run com.github.Matoking.protontricks'
 WINEPATH=$(if [ -d "${HOME}/.local/share/Steam/steamapps/compatdata/39140/pfx" ]; then echo "${HOME}/.local/share/Steam/steamapps/compatdata/39140/pfx"; else echo "/run/media/mmcblk0p1/steamapps/compatdata/39140/pfx"; fi)
 FF7_DIR=$(if [ -d "${HOME}/.local/share/Steam/steamapps/common/FINAL FANTASY VII" ]; then echo "${HOME}/.local/share/Steam/steamapps/common/FINAL FANTASY VII"; else echo "/run/media/mmcblk0p1/steamapps/common/FINAL FANTASY VII"; fi)
 PROTON_HOME="${HOME}/.local/share/Steam/steamapps/common/Proton 7.0/proton"
@@ -88,7 +88,8 @@ echo "Please follow the installation prompts that appear."
 echo "The script may appear to hang here. Be patient."
 [ -f "$WINEPATH/drive_c/windows/syswow64/dinput.dll" ] && rm "$WINEPATH/drive_c/windows/syswow64/dinput.dll"
 [ -f "$WINEPATH/drive_c/windows/system32/dinput.dll" ] && rm "$WINEPATH/drive_c/windows/system32/dinput.dll"
-protontricks 39140 dinput dotnetdesktop7 &> /dev/null
+WINEPREFIX="$WINEPATH" WINESERVER="${PROTON%/proton}/dist/bin/wineserver" \
+WINE="${PROTON%/proton}/dist/bin/wine" winetricks dinput dotnetdesktop7 &> /dev/null
 echo
 
 # Download 7th Heaven from Github
