@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Settings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <AppLanguage>en</AppLanguage>
+  <SubscribedUrls>
+    <string>iros://Url/https$github.com/tsunamods-codes/7th-Heaven-Catalogs/releases/download/canary/qhimm.xml</string>
+    <string>iros://Url/https$github.com/tsunamods-codes/7th-Heaven-Catalogs/releases/download/canary/sega.xml</string>
+  </SubscribedUrls>
+  <ExtraFolders>
+    <string>ambient</string>
+    <string>direct</string>
+    <string>lighting</string>
+    <string>music</string>
+    <string>sfx</string>
+    <string>time</string>
+    <string>voice</string>
+    <string>widescreen</string>
+  </ExtraFolders>
+  <Subscriptions>
+    <Subscription>
+      <FailureCount>0</FailureCount>
+      <Url>iros://Url/https$github.com/tsunamods-codes/7th-Heaven-Catalogs/releases/download/canary/qhimm.xml</Url>
+      <Name>Qhimm Catalog</Name>
+    </Subscription>
+    <Subscription>
+      <FailureCount>0</FailureCount>
+      <Url>iros://Url/https$github.com/tsunamods-codes/7th-Heaven-Catalogs/releases/download/canary/sega.xml</Url>
+      <Name>Sega Catalog</Name>
+    </Subscription>
+  </Subscriptions>
+  <LibraryLocation>REPLACE_ME</LibraryLocation>
+  <FF7Exe>REPLACE_ME</FF7Exe>
+  <FFNxUpdateChannel>Canary</FFNxUpdateChannel>
+  <AppUpdateChannel>Canary</AppUpdateChannel>
+  <Options>
+    <GeneralOptions>AutoActiveNewMods</GeneralOptions>
+    <GeneralOptions>AutoImportMods</GeneralOptions>
+    <GeneralOptions>CheckForUpdates</GeneralOptions>
+    <GeneralOptions>OpenIrosLinksWith7H</GeneralOptions>
+    <GeneralOptions>OpenModFilesWith7H</GeneralOptions>
+    <GeneralOptions>WarnAboutModCode</GeneralOptions>
+  </Options>
+  <IntOptions>None</IntOptions>
+  <CurrentProfile>Default</CurrentProfile>
+  <MainWindow>
+    <X>655</X>
+    <Y>405</Y>
+    <W>1250</W>
+    <H>600</H>
+    <State>Normal</State>
+  </MainWindow>
+</Settings>
