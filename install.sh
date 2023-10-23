@@ -34,7 +34,7 @@ while [ -z "$PROTON" ]; do
     PROTON="$PROTON_SD"
   else
     echo -e "\nNot found! Launching Steam to install."
-    steam steam://install/1887720
+    steam steam://install/1887720 &> /dev/null
     read -p "Press Enter when Proton 7 is done installing."
   fi
 done
@@ -47,7 +47,7 @@ while [ -z "$RUNTIME" ]; do
     RUNTIME="$RUNTIME_SD"
   else
     echo -e "\nNot found! Launching Steam to install."
-    steam steam steam://install/1391110
+    steam steam steam://install/1391110 &> /dev/null
     read -p "Press Enter when SteamLinuxRuntime 2.0 (Soldier) is done installing."
   fi
 done
