@@ -80,7 +80,7 @@ echo
 echo "Installing Protontricks..."
 flatpak --system install com.github.Matoking.protontricks -y
 flatpak --system update com.github.Matoking.protontricks -y
-flatpak override --user --filesystem=host com.github.Matoking.protontricks
+flatpak override --system --filesystem=host com.github.Matoking.protontricks
 echo
 
 # Install dependencies and patch dinput
