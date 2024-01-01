@@ -11,6 +11,8 @@ RUNTIME_SD="/run/media/mmcblk0p1/steamapps/common/SteamLinuxRuntime_soldier/run"
 RUNTIME=""
 
 [ ! -d "temp" ] && mkdir temp
+echo "" > "7thDeck.log"
+exec 2> >(tee -ia "7thDeck.log")
 
 echo "########################################################################"
 echo "#                             7thDeck v1.1                             #"
@@ -34,7 +36,7 @@ while [ -z "$PROTON" ]; do
     PROTON="$PROTON_SD"
   else
     echo -e "\nNot found! Launching Steam to install."
-    steam steam://install/1887720 &> /dev/null
+    steam steam://install/1887720 &>> "7thDeck.log"
     read -p "Press Enter when Proton 7 is done installing."
   fi
 done
@@ -47,7 +49,7 @@ while [ -z "$RUNTIME" ]; do
     RUNTIME="$RUNTIME_SD"
   else
     echo -e "\nNot found! Launching Steam to install."
-    steam steam steam://install/1391110 &> /dev/null
+    steam steam steam://install/1391110 &>> "7thDeck.log"
     read -p "Press Enter when SteamLinuxRuntime 2.0 (Soldier) is done installing."
   fi
 done
@@ -58,7 +60,7 @@ echo
 echo "Downgrading FF7 to Proton 7.0..."
 [ ! -d $WINEPATH ] && { echo "FF7 proton prefix not found! Have you run the game before? Exiting."; exit 1; }
 STEAM_COMPAT_APP_ID=39140 STEAM_COMPAT_DATA_PATH="${WINEPATH%/pfx}" \
-STEAM_COMPAT_CLIENT_INSTALL_PATH=$(readlink -f "$HOME/.steam/root") "$PROTON" run &> /dev/null
+STEAM_COMPAT_CLIENT_INSTALL_PATH=$(readlink -f "$HOME/.steam/root") "$PROTON" run &>> "7thDeck.log"
 echo
 
 # Ask for install path
@@ -73,7 +75,7 @@ while true; do
     -1) echo "An unexpected error has occurred. Exiting"; exit 1 ;;
   esac
 done
-cd - &> /dev/null
+cd - &>> "7thDeck.log"
 echo
 
 # Install protontricks and apply patches
@@ -90,7 +92,7 @@ echo "The script may appear to hang here. Be patient."
 [ -f "$WINEPATH/drive_c/windows/syswow64/dinput.dll" ] && rm "$WINEPATH/drive_c/windows/syswow64/dinput.dll"
 [ -f "$WINEPATH/drive_c/windows/system32/dinput.dll" ] && rm "$WINEPATH/drive_c/windows/system32/dinput.dll"
 WINEPREFIX="$WINEPATH" WINESERVER="${PROTON%/proton}/dist/bin/wineserver" \
-WINE="${PROTON%/proton}/dist/bin/wine" winetricks dinput dotnetdesktop7 &> /dev/null
+WINE="${PROTON%/proton}/dist/bin/wine" winetricks dinput dotnetdesktop7 &>> "7thDeck.log"
 echo
 
 # Download 7th Heaven from Github
@@ -146,7 +148,7 @@ echo "44000000" > "$WINEPATH/drive_c/.windows-serial"
 # Add shortcut to Desktop/Launcher
 echo "Adding 7th Heaven to Desktop and Launcher"
 xdg-icon-resource install deps/7th-heaven.png --size 64 --novendor
-mkdir -p "${HOME}/.local/share/applications" &> /dev/null
+mkdir -p "${HOME}/.local/share/applications" &>> "7thDeck.log"
 # Launcher
 rm -r "${HOME}/.local/share/applications/7th Heaven.desktop" 2> /dev/null
 echo "#!/usr/bin/env xdg-open
@@ -178,7 +180,7 @@ echo
 
 # Add launcher to Steam
 echo "Adding 7th Heaven to Steam..."
-steamos-add-to-steam "${HOME}/.local/share/applications/7th Heaven.desktop" &> /dev/null
+steamos-add-to-steam "${HOME}/.local/share/applications/7th Heaven.desktop" &>> "7thDeck.log"
 sleep 5
 echo
 
@@ -197,7 +199,7 @@ for CONTROLLERCONFIG in ${HOME}/.steam/steam/steamapps/common/Steam\ Controller\
     perl -0777 -i -pe 's/"controller_config"\n\{/"controller_config"\n\{\n\t"39140"\n\t\{\n\t\t"template"\t"controller_neptune_gamepad+mouse+click.vdf"\n\t\}\n\t"7th heaven"\n\t\{\n\t\t"template"\t"controller_neptune_gamepad+mouse+click.vdf"\n\t\}/' "$CONTROLLERCONFIG"
   fi
 done
-nohup steam &> /dev/null &
+nohup steam &>> "7thDeck.log" &
 echo
 
 # Clean up files
