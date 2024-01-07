@@ -12,7 +12,7 @@ RUNTIME=""
 
 [ ! -d "temp" ] && mkdir temp
 echo "" > "7thDeck.log"
-exec 2> >(tee -ia "7thDeck.log")
+exec > >(tee -ia "7thDeck.log") 2>&1
 
 echo "########################################################################"
 echo "#                             7thDeck v1.1                             #"
@@ -111,7 +111,7 @@ downloadDependency() {
     echo "$FILENAME is ready to be installed."
   else
     echo "$FILENAME not found. Downloading..."
-    wget --show-progress -q -O $FILENAME $RELEASE_URL
+    curl -#SL -o $FILENAME $RELEASE_URL
   fi
   eval "${RETURN_VARIABLE}=\"$FILENAME\""
 }
@@ -132,7 +132,7 @@ echo
 
 # Extract 7th Heaven to chosen path
 echo "Extracting 7th Heaven..."
-unzip $ZIPFILE -d "temp/7th Heaven/" > /dev/null
+unzip $ZIPFILE -d "temp/7th Heaven/" &> "7thDeck.log"
 cp -f "temp/7th Heaven/Resources/FF7_1.02_Eng_Patch/ff7.exe" "$FF7_DIR/ff7.exe"
 cp -rf "temp/7th Heaven"/* "$INSTALL_PATH"
 cp -f "deps/7th Heaven.sh" "$INSTALL_PATH"
@@ -199,7 +199,7 @@ for CONTROLLERCONFIG in ${HOME}/.steam/steam/steamapps/common/Steam\ Controller\
     perl -0777 -i -pe 's/"controller_config"\n\{/"controller_config"\n\{\n\t"39140"\n\t\{\n\t\t"template"\t"controller_neptune_gamepad+mouse+click.vdf"\n\t\}\n\t"7th heaven"\n\t\{\n\t\t"template"\t"controller_neptune_gamepad+mouse+click.vdf"\n\t\}/' "$CONTROLLERCONFIG"
   fi
 done
-nohup steam &>> "7thDeck.log" &
+nohup steam &> /dev/null &
 echo
 
 # Clean up files
