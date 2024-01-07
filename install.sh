@@ -99,10 +99,12 @@ echo
 downloadDependency() {
   local REPO=$1
   local FILTER=$2
-  local RETURN_VARIABLE=$3
+  local EXTENSION=$3
+  local RETURN_VARIABLE=$4
   local RELEASE_URL=$(
     curl -s https://api.github.com/repos/"$REPO"/releases/tags/canary  \
-    | grep "browser_download_url.$FILTER" \
+    | grep "browser_download_url.$EXTENSION" \
+    | grep "$FILTER" \
     | head -1 \
     | cut -d : -f 2,3 \
     | tr -d \")
@@ -116,7 +118,13 @@ downloadDependency() {
   eval "${RETURN_VARIABLE}=\"$FILENAME\""
 }
 echo "Downloading 7th Heaven..."
-downloadDependency "tsunamods-codes/7th-Heaven" "*.zip" ZIPFILE
+downloadDependency "tsunamods-codes/7th-Heaven" "" "*.zip" SEVENHEAVENZIP
+echo
+
+# Install FFNx Canary - Remove on next FFNx Stable release
+echo "Downloading FFNx..."
+downloadDependency "julianxhokaxhiu/FFNx" "FF7" "*.zip" FFNXZIP
+unzip $FFNXZIP -d "$FF7_DIR" &> "7thDeck.log"
 echo
 
 # Copy dxvk.conf and settings.xml
@@ -132,7 +140,7 @@ echo
 
 # Extract 7th Heaven to chosen path
 echo "Extracting 7th Heaven..."
-unzip $ZIPFILE -d "temp/7th Heaven/" &> "7thDeck.log"
+unzip $SEVENHEAVENZIP -d "temp/7th Heaven/" &> "7thDeck.log"
 cp -f "temp/7th Heaven/Resources/FF7_1.02_Eng_Patch/ff7.exe" "$FF7_DIR/ff7.exe"
 cp -rf "temp/7th Heaven"/* "$INSTALL_PATH"
 cp -f "deps/7th Heaven.sh" "$INSTALL_PATH"
