@@ -124,7 +124,7 @@ echo
 # Install FFNx Canary - Remove on next FFNx Stable release
 echo "Downloading FFNx..."
 downloadDependency "julianxhokaxhiu/FFNx" "FF7" "*.zip" FFNXZIP
-unzip $FFNXZIP -d "$FF7_DIR" &> "7thDeck.log"
+unzip -o $FFNXZIP -d "$FF7_DIR" &> "7thDeck.log"
 echo
 
 # Copy dxvk.conf and settings.xml
