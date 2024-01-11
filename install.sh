@@ -127,7 +127,7 @@ echo
 # Install FFNx Canary - Remove on next FFNx Stable release
 echo "Downloading FFNx..."
 downloadDependency "julianxhokaxhiu/FFNx" "FF7" "*.zip" FFNXZIP
-unzip -o $FFNXZIP -d "$FF7_DIR" &> "7thDeck.log"
+unzip -o $FFNXZIP -d "$FF7_DIR" &>> "7thDeck.log"
 echo
 
 # Copy dxvk.conf and settings.xml
@@ -143,7 +143,7 @@ echo
 
 # Extract 7th Heaven to chosen path
 echo "Extracting 7th Heaven..."
-unzip $SEVENHEAVENZIP -d "temp/7th Heaven/" &> "7thDeck.log"
+unzip $SEVENHEAVENZIP -d "temp/7th Heaven/" &>> "7thDeck.log"
 cp -f "temp/7th Heaven/Resources/FF7_1.02_Eng_Patch/ff7.exe" "$FF7_DIR/ff7.exe"
 cp -rf "temp/7th Heaven"/* "$INSTALL_PATH"
 cp -f "deps/7th Heaven.sh" "$INSTALL_PATH"
