@@ -205,7 +205,7 @@ perl -0777 -i -pe 's/"CompatToolMapping"\n\s+{/"CompatToolMapping"\n\t\t\t\t{\n\
 ${HOME}/.local/share/Steam/config/config.vdf
 echo
 
-# Add custom controller config
+# This allows moving and clicking the mouse by using the right track-pad without holding down the STEAM button
 echo "Adding custom controller config"
 cp -f deps/controller_neptune_gamepad+mouse+click.vdf ${HOME}/.steam/steam/controller_base/templates/controller_neptune_gamepad+mouse+click.vdf
 for CONTROLLERCONFIG in ${HOME}/.steam/steam/steamapps/common/Steam\ Controller\ Configs/*/config/configset_controller_neptune.vdf ; do
