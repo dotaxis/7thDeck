@@ -15,13 +15,16 @@ echo "" > "7thDeck.log"
 exec > >(tee -ia "7thDeck.log") 2>&1
 
 echo "########################################################################"
-echo "#                             7thDeck v1.1                             #"
+echo "#                             7thDeck v1.2                             #"
 echo "########################################################################"
 echo "#    This script will:                                                 #"
-echo "#    1. Install protontricks from the Discover store                   #"
-echo "#    2. Apply patches to FF7's protonprefix to accomodate 7th Heaven   #"
-echo "#    3. Install 7th Heaven to a folder of your choosing                #"
-echo "#    4. Add 7th Heaven to Steam using a custom launcher script         #"
+echo "#   1. Install protontricks from the Discover app                      #"
+echo "#   2. Apply patches to FF7's proton prefix to accomodate 7th Heaven   #"
+echo "#   3. Install 7th Heaven to a folder of your choosing                 #"
+echo "#   4. Add 7th Heaven to Steam using a custom launcher script          #"
+echo "#   5. Add a custom controller config, so you can control the mouse    #"
+echo "#      with the trackpad without holding down the STEAM button         #"
+echo "########################################################################"
 echo "#           For support, please open an issue on GitHub,               #"
 echo "#   or ask in the #Steamdeck-Proton channel of the Tsunamods Discord   #"
 echo "########################################################################"
@@ -99,10 +102,12 @@ echo
 downloadDependency() {
   local REPO=$1
   local FILTER=$2
-  local RETURN_VARIABLE=$3
+  local EXTENSION=$3
+  local RETURN_VARIABLE=$4
   local RELEASE_URL=$(
     curl -s https://api.github.com/repos/"$REPO"/releases/tags/canary  \
-    | grep "browser_download_url.$FILTER" \
+    | grep "browser_download_url.$EXTENSION" \
+    | grep "$FILTER" \
     | head -1 \
     | cut -d : -f 2,3 \
     | tr -d \")
@@ -116,7 +121,13 @@ downloadDependency() {
   eval "${RETURN_VARIABLE}=\"$FILENAME\""
 }
 echo "Downloading 7th Heaven..."
-downloadDependency "tsunamods-codes/7th-Heaven" "*.zip" ZIPFILE
+downloadDependency "tsunamods-codes/7th-Heaven" "" "*.zip" SEVENHEAVENZIP
+echo
+
+# Install FFNx Canary - Remove on next FFNx Stable release
+echo "Downloading FFNx..."
+downloadDependency "julianxhokaxhiu/FFNx" "FF7" "*.zip" FFNXZIP
+unzip -o $FFNXZIP -d "$FF7_DIR" &> "7thDeck.log"
 echo
 
 # Copy dxvk.conf and settings.xml
@@ -132,7 +143,7 @@ echo
 
 # Extract 7th Heaven to chosen path
 echo "Extracting 7th Heaven..."
-unzip $ZIPFILE -d "temp/7th Heaven/" &> "7thDeck.log"
+unzip $SEVENHEAVENZIP -d "temp/7th Heaven/" &> "7thDeck.log"
 cp -f "temp/7th Heaven/Resources/FF7_1.02_Eng_Patch/ff7.exe" "$FF7_DIR/ff7.exe"
 cp -rf "temp/7th Heaven"/* "$INSTALL_PATH"
 cp -f "deps/7th Heaven.sh" "$INSTALL_PATH"
@@ -186,10 +197,15 @@ echo
 
 # Kill Steam for next steps
 pkill -9 steam
+
+# Modify config.vdf
 echo "Forcing Final Fantasy VII to run under Proton 7.0"
 cp ${HOME}/.local/share/Steam/config/config.vdf ${HOME}/.local/share/Steam/config/config.vdf.bak
 perl -0777 -i -pe 's/"CompatToolMapping"\n\s+{/"CompatToolMapping"\n\t\t\t\t{\n\t\t\t\t\t"39140"\n\t\t\t\t\t{\n\t\t\t\t\t\t"name"\t\t"proton_7"\n\t\t\t\t\t\t"config"\t\t""\n\t\t\t\t\t\t"priority"\t\t"250"\n\t\t\t\t\t}/gs' \
 ${HOME}/.local/share/Steam/config/config.vdf
+echo
+
+# This allows moving and clicking the mouse by using the right track-pad without holding down the STEAM button
 echo "Adding custom controller config"
 cp -f deps/controller_neptune_gamepad+mouse+click.vdf ${HOME}/.steam/steam/controller_base/templates/controller_neptune_gamepad+mouse+click.vdf
 for CONTROLLERCONFIG in ${HOME}/.steam/steam/steamapps/common/Steam\ Controller\ Configs/*/config/configset_controller_neptune.vdf ; do
@@ -199,8 +215,10 @@ for CONTROLLERCONFIG in ${HOME}/.steam/steam/steamapps/common/Steam\ Controller\
     perl -0777 -i -pe 's/"controller_config"\n\{/"controller_config"\n\{\n\t"39140"\n\t\{\n\t\t"template"\t"controller_neptune_gamepad+mouse+click.vdf"\n\t\}\n\t"7th heaven"\n\t\{\n\t\t"template"\t"controller_neptune_gamepad+mouse+click.vdf"\n\t\}/' "$CONTROLLERCONFIG"
   fi
 done
-nohup steam &> /dev/null &
 echo
+
+# Restart Steam
+nohup steam &> /dev/null &
 
 # Clean up files
 rm -r temp
