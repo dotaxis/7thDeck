@@ -29,8 +29,8 @@
   </Subscriptions>
   <LibraryLocation>REPLACE_ME</LibraryLocation>
   <FF7Exe>REPLACE_ME</FF7Exe>
-  <FFNxUpdateChannel>Canary</FFNxUpdateChannel>
-  <AppUpdateChannel>Canary</AppUpdateChannel>
+  <FFNxUpdateChannel>Stable</FFNxUpdateChannel>
+  <AppUpdateChannel>Stable</AppUpdateChannel>
   <Options>
     <GeneralOptions>AutoActiveNewMods</GeneralOptions>
     <GeneralOptions>AutoImportMods</GeneralOptions>
