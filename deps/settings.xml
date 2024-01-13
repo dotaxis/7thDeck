@@ -32,6 +32,7 @@
   <FFNxUpdateChannel>Stable</FFNxUpdateChannel>
   <AppUpdateChannel>Stable</AppUpdateChannel>
   <Options>
+    <GeneralOptions>AutoSortMods</GeneralOptions>
     <GeneralOptions>AutoActiveNewMods</GeneralOptions>
     <GeneralOptions>AutoImportMods</GeneralOptions>
     <GeneralOptions>CheckForUpdates</GeneralOptions>
