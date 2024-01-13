@@ -15,7 +15,7 @@ echo "" > "7thDeck.log"
 exec > >(tee -ia "7thDeck.log") 2>&1
 
 echo "########################################################################"
-echo "#                             7thDeck v1.2                             #"
+echo "#                             7thDeck v1.3                             #"
 echo "########################################################################"
 echo "#    This script will:                                                 #"
 echo "#   1. Install protontricks from the Discover app                      #"
