@@ -15,7 +15,7 @@ echo "" > "7thDeck.log"
 exec > >(tee -ia "7thDeck.log") 2>&1
 
 echo "########################################################################"
-echo "#                             7thDeck v1.2                             #"
+echo "#                             7thDeck v1.3                             #"
 echo "########################################################################"
 echo "#    This script will:                                                 #"
 echo "#   1. Install protontricks from the Discover app                      #"
@@ -105,7 +105,7 @@ downloadDependency() {
   local EXTENSION=$3
   local RETURN_VARIABLE=$4
   local RELEASE_URL=$(
-    curl -s https://api.github.com/repos/"$REPO"/releases/tags/canary  \
+    curl -s https://api.github.com/repos/"$REPO"/releases  \
     | grep "browser_download_url.$EXTENSION" \
     | grep "$FILTER" \
     | head -1 \
@@ -122,12 +122,6 @@ downloadDependency() {
 }
 echo "Downloading 7th Heaven..."
 downloadDependency "tsunamods-codes/7th-Heaven" "" "*.zip" SEVENHEAVENZIP
-echo
-
-# Install FFNx Canary - Remove on next FFNx Stable release
-echo "Downloading FFNx..."
-downloadDependency "julianxhokaxhiu/FFNx" "FF7" "*.zip" FFNXZIP
-unzip -o $FFNXZIP -d "$FF7_DIR" &>> "7thDeck.log"
 echo
 
 # Copy dxvk.conf and settings.xml
