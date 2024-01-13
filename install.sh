@@ -105,7 +105,7 @@ downloadDependency() {
   local EXTENSION=$3
   local RETURN_VARIABLE=$4
   local RELEASE_URL=$(
-    curl -s https://api.github.com/repos/"$REPO"/releases/tags/canary  \
+    curl -s https://api.github.com/repos/"$REPO"/releases  \
     | grep "browser_download_url.$EXTENSION" \
     | grep "$FILTER" \
     | head -1 \
