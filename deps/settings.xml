@@ -9,6 +9,7 @@
     <string>ambient</string>
     <string>direct</string>
     <string>lighting</string>
+    <string>mesh</string>
     <string>music</string>
     <string>sfx</string>
     <string>time</string>
