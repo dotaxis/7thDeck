@@ -11,14 +11,20 @@ This script will:
 * Add 7th Heaven to Steam and the KDE Launcher using a custom launcher script
 * Add a custom controller config, so you can control the mouse with the trackpad without holding down the STEAM button  
 
+<br>
+
 ## Requirements
 * A fresh installation of FF7 via Steam
 * Have run the game at least once
-  
+
+<br>
+
 ## Usage
 1. [Download ZIP](https://github.com/dotaxis/7thDeck/archive/refs/heads/master.zip) and extract to a folder of your choosing
 2. Run install.sh (Right-click -> Run in Konsole)
 3. Launch 7th Heaven from Steam or Desktop Shortcut
+
+<br>
 
 ## Support
 * [Video Guide](https://www.youtube.com/watch?v=bQ3Md8HCPbY)
@@ -27,4 +33,4 @@ This script will:
 <br>
 
 ## Donate
-https://ko-fi.com/dotaxis
+* https://ko-fi.com/dotaxis
