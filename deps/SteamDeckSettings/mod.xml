@@ -40,4 +40,11 @@
     <show_renderer_backend>false</show_renderer_backend>
   </FFNxConfig>
   <Variables />
+  <Compatibility>
+    <Setting>
+      <ModID>7c6a0289-ae89-411d-836a-531e78938401</ModID>
+      <TheirID>LIMITBREAK</TheirID>
+      <Require>2</Require>
+    </Setting>
+  </Compatibility>
 </ModInfo>
