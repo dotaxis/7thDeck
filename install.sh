@@ -158,8 +158,7 @@ echo
 
 # Force FF7 under Proton 7
 echo "Forcing Final Fantasy VII to run under Proton 7.0"
-pkill steam
-sleep 10
+pkill -9 steam
 cp ${HOME}/.local/share/Steam/config/config.vdf ${HOME}/.local/share/Steam/config/config.vdf.bak
 perl -0777 -i -pe 's/"CompatToolMapping"\n\s+{/"CompatToolMapping"\n\t\t\t\t{\n\t\t\t\t\t"39140"\n\t\t\t\t\t{\n\t\t\t\t\t\t"name"\t\t"proton_7"\n\t\t\t\t\t\t"config"\t\t""\n\t\t\t\t\t\t"priority"\t\t"250"\n\t\t\t\t\t}/gs' \
 ${HOME}/.local/share/Steam/config/config.vdf
