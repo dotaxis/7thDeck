@@ -8,7 +8,7 @@ echo "" > "7thDeck.log"
 exec > >(tee -ia "7thDeck.log") 2>&1
 
 echo "########################################################################"
-echo "#                          7thDeck v1.1 (KDE)                          #"
+echo "#                          7thDeck v1.2 (KDE)                          #"
 echo "########################################################################"
 echo "#    This script will:                                                 #"
 echo "#    1. Verify protontricks is installed                               #"
