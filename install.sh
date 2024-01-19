@@ -22,7 +22,7 @@ echo -e "\n"
 
 # Check for Proton 7 and SteamLinuxRuntime
 echo -n "Checking if Proton 7 is installed... "
-if [ $PROTON -eq "NONE" ]; then
+if [ "$PROTON" = "NONE" ]; then
   echo -e "\nNot found! Launching Steam to install."
   nohup steam steam://install/1887720 &> /dev/null &
   echo "Re-run this script when Proton 7 is done installing."
@@ -31,7 +31,7 @@ if [ $PROTON -eq "NONE" ]; then
 fi
 echo "OK!"
 echo -n "Checking if SteamLinuxRuntime 2.0 is installed... "
-if [ $RUNTIME -eq "NONE" ]; then
+if [ "$RUNTIME" = "NONE" ]; then
   echo -e "\nNot found! Launching Steam to install."
   nohup steam steam steam://install/1391110 &> /dev/null &
   echo "Re-run this script when SteamLinuxRuntime 2.0 (Soldier) is done installing."
