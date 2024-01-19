@@ -1,7 +1,7 @@
 #!/bin/bash
 . deps/functions.sh
-PROTON="${HOME}/.local/share/Steam/steamapps/common/Proton 7.0/proton"
-RUNTIME="${HOME}/.local/share/Steam/steamapps/common/SteamLinuxRuntime_soldier/run"
+PROTON=$(LIBRARY=$(getSteamLibrary 1887720) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/Proton 7.0/proton" || echo "NONE")
+RUNTIME=$(LIBRARY=$(getSteamLibrary 1391110) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/SteamLinuxRuntime_soldier/run" || echo "NONE")
 
 [ ! -d "temp" ] && mkdir temp
 
