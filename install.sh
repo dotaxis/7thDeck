@@ -93,7 +93,7 @@ echo "Installing 7th Heaven..."
 STEAM_COMPAT_APP_ID=39140 STEAM_COMPAT_DATA_PATH="${WINEPATH%/pfx}" \
 STEAM_COMPAT_CLIENT_INSTALL_PATH=$(readlink -f "$HOME/.steam/root") \
 "$RUNTIME" -- "$PROTON" waitforexitandrun \
-$SEVENTH_INSTALLER /SILENT /DIR="Z:$INSTALL_PATH"
+$SEVENTH_INSTALLER /SILENT /DIR="Z:$INSTALL_PATH" &>> "7thDeck.log"
 
 # Apply patches to 7th Heaven and FF7
 echo "Applying patches..."
