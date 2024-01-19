@@ -9,6 +9,7 @@
     <string>ambient</string>
     <string>direct</string>
     <string>lighting</string>
+    <string>mesh</string>
     <string>music</string>
     <string>sfx</string>
     <string>time</string>
@@ -29,15 +30,15 @@
   </Subscriptions>
   <LibraryLocation>REPLACE_ME</LibraryLocation>
   <FF7Exe>REPLACE_ME</FF7Exe>
-  <FFNxUpdateChannel>Canary</FFNxUpdateChannel>
-  <AppUpdateChannel>Canary</AppUpdateChannel>
+  <FFNxUpdateChannel>Stable</FFNxUpdateChannel>
+  <AppUpdateChannel>Stable</AppUpdateChannel>
   <Options>
+    <GeneralOptions>AutoSortMods</GeneralOptions>
     <GeneralOptions>AutoActiveNewMods</GeneralOptions>
     <GeneralOptions>AutoImportMods</GeneralOptions>
     <GeneralOptions>CheckForUpdates</GeneralOptions>
     <GeneralOptions>OpenIrosLinksWith7H</GeneralOptions>
     <GeneralOptions>OpenModFilesWith7H</GeneralOptions>
-    <GeneralOptions>WarnAboutModCode</GeneralOptions>
   </Options>
   <IntOptions>None</IntOptions>
   <CurrentProfile>Default</CurrentProfile>
