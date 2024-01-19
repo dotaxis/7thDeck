@@ -4,6 +4,8 @@ PROTON=$(LIBRARY=$(getSteamLibrary 1887720) && [ -n "$LIBRARY" ] && echo "$LIBRA
 RUNTIME=$(LIBRARY=$(getSteamLibrary 1391110) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/SteamLinuxRuntime_soldier/run" || echo "NONE")
 
 [ ! -d "temp" ] && mkdir temp
+echo "" > "7thDeck.log"
+exec > >(tee -ia "7thDeck.log") 2>&1
 
 echo "########################################################################"
 echo "#                          7thDeck v1.1 (KDE)                          #"
@@ -51,7 +53,7 @@ echo
 # Downgrade FF7 prefix to Proton 7.0
 echo "Downgrading FF7 to Proton 7.0..."
 STEAM_COMPAT_APP_ID=39140 STEAM_COMPAT_DATA_PATH="${WINEPATH%/pfx}" \
-STEAM_COMPAT_CLIENT_INSTALL_PATH=$(readlink -f "$HOME/.steam/root") "$PROTON" run &> /dev/null
+STEAM_COMPAT_CLIENT_INSTALL_PATH=$(readlink -f "$HOME/.steam/root") "$PROTON" run &>> "7thDeck.log"
 echo
 
 # Ask for install path
@@ -66,7 +68,7 @@ while true; do
     -1) echo "An unexpected error has occurred. Exiting"; exit 1 ;;
   esac
 done
-cd - &> /dev/null
+cd - &>> "7thDeck.log"
 echo
 
 # Check if protontricks is installed
@@ -78,7 +80,7 @@ echo "Please follow the installation prompts that appear."
 echo "The script may appear to hang here. Be patient."
 [ -f "$WINEPATH/drive_c/windows/syswow64/dinput.dll" ] && rm "$WINEPATH/drive_c/windows/syswow64/dinput.dll"
 [ -f "$WINEPATH/drive_c/windows/system32/dinput.dll" ] && rm "$WINEPATH/drive_c/windows/system32/dinput.dll"
-protontricks 39140 dinput &> /dev/null
+protontricks 39140 dinput &>> "7thDeck.log"
 echo
 
 # Download 7th Heaven from Github
@@ -118,7 +120,7 @@ echo "44000000" > "$WINEPATH/drive_c/.windows-serial"
 # Add shortcut to Desktop/Launcher
 echo "Adding 7th Heaven to Desktop and Launcher"
 xdg-icon-resource install deps/7th-heaven.png --size 64 --novendor
-mkdir -p "${HOME}/.local/share/applications" &> /dev/null
+mkdir -p "${HOME}/.local/share/applications" &>> "7thDeck.log"
 # Launcher
 rm -r "${HOME}/.local/share/applications/7th Heaven.desktop" 2> /dev/null
 echo "#!/usr/bin/env xdg-open
@@ -145,12 +147,12 @@ Terminal=false
 Type=Application
 StartupNotify=false" > "${HOME}/Desktop/7th Heaven.desktop"
 chmod +x "${HOME}/Desktop/7th Heaven.desktop"
-update-desktop-database ~/.local/share/applications &> /dev/null
+update-desktop-database ~/.local/share/applications &>> "7thDeck.log"
 echo
 
 # Add launcher to Steam
 echo "Adding 7th Heaven to Steam..."
-deps/steamos-add-to-steam "${HOME}/.local/share/applications/7th Heaven.desktop" &> /dev/null
+deps/steamos-add-to-steam "${HOME}/.local/share/applications/7th Heaven.desktop" &>> "7thDeck.log"
 sleep 5
 echo
 
