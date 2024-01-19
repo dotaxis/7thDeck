@@ -50,6 +50,9 @@ echo
 || read -p "Enter the path to your FF7 installation: " FF7_DIR
 [ ! -d "$FF7_DIR" ] && { echo "Invalid FF7 path!"; exit 1; }
 
+# Check if protontricks is installed
+[ ! command -v protontricks &> /dev/null ] && { echo "Protontricks is not installed. Exiting."; exit 1; }
+
 # Downgrade FF7 prefix to Proton 7.0
 echo "Downgrading FF7 to Proton 7.0..."
 STEAM_COMPAT_APP_ID=39140 STEAM_COMPAT_DATA_PATH="${WINEPATH%/pfx}" \
@@ -70,9 +73,6 @@ while true; do
 done
 cd - &>> "7thDeck.log"
 echo
-
-# Check if protontricks is installed
-[ ! command -v protontricks &> /dev/null ] && { echo "Protontricks is not installed. Exiting."; exit 1; }
 
 # Install dependencies and patch dinput
 echo "Installing dependencies..."
