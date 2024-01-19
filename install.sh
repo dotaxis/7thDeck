@@ -20,18 +20,22 @@ echo -e "\n"
 
 # Check for Proton 7 and SteamLinuxRuntime
 echo -n "Checking if Proton 7 is installed... "
-while [ ! -f "$PROTON" ]; do
+if [ $PROTON -eq "NONE" ]; then
   echo -e "\nNot found! Launching Steam to install."
-  steam steam://install/1887720
-  read -p "Press Enter when Proton 7 is done installing."
-done
+  nohup steam steam://install/1887720 &> /dev/null &
+  echo "Re-run this script when Proton 7 is done installing."
+  read -p "Press Enter to close this window."
+  kill -9 $PPID
+fi
 echo "OK!"
 echo -n "Checking if SteamLinuxRuntime 2.0 is installed... "
-while [ ! -f "$RUNTIME" ]; do
+if [ $RUNTIME -eq "NONE" ]; then
   echo -e "\nNot found! Launching Steam to install."
-  steam steam steam://install/1391110
-  read -p "Press Enter when SteamLinuxRuntime 2.0 (Soldier) is done installing."
-done
+  nohup steam steam steam://install/1391110 &> /dev/null &
+  echo "Re-run this script when SteamLinuxRuntime 2.0 (Soldier) is done installing."
+  read -p "Press Enter to close this window."
+  kill -9 $PPID
+fi
 echo "OK!"
 echo
 
