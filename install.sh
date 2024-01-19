@@ -88,16 +88,6 @@ echo "Downloading 7th Heaven..."
 downloadDependency "tsunamods-codes/7th-Heaven" "*.exe" SEVENTH_INSTALLER
 echo
 
-# Copy dxvk.conf and settings.xml
-echo "Copying settings..."
-mkdir -p "temp/7th Heaven/mods"
-mkdir -p "temp/7th Heaven/7thWorkshop"
-cp -f deps/settings.xml "temp/7th Heaven/7thWorkshop"
-cp -f deps/dxvk.conf "temp/7th Heaven"
-sed -i "s|<LibraryLocation>REPLACE_ME</LibraryLocation>|<LibraryLocation>Z:$INSTALL_PATH/mods</LibraryLocation>|" "temp/7th Heaven/7thWorkshop/settings.xml"
-sed -i "s|<FF7Exe>REPLACE_ME</FF7Exe>|<FF7Exe>Z:$FF7_DIR/ff7.exe</FF7Exe>|" "temp/7th Heaven/7thWorkshop/settings.xml"
-echo
-
 # Install 7th Heaven using EXE
 echo "Installing 7th Heaven..."
 STEAM_COMPAT_APP_ID=39140 STEAM_COMPAT_DATA_PATH="${WINEPATH%/pfx}" \
@@ -107,9 +97,14 @@ $SEVENTH_INSTALLER /SILENT /DIR="Z:$INSTALL_PATH"
 
 # Apply patches to 7th Heaven and FF7
 echo "Applying patches..."
+mkdir "$INSTALL_PATH/7thWorkshop"
 cp -f "$INSTALL_PATH/Resources/FF7_1.02_Eng_Patch/ff7.exe" "$FF7_DIR/ff7.exe"
-cp -f "deps/7th Heaven.sh" "$INSTALL_PATH"
+cp -f deps/dxvk.conf "$INSTALL_PATH/"
+cp -f "deps/7th Heaven.sh" "$INSTALL_PATH/"
+cp -f deps/settings.xml "$INSTALL_PATH/7thWorkshop/"
 sed -i "s|WINEPATH|${WINEPATH%/pfx}|" "$INSTALL_PATH/7th Heaven.sh"
+sed -i "s|<LibraryLocation>REPLACE_ME</LibraryLocation>|<LibraryLocation>Z:$INSTALL_PATH/mods</LibraryLocation>|" "$INSTALL_PATH/7thWorkshop/settings.xml"
+sed -i "s|<FF7Exe>REPLACE_ME</FF7Exe>|<FF7Exe>Z:$FF7_DIR/ff7.exe</FF7Exe>|" "$INSTALL_PATH/7thWorkshop/settings.xml"
 cp -f "deps/timeout.exe" "$WINEPATH/drive_c/windows/system32/"
 echo
 
