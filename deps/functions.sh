@@ -1,5 +1,21 @@
 #!/bin/bash
 
+# Locate SteamLibrary containing app_id
+getSteamLibrary() {
+    local app_id="$1"
+
+    # Use awk to find the path associated with the target value
+    local path=$(awk -v target="$app_id" '
+        BEGIN { RS = ""; ORS = "\n" }
+        $0 ~ target {
+            match($0, /"path"\s+"([^"]+)"/, arr)
+            print arr[1]
+            exit
+        }' "${HOME}/.steam/root/steamapps/libraryfolders.vdf")
+
+    echo $path
+}
+
 # Download from GitHub
 downloadDependency() {
   local REPO=$1
