@@ -22,7 +22,7 @@ downloadDependency() {
   local FILTER=$2
   local RETURN_VARIABLE=$3
   local RELEASE_URL=$(
-    curl -s https://api.github.com/repos/"$REPO"/releases  \
+    curl -s https://api.github.com/repos/"$REPO"/releases/latest  \
     | grep "browser_download_url.$FILTER" \
     | head -1 \
     | cut -d : -f 2,3 \
