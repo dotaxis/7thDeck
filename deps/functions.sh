@@ -32,7 +32,7 @@ downloadDependency() {
     echo "$FILENAME is ready to be installed."
   else
     echo "$FILENAME not found. Downloading..."
-    wget --show-progress -q -O $FILENAME $RELEASE_URL
+    curl -#SL -o $FILENAME $RELEASE_URL
   fi
   eval "${RETURN_VARIABLE}=\"$FILENAME\""
 }
