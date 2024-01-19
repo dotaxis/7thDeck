@@ -50,7 +50,6 @@ echo
 
 # Downgrade FF7 prefix to Proton 7.0
 echo "Downgrading FF7 to Proton 7.0..."
-[ ! -d $WINEPATH ] && { echo "FF7 proton prefix not found! Have you run the game before? Exiting."; exit 1; }
 STEAM_COMPAT_APP_ID=39140 STEAM_COMPAT_DATA_PATH="${WINEPATH%/pfx}" \
 STEAM_COMPAT_CLIENT_INSTALL_PATH=$(readlink -f "$HOME/.steam/root") "$PROTON" run &> /dev/null
 echo
