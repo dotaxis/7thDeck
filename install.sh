@@ -40,11 +40,11 @@ echo "OK!"
 echo
 
 # Find FF7 and prefix
-[ -d "${HOME}/.local/share/Steam/steamapps/compatdata/39140/pfx" ] && WINEPATH="${HOME}/.local/share/Steam/steamapps/compatdata/39140/pfx" \
+[ -d $(getSteamLibrary 39140)"/steamapps/compatdata/39140/pfx" ] && WINEPATH=$(getSteamLibrary 39140)"/steamapps/compatdata/39140/pfx" \
 || read -p "Enter the path to FF7's proton prefix (should end in '/39140/pfx'): " WINEPATH
 [ ! -d "$WINEPATH" ] && { echo "Invalid proton prefix!"; exit 1; }
 
-[ -d "${HOME}/.local/share/Steam/steamapps/common/FINAL FANTASY VII" ] && FF7_DIR="${HOME}/.local/share/Steam/steamapps/common/FINAL FANTASY VII" \
+[ -d $(getSteamLibrary 39140)"/steamapps/common/FINAL FANTASY VII" ] && FF7_DIR=$(getSteamLibrary 39140)"/steamapps/common/FINAL FANTASY VII" \
 || read -p "Enter the path to your FF7 installation: " FF7_DIR
 [ ! -d "$FF7_DIR" ] && { echo "Invalid FF7 path!"; exit 1; }
 
