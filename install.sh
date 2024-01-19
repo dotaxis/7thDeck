@@ -1,4 +1,5 @@
 #!/bin/bash
+. deps/functions.sh
 PROTON="${HOME}/.local/share/Steam/steamapps/common/Proton 7.0/proton"
 RUNTIME="${HOME}/.local/share/Steam/steamapps/common/SteamLinuxRuntime_soldier/run"
 
@@ -78,25 +79,6 @@ protontricks 39140 dinput dotnetdesktop7 &> /dev/null
 echo
 
 # Download 7th Heaven from Github
-downloadDependency() {
-  local REPO=$1
-  local FILTER=$2
-  local RETURN_VARIABLE=$3
-  local RELEASE_URL=$(
-    curl -s https://api.github.com/repos/"$REPO"/releases/tags/canary  \
-    | grep "browser_download_url.$FILTER" \
-    | head -1 \
-    | cut -d : -f 2,3 \
-    | tr -d \")
-  local FILENAME="temp/$(basename "$RELEASE_URL")"
-  if [ -f "$FILENAME" ]; then
-    echo "$FILENAME is ready to be installed."
-  else
-    echo "$FILENAME not found. Downloading..."
-    wget --show-progress -q -O $FILENAME $RELEASE_URL
-  fi
-  eval "${RETURN_VARIABLE}=\"$FILENAME\""
-}
 echo "Downloading 7th Heaven..."
 downloadDependency "tsunamods-codes/7th-Heaven" "*.zip" ZIPFILE
 echo
