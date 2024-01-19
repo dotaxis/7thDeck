@@ -10,4 +10,4 @@ PROTON="${HOME}/.local/share/Steam/steamapps/common/Proton 7.0/proton"
 
 [ ! -f "$PROTON" ] && { kdialog --error  "Proton 7.0 not found!"; exit 1; }
 
-"$RUNTIME" -- "$PROTON" waitforexitandrun "7th Heaven.exe" $*
+"$RUNTIME" -- "$PROTON" waitforexitandrun "$PWD/7th Heaven.exe" $*

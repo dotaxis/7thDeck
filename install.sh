@@ -107,7 +107,6 @@ $SEVENTH_INSTALLER /SILENT /DIR="Z:$INSTALL_PATH"
 echo "Applying patches..."
 cp -f "$INSTALL_PATH/Resources/FF7_1.02_Eng_Patch/ff7.exe" "$FF7_DIR/ff7.exe"
 cp -f "deps/7th Heaven.sh" "$INSTALL_PATH"
-sed -i "s|7th Heaven.exe|$INSTALL_PATH/7th Heaven.exe|" "$INSTALL_PATH/7th Heaven.sh"
 sed -i "s|WINEPATH|${WINEPATH%/pfx}|" "$INSTALL_PATH/7th Heaven.sh"
 cp -f "deps/timeout.exe" "$WINEPATH/drive_c/windows/system32/"
 echo
