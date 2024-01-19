@@ -78,12 +78,12 @@ echo "Please follow the installation prompts that appear."
 echo "The script may appear to hang here. Be patient."
 [ -f "$WINEPATH/drive_c/windows/syswow64/dinput.dll" ] && rm "$WINEPATH/drive_c/windows/syswow64/dinput.dll"
 [ -f "$WINEPATH/drive_c/windows/system32/dinput.dll" ] && rm "$WINEPATH/drive_c/windows/system32/dinput.dll"
-protontricks 39140 dinput dotnetdesktop7 &> /dev/null
+protontricks 39140 dinput &> /dev/null
 echo
 
 # Download 7th Heaven from Github
 echo "Downloading 7th Heaven..."
-downloadDependency "tsunamods-codes/7th-Heaven" "*.zip" ZIPFILE
+downloadDependency "tsunamods-codes/7th-Heaven" "*.exe" SEVENTH_INSTALLER
 echo
 
 # Copy dxvk.conf and settings.xml
@@ -96,11 +96,16 @@ sed -i "s|<LibraryLocation>REPLACE_ME</LibraryLocation>|<LibraryLocation>Z:$INST
 sed -i "s|<FF7Exe>REPLACE_ME</FF7Exe>|<FF7Exe>Z:$FF7_DIR/ff7.exe</FF7Exe>|" "temp/7th Heaven/7thWorkshop/settings.xml"
 echo
 
-# Extract 7th Heaven to chosen path
-echo "Extracting 7th Heaven..."
-unzip $ZIPFILE -d "temp/7th Heaven/" > /dev/null
-cp -f "temp/7th Heaven/Resources/FF7_1.02_Eng_Patch/ff7.exe" "$FF7_DIR/ff7.exe"
-cp -rf "temp/7th Heaven"/* "$INSTALL_PATH"
+# Install 7th Heaven using EXE
+echo "Installing 7th Heaven..."
+STEAM_COMPAT_APP_ID=39140 STEAM_COMPAT_DATA_PATH="$WINEPATH" \
+STEAM_COMPAT_CLIENT_INSTALL_PATH=$(readlink -f "$HOME/.steam/root") \
+"$RUNTIME" -- "$PROTON" waitforexitandrun \
+$SEVENTH_INSTALLER /SILENT /DIR="Z:$INSTALL_PATH"
+
+# Apply patches to 7th Heaven and FF7
+echo "Applying patches..."
+cp -f "$INSTALL_PATH/Resources/FF7_1.02_Eng_Patch/ff7.exe" "$FF7_DIR/ff7.exe"
 cp -f "deps/7th Heaven.sh" "$INSTALL_PATH"
 sed -i "s|7th Heaven.exe|$INSTALL_PATH/7th Heaven.exe|" "$INSTALL_PATH/7th Heaven.sh"
 sed -i "s|WINEPATH|${WINEPATH%/pfx}|" "$INSTALL_PATH/7th Heaven.sh"
