@@ -48,3 +48,42 @@ downloadDependency() {
   fi
   eval "${RETURN_VARIABLE}=\"$FILENAME\""
 }
+
+# Dialog compatibility
+promptUser() {
+  local message="$1"
+
+  if command -v kdialog &> /dev/null; then
+    kdialog --msgbox "$message" &> /dev/null
+  elif command -v zenity &> /dev/null; then
+    zenity --info --text="$message" &> /dev/null
+  elif command -v dialog &> /dev/null; then
+    dialog --msgbox "$message" 10 60
+  fi
+}
+
+promptYesNo() {
+  local message="$1"
+
+  if command -v kdialog &> /dev/null; then
+    kdialog --yesno "$message" &> /dev/null
+  elif command -v zenity &> /dev/null; then
+    zenity --question --text="$message" &> /dev/null
+  elif command -v dialog &> /dev/null; then
+    dialog --yesno "$message" 10 60
+  fi
+}
+
+promptDirectory() {
+  local title="$1"
+
+  if command -v kdialog &> /dev/null; then
+    cd ${HOME}
+    echo $(kdialog --getexistingdirectory)
+    cd - &> /dev/null
+  elif command -v zenity &> /dev/null; then
+    echo $(zenity --file-selection --directory)
+  elif command -v dialog &> /dev/null; then
+    echo $(dialog --dselect "${HOME}" 10 60 --stdout)
+  fi
+}
