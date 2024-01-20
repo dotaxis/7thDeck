@@ -2,6 +2,8 @@
 . deps/functions.sh
 PROTON=$(LIBRARY=$(getSteamLibrary 1887720) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/Proton 7.0/proton" || echo "NONE")
 RUNTIME=$(LIBRARY=$(getSteamLibrary 1391110) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/SteamLinuxRuntime_soldier/run" || echo "NONE")
+XDG_DESKTOP_DIR=$(xdg-user-dir DESKTOP)
+XDG_DATA_HOME="${XDG_DATA_HOME:=${HOME}/.local/share}"
 
 [ ! -d "temp" ] && mkdir temp
 echo "" > "7thDeck.log"
@@ -113,9 +115,9 @@ echo "44000000" > "$WINEPATH/drive_c/.windows-serial"
 # Add shortcut to Desktop/Launcher
 echo "Adding 7th Heaven to Desktop and Launcher"
 xdg-icon-resource install deps/7th-heaven.png --size 64 --novendor
-mkdir -p "${HOME}/.local/share/applications" &>> "7thDeck.log"
+mkdir -p "${XDG_DATA_HOME}/applications" &>> "7thDeck.log"
 # Launcher
-rm -r "${HOME}/.local/share/applications/7th Heaven.desktop" 2> /dev/null
+rm -r "${XDG_DATA_HOME}/applications/7th Heaven.desktop" 2> /dev/null
 echo "#!/usr/bin/env xdg-open
 [Desktop Entry]
 Name=7th Heaven
@@ -125,10 +127,10 @@ Path=$INSTALL_PATH
 Categories=Game;
 Terminal=false
 Type=Application
-StartupNotify=false" > "${HOME}/.local/share/applications/7th Heaven.desktop"
-chmod +x "${HOME}/.local/share/applications/7th Heaven.desktop"
+StartupNotify=false" > "${XDG_DATA_HOME}/applications/7th Heaven.desktop"
+chmod +x "${XDG_DATA_HOME}/applications/7th Heaven.desktop"
 # Desktop
-rm -r "${HOME}/Desktop/7th Heaven.desktop" 2> /dev/null
+rm -r "${XDG_DESKTOP_DIR}/7th Heaven.desktop" 2> /dev/null
 echo "#!/usr/bin/env xdg-open
 [Desktop Entry]
 Name=7th Heaven
@@ -138,23 +140,23 @@ Path=$INSTALL_PATH
 Categories=Game;
 Terminal=false
 Type=Application
-StartupNotify=false" > "${HOME}/Desktop/7th Heaven.desktop"
-chmod +x "${HOME}/Desktop/7th Heaven.desktop"
+StartupNotify=false" > "${XDG_DESKTOP_DIR}/7th Heaven.desktop"
+chmod +x "${XDG_DESKTOP_DIR}/7th Heaven.desktop"
 update-desktop-database ~/.local/share/applications &>> "7thDeck.log"
 echo
 
 # Add launcher to Steam
 echo "Adding 7th Heaven to Steam..."
-deps/steamos-add-to-steam "${HOME}/.local/share/applications/7th Heaven.desktop" &>> "7thDeck.log"
+deps/steamos-add-to-steam "${XDG_DATA_HOME}/.local/share/applications/7th Heaven.desktop" &>> "7thDeck.log"
 sleep 5
 echo
 
 # Force FF7 under Proton 7
 echo "Forcing Final Fantasy VII to run under Proton 7.0"
 pkill -9 steam
-cp ${HOME}/.local/share/Steam/config/config.vdf ${HOME}/.local/share/Steam/config/config.vdf.bak
+cp ${XDG_DATA_HOME}/Steam/config/config.vdf ${XDG_DATA_HOME}/Steam/config/config.vdf.bak
 perl -0777 -i -pe 's/"CompatToolMapping"\n\s+{/"CompatToolMapping"\n\t\t\t\t{\n\t\t\t\t\t"39140"\n\t\t\t\t\t{\n\t\t\t\t\t\t"name"\t\t"proton_7"\n\t\t\t\t\t\t"config"\t\t""\n\t\t\t\t\t\t"priority"\t\t"250"\n\t\t\t\t\t}/gs' \
-${HOME}/.local/share/Steam/config/config.vdf
+${XDG_DATA_HOME}/Steam/config/config.vdf
 # Thanks ChatGPT
 nohup steam &> /dev/null &
 echo
