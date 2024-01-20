@@ -30,6 +30,7 @@ getSteamLibrary() {
 
 # Download from GitHub
 downloadDependency() {
+  local XDG_CACHE_HOME="${XDG_CACHE_HOME:=${HOME}/.cache}"
   local REPO=$1
   local FILTER=$2
   local RETURN_VARIABLE=$3
@@ -39,7 +40,7 @@ downloadDependency() {
     | head -1 \
     | cut -d : -f 2,3 \
     | tr -d \")
-  local FILENAME="temp/$(basename "$RELEASE_URL")"
+  local FILENAME="${XDG_CACHE_HOME}/$(basename "$RELEASE_URL")"
   if [ -f "$FILENAME" ]; then
     echo "$FILENAME is ready to be installed."
   else

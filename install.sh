@@ -5,7 +5,6 @@ RUNTIME=$(LIBRARY=$(getSteamLibrary 1391110) && [ -n "$LIBRARY" ] && echo "$LIBR
 XDG_DESKTOP_DIR=$(xdg-user-dir DESKTOP)
 XDG_DATA_HOME="${XDG_DATA_HOME:=${HOME}/.local/share}"
 
-[ ! -d "temp" ] && mkdir temp
 echo "" > "7thDeck.log"
 exec > >(tee -ia "7thDeck.log") 2>&1
 
@@ -160,8 +159,5 @@ ${XDG_DATA_HOME}/Steam/config/config.vdf
 # Thanks ChatGPT
 nohup steam &> /dev/null &
 echo
-
-# Clean up files
-rm -r temp
 
 echo -e "All done!\nYou can close this window and launch 7th Heaven from Steam or the desktop now."
