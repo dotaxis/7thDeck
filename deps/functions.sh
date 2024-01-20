@@ -4,16 +4,28 @@
 getSteamLibrary() {
     local app_id="$1"
 
-    # Use awk to find the path associated with the target value
-    local path=$(awk -v target="$app_id" '
-        BEGIN { RS = ""; ORS = "\n" }
-        $0 ~ target {
-            match($0, /"path"\s+"([^"]+)"/, arr)
-            print arr[1]
-            exit
-        }' "${HOME}/.steam/root/steamapps/libraryfolders.vdf")
+    local path=$(
+        awk -v app_id="$app_id" '
+            /^[[:space:]]*"[0-9]+"$/ {
+                in_block = 1;
+                block = $0;
+                next;
+            }
+            in_block {
+                block = block "\n" $0;
+                if ($0 ~ /^\s*}/) {
+                    in_block = 0;
+                    if (block ~ app_id) {
+                        match(block, /"path"\s+"([^"]+)"/, arr);
+                        print arr[1];
+                        exit;
+                    }
+                }
+            }
+        ' "${HOME}/.steam/root/steamapps/libraryfolders.vdf"
+    )
 
-    echo $path
+    echo "$path"
 }
 
 # Download from GitHub
