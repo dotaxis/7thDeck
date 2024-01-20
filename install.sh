@@ -1,6 +1,6 @@
 #!/bin/bash
 . deps/functions.sh
-export STEAM_COMPAT_MOUNTS="$(getSteamLibrary 1887720)"
+export PRESSURE_VESSEL_FILESYSTEMS_RW="$(getSteamLibrary 1887720)"
 PROTON=$(LIBRARY=$(getSteamLibrary 1887720) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/Proton 7.0/proton" || echo "NONE")
 RUNTIME=$(LIBRARY=$(getSteamLibrary 1391110) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/SteamLinuxRuntime_soldier/run" || echo "NONE")
 XDG_DESKTOP_DIR=$(xdg-user-dir DESKTOP)
@@ -104,7 +104,7 @@ cp -f "deps/7th Heaven.sh" "$INSTALL_PATH/"
 cp -f deps/settings.xml "$INSTALL_PATH/7thWorkshop/"
 sed -i "s|RUNTIME_PATH|$RUNTIME|" "$INSTALL_PATH/7th Heaven.sh"
 sed -i "s|PROTON_PATH|$PROTON|" "$INSTALL_PATH/7th Heaven.sh"
-sed -i "s|MOUNTS|$STEAM_COMPAT_MOUNTS|" "$INSTALL_PATH/7th Heaven.sh"
+sed -i "s|MOUNTS|$PRESSURE_VESSEL_FILESYSTEMS_RW|" "$INSTALL_PATH/7th Heaven.sh"
 sed -i "s|WINEPATH|${WINEPATH%/pfx}|" "$INSTALL_PATH/7th Heaven.sh"
 sed -i "s|<LibraryLocation>REPLACE_ME</LibraryLocation>|<LibraryLocation>Z:$INSTALL_PATH/mods</LibraryLocation>|" "$INSTALL_PATH/7thWorkshop/settings.xml"
 sed -i "s|<FF7Exe>REPLACE_ME</FF7Exe>|<FF7Exe>Z:$FF7_DIR/ff7.exe</FF7Exe>|" "$INSTALL_PATH/7thWorkshop/settings.xml"
