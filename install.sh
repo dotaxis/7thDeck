@@ -92,7 +92,6 @@ echo
 echo "Installing 7th Heaven..."
 STEAM_COMPAT_APP_ID=39140 STEAM_COMPAT_DATA_PATH="${WINEPATH%/pfx}" \
 STEAM_COMPAT_CLIENT_INSTALL_PATH=$(readlink -f "$HOME/.steam/root") \
-STEAM_COMPAT_MOUNTS="$(getSteamLibrary 1887720)" \
 "$RUNTIME" -- "$PROTON" waitforexitandrun \
 $SEVENTH_INSTALLER /SILENT /DIR="Z:$INSTALL_PATH" &>> "7thDeck.log"
 
