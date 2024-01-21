@@ -102,10 +102,10 @@ cp -f "$INSTALL_PATH/Resources/FF7_1.02_Eng_Patch/ff7.exe" "$FF7_DIR/ff7.exe"
 cp -f deps/dxvk.conf "$INSTALL_PATH/"
 cp -f "deps/7th Heaven.sh" "$INSTALL_PATH/"
 cp -f deps/settings.xml "$INSTALL_PATH/7thWorkshop/"
-sed -i "s|RUNTIME_PATH|$RUNTIME|" "$INSTALL_PATH/7th Heaven.sh"
-sed -i "s|PROTON_PATH|$PROTON|" "$INSTALL_PATH/7th Heaven.sh"
-sed -i "s|MOUNTS|$PRESSURE_VESSEL_FILESYSTEMS_RW|" "$INSTALL_PATH/7th Heaven.sh"
-sed -i "s|WINEPATH|${WINEPATH%/pfx}|" "$INSTALL_PATH/7th Heaven.sh"
+sed -i "s|@RUNTIME_PATH@|$RUNTIME|" "$INSTALL_PATH/7th Heaven.sh"
+sed -i "s|@PROTON_PATH@|$PROTON|" "$INSTALL_PATH/7th Heaven.sh"
+sed -i "s|@MOUNTS@|$PRESSURE_VESSEL_FILESYSTEMS_RW|" "$INSTALL_PATH/7th Heaven.sh"
+sed -i "s|@WINEPATH@|${WINEPATH%/pfx}|" "$INSTALL_PATH/7th Heaven.sh"
 sed -i "s|<LibraryLocation>REPLACE_ME</LibraryLocation>|<LibraryLocation>Z:$INSTALL_PATH/mods</LibraryLocation>|" "$INSTALL_PATH/7thWorkshop/settings.xml"
 sed -i "s|<FF7Exe>REPLACE_ME</FF7Exe>|<FF7Exe>Z:$FF7_DIR/ff7.exe</FF7Exe>|" "$INSTALL_PATH/7thWorkshop/settings.xml"
 cp -f "deps/timeout.exe" "$WINEPATH/drive_c/windows/system32/"
@@ -150,7 +150,7 @@ echo
 
 # Add launcher to Steam
 echo "Adding 7th Heaven to Steam..."
-deps/steamos-add-to-steam "${XDG_DATA_HOME}/.local/share/applications/7th Heaven.desktop" &>> "7thDeck.log"
+deps/steamos-add-to-steam "${XDG_DATA_HOME}/applications/7th Heaven.desktop" &>> "7thDeck.log"
 sleep 5
 echo
 
