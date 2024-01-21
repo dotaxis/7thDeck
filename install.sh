@@ -150,7 +150,7 @@ echo
 
 # Add launcher to Steam
 echo "Adding 7th Heaven to Steam..."
-deps/steamos-add-to-steam "${XDG_DATA_HOME}/.local/share/applications/7th Heaven.desktop" &>> "7thDeck.log"
+deps/steamos-add-to-steam "${XDG_DATA_HOME}/applications/7th Heaven.desktop" &>> "7thDeck.log"
 sleep 5
 echo
 
