@@ -117,7 +117,7 @@ STEAM_COMPAT_CLIENT_INSTALL_PATH=$(readlink -f "$HOME/.steam/root") \
 "$RUNTIME" -- "$PROTON" waitforexitandrun \
 $SEVENTH_INSTALLER /SILENT /DIR="Z:$INSTALL_PATH" &>> "7thDeck.log"
 
-# Apply patches to 7th Heaven and FF7
+# Tweaks to 7th Heaven and FF7 directories
 echo "Applying patches..."
 mkdir "$INSTALL_PATH/7thWorkshop"
 cp -f "$INSTALL_PATH/Resources/FF7_1.02_Eng_Patch/ff7.exe" "$FF7_DIR/ff7.exe"
@@ -130,12 +130,11 @@ sed -i "s|@MOUNTS@|$STEAM_COMPAT_MOUNTS|" "$INSTALL_PATH/7th Heaven.sh"
 sed -i "s|@WINEPATH@|${WINEPATH%/pfx}|" "$INSTALL_PATH/7th Heaven.sh"
 sed -i "s|<LibraryLocation>REPLACE_ME</LibraryLocation>|<LibraryLocation>Z:$INSTALL_PATH/mods</LibraryLocation>|" "$INSTALL_PATH/7thWorkshop/settings.xml"
 sed -i "s|<FF7Exe>REPLACE_ME</FF7Exe>|<FF7Exe>Z:$FF7_DIR/ff7.exe</FF7Exe>|" "$INSTALL_PATH/7thWorkshop/settings.xml"
+# Tweaks to proton prefix
 cp -f "deps/timeout.exe" "$WINEPATH/drive_c/windows/system32/"
-echo
-
-# No-CD Fix
 echo "FF7DISC1" > "$WINEPATH/drive_c/.windows-label"
 echo "44000000" > "$WINEPATH/drive_c/.windows-serial"
+echo
 
 # SteamOS only
 if grep -qi "SteamOS" /etc/os-release; then
