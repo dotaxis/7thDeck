@@ -79,6 +79,7 @@ while pgrep "steam" > /dev/null; do sleep 1; done
 rm -rf "${WINEPATH%/pfx}"
 echo "Sign into the Steam account that owns FF7 if prompted."
 nohup steam steam://rungameid/39140 &> /dev/null &
+echo "Waiting for Steam..."
 while ! pgrep "FF7_Launcher" > /dev/null; do sleep 1; done
 pkill -9 "FF7_Launcher"
 echo
@@ -153,7 +154,7 @@ if [ $IS_STEAMOS = true ]; then
   cp -rf deps/SteamDeckSettings "$INSTALL_PATH/mods/"
 
   # This allows moving and clicking the mouse by using the right track-pad without holding down the STEAM button
-  echo "Adding Steam Deck controller config"
+  echo "Adding controller config..."
   cp -f deps/controller_neptune_gamepad+mouse+click.vdf ${HOME}/.steam/steam/controller_base/templates/controller_neptune_gamepad+mouse+click.vdf
   for CONTROLLERCONFIG in ${HOME}/.steam/steam/steamapps/common/Steam\ Controller\ Configs/*/config/configset_controller_neptune.vdf ; do
     if grep -q "\"39140\"" "$CONTROLLERCONFIG"; then
@@ -166,7 +167,7 @@ if [ $IS_STEAMOS = true ]; then
 fi
 
 # Add shortcut to Desktop/Launcher
-echo "Adding 7th Heaven to Desktop and Launcher"
+echo "Adding 7th Heaven to Desktop and Launcher..."
 xdg-icon-resource install deps/7th-heaven.png --size 64 --novendor
 mkdir -p "${XDG_DATA_HOME}/applications" &>> "7thDeck.log"
 # Launcher
