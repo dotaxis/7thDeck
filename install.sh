@@ -68,8 +68,14 @@ while [ ! $(pgrep "FF7_Launcher") > /dev/null ]; do sleep 1; done
 pkill -9 "FF7_Launcher"
 echo
 
-# Check if protontricks is installed
-[ ! command -v protontricks &> /dev/null ] && { echo "Protontricks is not installed. Exiting."; exit 1; }
+# Install protontricks and apply patches
+[ ! command -v protontricks &> /dev/null ] && { echo "Native Protontricks is not installed. Using flatpak." }
+echo "Installing Protontricks..."
+flatpak install com.github.Matoking.protontricks -y
+flatpak update com.github.Matoking.protontricks -y
+flatpak override --user --filesystem=host com.github.Matoking.protontricks
+alias protontricks='flatpak run com.github.Matoking.protontricks'
+echo
 
 # Ask for install path
 promptUser "Choose an installation path for 7th Heaven. The folder must already exist."
