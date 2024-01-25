@@ -3,6 +3,7 @@
 export STEAM_COMPAT_MOUNTS="$(getSteamLibrary 1887720)"
 PROTON=$(LIBRARY=$(getSteamLibrary 1887720) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/Proton 7.0/proton" || echo "NONE")
 RUNTIME=$(LIBRARY=$(getSteamLibrary 1391110) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/SteamLinuxRuntime_soldier/run" || echo "NONE")
+FF7_LIBRARY=$(getSteamLibrary 39140 || echo "NONE")
 XDG_DESKTOP_DIR=$(xdg-user-dir DESKTOP)
 XDG_DATA_HOME="${XDG_DATA_HOME:=${HOME}/.local/share}"
 
@@ -22,7 +23,7 @@ echo "#   or ask in the #Steamdeck-Proton channel of the Tsunamods Discord   #"
 echo "########################################################################"
 echo -e "\n"
 
-# Check for Proton 7 and SteamLinuxRuntime
+# Check for Proton 7
 echo -n "Checking if Proton 7 is installed... "
 if [ "$PROTON" = "NONE" ]; then
   echo -e "\nNot found! Launching Steam to install."
@@ -32,25 +33,30 @@ if [ "$PROTON" = "NONE" ]; then
   kill -9 $PPID
 fi
 echo "OK!"
+# Check for SteamLinuxRuntime
 echo -n "Checking if SteamLinuxRuntime 2.0 is installed... "
 if [ "$RUNTIME" = "NONE" ]; then
   echo -e "\nNot found! Launching Steam to install."
-  nohup steam steam steam://install/1391110 &> /dev/null &
+  nohup steam steam://install/1391110 &> /dev/null &
   echo "Re-run this script when SteamLinuxRuntime 2.0 (Soldier) is done installing."
   read -p "Press Enter to close this window."
   kill -9 $PPID
 fi
 echo "OK!"
+# Check for FF7 and set paths
+echo -n "Checking if FF7 is installed... "
+if [ "$FF7_LIBRARY" = "NONE" ]; then
+  echo -e "\nNot found! Launching Steam to install."
+  nohup steam steam://install/39140 &> /dev/null &
+  echo "Re-run this script when FINAL FANTASY VII is done installing."
+  read -p "Press Enter to close this window."
+  kill -9 $PPID
+else
+  WINEPATH="$LIBRARY/steamapps/compatdata/39140/pfx"
+  FF7_DIR="$LIBRARY/steamapps/common/FINAL FANTASY VII"
+fi
+echo "OK!"
 echo
-
-# Find FF7 and prefix
-[ -d $(getSteamLibrary 39140)"/steamapps/compatdata/39140/pfx" ] && WINEPATH=$(getSteamLibrary 39140)"/steamapps/compatdata/39140/pfx" \
-|| read -p "Enter the path to FF7's proton prefix (should end in '/39140/pfx'): " WINEPATH
-[ ! -d "$WINEPATH" ] && { echo "Invalid proton prefix!"; exit 1; }
-
-[ -d $(getSteamLibrary 39140)"/steamapps/common/FINAL FANTASY VII" ] && FF7_DIR=$(getSteamLibrary 39140)"/steamapps/common/FINAL FANTASY VII" \
-|| read -p "Enter the path to your FF7 installation: " FF7_DIR
-[ ! -d "$FF7_DIR" ] && { echo "Invalid FF7 path!"; exit 1; }
 
 # Force FF7 under Proton 7
 echo "Forcing Final Fantasy VII to run under Proton 7.0..."
