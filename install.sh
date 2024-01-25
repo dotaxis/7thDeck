@@ -90,6 +90,7 @@ if ! command -v protontricks > /dev/null; then
   flatpak --system install com.github.Matoking.protontricks -y
   flatpak --system update com.github.Matoking.protontricks -y
   flatpak override --user --filesystem=host com.github.Matoking.protontricks
+  shopt -s expand_aliases
   alias protontricks='flatpak run com.github.Matoking.protontricks'
 fi
 echo
