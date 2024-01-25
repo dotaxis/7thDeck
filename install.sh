@@ -52,14 +52,24 @@ echo
 || read -p "Enter the path to your FF7 installation: " FF7_DIR
 [ ! -d "$FF7_DIR" ] && { echo "Invalid FF7 path!"; exit 1; }
 
+# Force FF7 under Proton 7
+echo "Forcing Final Fantasy VII to run under Proton 7.0..."
+pkill -9 steam
+cp ${XDG_DATA_HOME}/Steam/config/config.vdf ${XDG_DATA_HOME}/Steam/config/config.vdf.bak
+perl -0777 -i -pe 's/"CompatToolMapping"\n\s+{/"CompatToolMapping"\n\t\t\t\t{\n\t\t\t\t\t"39140"\n\t\t\t\t\t{\n\t\t\t\t\t\t"name"\t\t"proton_7"\n\t\t\t\t\t\t"config"\t\t""\n\t\t\t\t\t\t"priority"\t\t"250"\n\t\t\t\t\t}/gs' \
+${XDG_DATA_HOME}/Steam/config/config.vdf
+echo
+echo "Rebuilding prefix..."
+while [ $(pgrep "steam") > /dev/null ]; do sleep 1; done
+rm -r "$WINEPATH"
+echo "Sign into the Steam account that owns FF7 if prompted."
+nohup steam steam://rungameid/39140 &> /dev/null &
+while [ ! $(pgrep "FF7_Launcher") > /dev/null ]; do sleep 1; done
+pkill -9 "FF7_Launcher"
+echo
+
 # Check if protontricks is installed
 [ ! command -v protontricks &> /dev/null ] && { echo "Protontricks is not installed. Exiting."; exit 1; }
-
-# Downgrade FF7 prefix to Proton 7.0
-echo "Downgrading FF7 to Proton 7.0..."
-STEAM_COMPAT_APP_ID=39140 STEAM_COMPAT_DATA_PATH="${WINEPATH%/pfx}" \
-STEAM_COMPAT_CLIENT_INSTALL_PATH=$(readlink -f "$HOME/.steam/root") "$PROTON" run &>> "7thDeck.log"
-echo
 
 # Ask for install path
 promptUser "Choose an installation path for 7th Heaven. The folder must already exist."
@@ -152,16 +162,6 @@ echo
 echo "Adding 7th Heaven to Steam..."
 deps/steamos-add-to-steam "${XDG_DATA_HOME}/applications/7th Heaven.desktop" &>> "7thDeck.log"
 sleep 5
-echo
-
-# Force FF7 under Proton 7
-echo "Forcing Final Fantasy VII to run under Proton 7.0"
-pkill -9 steam
-cp ${XDG_DATA_HOME}/Steam/config/config.vdf ${XDG_DATA_HOME}/Steam/config/config.vdf.bak
-perl -0777 -i -pe 's/"CompatToolMapping"\n\s+{/"CompatToolMapping"\n\t\t\t\t{\n\t\t\t\t\t"39140"\n\t\t\t\t\t{\n\t\t\t\t\t\t"name"\t\t"proton_7"\n\t\t\t\t\t\t"config"\t\t""\n\t\t\t\t\t\t"priority"\t\t"250"\n\t\t\t\t\t}/gs' \
-${XDG_DATA_HOME}/Steam/config/config.vdf
-# Thanks ChatGPT
-nohup steam &> /dev/null &
 echo
 
 echo -e "All done!\nYou can close this window and launch 7th Heaven from Steam or the desktop now."
