@@ -1,6 +1,6 @@
 #!/bin/bash
 . deps/functions.sh
-export STEAM_COMPAT_MOUNTS="$(getSteamLibrary 1887720)"
+export STEAM_COMPAT_MOUNTS="$(getSteamLibrary 1887720):$(getSteamLibrary 1391110):$(getSteamLibrary 39140)"
 PROTON=$(LIBRARY=$(getSteamLibrary 1887720) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/Proton 7.0/proton" || echo "NONE")
 RUNTIME=$(LIBRARY=$(getSteamLibrary 1391110) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/SteamLinuxRuntime_soldier/run" || echo "NONE")
 FF7_LIBRARY=$(getSteamLibrary 39140 || echo "NONE")
