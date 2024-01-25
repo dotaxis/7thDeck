@@ -6,6 +6,7 @@ RUNTIME=$(LIBRARY=$(getSteamLibrary 1391110) && [ -n "$LIBRARY" ] && echo "$LIBR
 FF7_LIBRARY=$(getSteamLibrary 39140 || echo "NONE")
 XDG_DESKTOP_DIR=$(xdg-user-dir DESKTOP)
 XDG_DATA_HOME="${XDG_DATA_HOME:=${HOME}/.local/share}"
+IS_STEAMOS=$(grep -qi "SteamOS" /etc/os-release && echo true || echo false)
 
 echo "" > "7thDeck.log"
 exec > >(tee -ia "7thDeck.log") 2>&1
@@ -56,35 +57,40 @@ if [ "$FF7_LIBRARY" = "NONE" ]; then
   read -p "Press Enter to close this window."
   kill -9 $PPID
 else
-  WINEPATH="$LIBRARY/steamapps/compatdata/39140/pfx"
-  FF7_DIR="$LIBRARY/steamapps/common/FINAL FANTASY VII"
+  FF7_DIR="$FF7_LIBRARY/steamapps/common/FINAL FANTASY VII"
+  if [ $IS_STEAMOS = true ]; then
+    WINEPATH=$(if [ -d "${HOME}/.local/share/Steam/steamapps/compatdata/39140/pfx" ]; \
+    then echo "${HOME}/.local/share/Steam/steamapps/compatdata/39140/pfx"; \
+    else echo "/run/media/mmcblk0p1/steamapps/compatdata/39140/pfx"; fi)
+  else
+    WINEPATH="$FF7_LIBRARY/steamapps/compatdata/39140/pfx"
+  fi
 fi
 echo "OK!"
 echo
 
 # Force FF7 under Proton 7
-echo "Forcing Final Fantasy VII to run under Proton 7.0..."
+echo "Rebuilding Final Fantasy VII under Proton 7.0..."
 pkill -9 steam
 cp ${XDG_DATA_HOME}/Steam/config/config.vdf ${XDG_DATA_HOME}/Steam/config/config.vdf.bak
 perl -0777 -i -pe 's/"CompatToolMapping"\n\s+{/"CompatToolMapping"\n\t\t\t\t{\n\t\t\t\t\t"39140"\n\t\t\t\t\t{\n\t\t\t\t\t\t"name"\t\t"proton_7"\n\t\t\t\t\t\t"config"\t\t""\n\t\t\t\t\t\t"priority"\t\t"250"\n\t\t\t\t\t}/gs' \
 ${XDG_DATA_HOME}/Steam/config/config.vdf
-echo
-echo "Rebuilding prefix..."
-while [ $(pgrep "steam") > /dev/null ]; do sleep 1; done
-rm -r "$WINEPATH"
+while pgrep "steam" > /dev/null; do sleep 1; done
+rm -rf "${WINEPATH%/pfx}"
 echo "Sign into the Steam account that owns FF7 if prompted."
 nohup steam steam://rungameid/39140 &> /dev/null &
-while [ ! $(pgrep "FF7_Launcher") > /dev/null ]; do sleep 1; done
+while ! pgrep "FF7_Launcher" > /dev/null; do sleep 1; done
 pkill -9 "FF7_Launcher"
 echo
 
 # Install protontricks and apply patches
-[ ! command -v protontricks &> /dev/null ] && { echo "Native Protontricks is not installed. Using flatpak." }
-echo "Installing Protontricks..."
-flatpak install com.github.Matoking.protontricks -y
-flatpak update com.github.Matoking.protontricks -y
-flatpak override --user --filesystem=host com.github.Matoking.protontricks
-alias protontricks='flatpak run com.github.Matoking.protontricks'
+if ! command -v protontricks > /dev/null; then
+  echo "Native Protontricks is not installed. Using flatpak..."
+  flatpak --system install com.github.Matoking.protontricks -y
+  flatpak --system update com.github.Matoking.protontricks -y
+  flatpak override --user --filesystem=host com.github.Matoking.protontricks
+  alias protontricks='flatpak run com.github.Matoking.protontricks'
+fi
 echo
 
 # Ask for install path
@@ -141,9 +147,10 @@ echo "44000000" > "$WINEPATH/drive_c/.windows-serial"
 echo
 
 # SteamOS only
-if grep -qi "SteamOS" /etc/os-release; then
+if [ $IS_STEAMOS = true ]; then
   # Steam Deck Auto-Config (mod)
-  cp -rf deps/SteamDeckSettings "/home/dot/Games/7th Heaven/mods/"
+  mkdir "$INSTALL_PATH/mods"
+  cp -rf deps/SteamDeckSettings "$INSTALL_PATH/mods/"
 
   # This allows moving and clicking the mouse by using the right track-pad without holding down the STEAM button
   echo "Adding Steam Deck controller config"
@@ -196,5 +203,8 @@ echo "Adding 7th Heaven to Steam..."
 deps/steamos-add-to-steam "${XDG_DATA_HOME}/applications/7th Heaven.desktop" &>> "7thDeck.log"
 sleep 5
 echo
+
+# Remove installer
+rm $SEVENTH_INSTALLER
 
 echo -e "All done!\nYou can close this window and launch 7th Heaven from Steam or the desktop now."
