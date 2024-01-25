@@ -137,6 +137,24 @@ echo
 echo "FF7DISC1" > "$WINEPATH/drive_c/.windows-label"
 echo "44000000" > "$WINEPATH/drive_c/.windows-serial"
 
+# SteamOS only
+if grep -qi "SteamOS" /etc/os-release; then
+  # Steam Deck Auto-Config (mod)
+  cp -rf deps/SteamDeckSettings "/home/dot/Games/7th Heaven/mods/"
+
+  # This allows moving and clicking the mouse by using the right track-pad without holding down the STEAM button
+  echo "Adding Steam Deck controller config"
+  cp -f deps/controller_neptune_gamepad+mouse+click.vdf ${HOME}/.steam/steam/controller_base/templates/controller_neptune_gamepad+mouse+click.vdf
+  for CONTROLLERCONFIG in ${HOME}/.steam/steam/steamapps/common/Steam\ Controller\ Configs/*/config/configset_controller_neptune.vdf ; do
+    if grep -q "\"39140\"" "$CONTROLLERCONFIG"; then
+      perl -0777 -i -pe 's/"39140"\n\s+\{\n\s+"template"\s+"controller_neptune_gamepad_fps.vdf"\n\s+\}/"39140"\n\t\{\n\t\t"template"\t\t"controller_neptune_gamepad+mouse+click.vdf"\n\t\}\n\t"7th heaven"\n\t\{\n\t\t"template"\t\t"controller_neptune_gamepad+mouse+click.vdf"\n\t\}/gs' "$CONTROLLERCONFIG"
+    else
+      perl -0777 -i -pe 's/"controller_config"\n\{/"controller_config"\n\{\n\t"39140"\n\t\{\n\t\t"template"\t"controller_neptune_gamepad+mouse+click.vdf"\n\t\}\n\t"7th heaven"\n\t\{\n\t\t"template"\t"controller_neptune_gamepad+mouse+click.vdf"\n\t\}/' "$CONTROLLERCONFIG"
+    fi
+  done
+  echo
+fi
+
 # Add shortcut to Desktop/Launcher
 echo "Adding 7th Heaven to Desktop and Launcher"
 xdg-icon-resource install deps/7th-heaven.png --size 64 --novendor
