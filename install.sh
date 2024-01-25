@@ -11,17 +11,21 @@ echo "" > "7thDeck.log"
 exec > >(tee -ia "7thDeck.log") 2>&1
 
 echo "########################################################################"
-echo "#                          7thDeck v1.2 (KDE)                          #"
+echo "#                             7thDeck v2.0                             #"
 echo "########################################################################"
 echo "#    This script will:                                                 #"
-echo "#    1. Verify protontricks is installed                               #"
-echo "#    2. Apply patches to FF7's protonprefix to accomodate 7th Heaven   #"
-echo "#    3. Install 7th Heaven to a folder of your choosing                #"
-echo "#    4. Add 7th Heaven to Steam using a custom launcher script         #"
+echo "#   1. Check for native protontricks, install flatpak if not found     #"
+echo "#   2. Apply patches to FF7's proton prefix to accomodate 7th Heaven   #"
+echo "#   3. Install 7th Heaven to a folder of your choosing                 #"
+echo "#   4. Add 7th Heaven to Steam using a custom launcher script          #"
+echo "#   5. Add a custom controller config for Steam Deck, to allow mouse   #"
+echo "#      control with trackpad without holding down the STEAM button     #"
+echo "########################################################################"
 echo "#           For support, please open an issue on GitHub,               #"
 echo "#   or ask in the #Steamdeck-Proton channel of the Tsunamods Discord   #"
 echo "########################################################################"
 echo -e "\n"
+
 
 # Check for Proton 7
 echo -n "Checking if Proton 7 is installed... "
