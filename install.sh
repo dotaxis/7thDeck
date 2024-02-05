@@ -206,7 +206,4 @@ deps/steamos-add-to-steam "${XDG_DATA_HOME}/applications/7th Heaven.desktop" &>>
 sleep 5
 echo
 
-# Remove installer
-rm $SEVENTH_INSTALLER
-
 echo -e "All done!\nYou can close this window and launch 7th Heaven from Steam or the desktop now."
