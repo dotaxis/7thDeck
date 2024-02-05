@@ -69,6 +69,21 @@ fi
 echo "OK!"
 echo
 
+# Force FF7 under Proton 8
+echo "Rebuilding Final Fantasy VII under Proton 8.0..."
+pkill -9 steam
+cp ${XDG_DATA_HOME}/Steam/config/config.vdf ${XDG_DATA_HOME}/Steam/config/config.vdf.bak
+perl -0777 -i -pe 's/"CompatToolMapping"\n\s+{/"CompatToolMapping"\n\t\t\t\t{\n\t\t\t\t\t"39140"\n\t\t\t\t\t{\n\t\t\t\t\t\t"name"\t\t"proton_8"\n\t\t\t\t\t\t"config"\t\t""\n\t\t\t\t\t\t"priority"\t\t"250"\n\t\t\t\t\t}/gs' \
+${XDG_DATA_HOME}/Steam/config/config.vdf
+while pgrep "steam" > /dev/null; do sleep 1; done
+rm -rf "${WINEPATH%/pfx}"
+echo "Sign into the Steam account that owns FF7 if prompted."
+nohup steam steam://rungameid/39140 &> /dev/null &
+echo "Waiting for Steam..."
+while ! pgrep "FF7_Launcher" > /dev/null; do sleep 1; done
+pkill -9 "FF7_Launcher"
+echo
+
 # Install protontricks and apply patches
 if ! command -v protontricks > /dev/null; then
   echo "Native Protontricks is not installed. Using flatpak..."
