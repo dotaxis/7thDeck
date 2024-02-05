@@ -1,7 +1,7 @@
 #!/bin/bash
 . deps/functions.sh
-export STEAM_COMPAT_MOUNTS="$(getSteamLibrary 1887720):$(getSteamLibrary 1391110):$(getSteamLibrary 39140)"
-PROTON=$(LIBRARY=$(getSteamLibrary 1887720) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/Proton 7.0/proton" || echo "NONE")
+export STEAM_COMPAT_MOUNTS="$(getSteamLibrary 2348590):$(getSteamLibrary 1391110):$(getSteamLibrary 39140)"
+PROTON=$(LIBRARY=$(getSteamLibrary 2348590) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/Proton 8.0/proton" || echo "NONE")
 RUNTIME=$(LIBRARY=$(getSteamLibrary 1391110) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/SteamLinuxRuntime_soldier/run" || echo "NONE")
 FF7_LIBRARY=$(getSteamLibrary 39140 || echo "NONE")
 XDG_DESKTOP_DIR=$(xdg-user-dir DESKTOP)
@@ -28,12 +28,12 @@ echo "########################################################################"
 echo -e "\n"
 
 
-# Check for Proton 7
-echo -n "Checking if Proton 7 is installed... "
+# Check for Proton 8
+echo -n "Checking if Proton is installed... "
 if [ "$PROTON" = "NONE" ]; then
   echo -e "\nNot found! Launching Steam to install."
-  nohup steam steam://install/1887720 &> /dev/null &
-  echo "Re-run this script when Proton 7 is done installing."
+  nohup steam steam://install/2348590 &> /dev/null &
+  echo "Re-run this script when Proton 8 is done installing."
   read -p "Press Enter to close this window."
   kill -9 $PPID
 fi
@@ -67,21 +67,6 @@ else
   fi
 fi
 echo "OK!"
-echo
-
-# Force FF7 under Proton 7
-echo "Rebuilding Final Fantasy VII under Proton 7.0..."
-pkill -9 steam
-cp ${XDG_DATA_HOME}/Steam/config/config.vdf ${XDG_DATA_HOME}/Steam/config/config.vdf.bak
-perl -0777 -i -pe 's/"CompatToolMapping"\n\s+{/"CompatToolMapping"\n\t\t\t\t{\n\t\t\t\t\t"39140"\n\t\t\t\t\t{\n\t\t\t\t\t\t"name"\t\t"proton_7"\n\t\t\t\t\t\t"config"\t\t""\n\t\t\t\t\t\t"priority"\t\t"250"\n\t\t\t\t\t}/gs' \
-${XDG_DATA_HOME}/Steam/config/config.vdf
-while pgrep "steam" > /dev/null; do sleep 1; done
-rm -rf "${WINEPATH%/pfx}"
-echo "Sign into the Steam account that owns FF7 if prompted."
-nohup steam steam://rungameid/39140 &> /dev/null &
-echo "Waiting for Steam..."
-while ! pgrep "FF7_Launcher" > /dev/null; do sleep 1; done
-pkill -9 "FF7_Launcher"
 echo
 
 # Install protontricks and apply patches

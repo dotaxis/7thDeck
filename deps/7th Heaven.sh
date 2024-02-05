@@ -9,6 +9,6 @@ PROTON="@PROTON_PATH@"
 
 [ ! -f "$RUNTIME" ] && { kdialog --error  "SteamLinuxRuntime not found!"; exit 1; }
 
-[ ! -f "$PROTON" ] && { kdialog --error  "Proton 7.0 not found!"; exit 1; }
+[ ! -f "$PROTON" ] && { kdialog --error  "Proton not found!"; exit 1; }
 
 "$RUNTIME" -- "$PROTON" waitforexitandrun "$PWD/7th Heaven.exe" $*
