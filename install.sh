@@ -35,7 +35,7 @@ if [ "$PROTON" = "NONE" ]; then
   nohup steam steam://install/1887720 &> /dev/null &
   echo "Re-run this script when Proton 7 is done installing."
   read -p "Press Enter to close this window."
-  kill -9 $PPID
+  exit 1
 fi
 echo "OK!"
 # Check for SteamLinuxRuntime
@@ -45,7 +45,7 @@ if [ "$RUNTIME" = "NONE" ]; then
   nohup steam steam://install/1391110 &> /dev/null &
   echo "Re-run this script when SteamLinuxRuntime 2.0 (Soldier) is done installing."
   read -p "Press Enter to close this window."
-  kill -9 $PPID
+  exit 1
 fi
 echo "OK!"
 # Check for FF7 and set paths
@@ -55,7 +55,7 @@ if [ "$FF7_LIBRARY" = "NONE" ]; then
   nohup steam steam://install/39140 &> /dev/null &
   echo "Re-run this script when FINAL FANTASY VII is done installing."
   read -p "Press Enter to close this window."
-  kill -9 $PPID
+  exit 1
 else
   FF7_DIR="$FF7_LIBRARY/steamapps/common/FINAL FANTASY VII"
   if [ $IS_STEAMOS = true ]; then
