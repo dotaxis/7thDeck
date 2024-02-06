@@ -12,14 +12,13 @@ echo "" > "7thDeck.log"
 exec > >(tee -ia "7thDeck.log") 2>&1
 
 echo "########################################################################"
-echo "#                             7thDeck v2.0                             #"
+echo "#                             7thDeck v2.1                             #"
 echo "########################################################################"
 echo "#    This script will:                                                 #"
-echo "#   1. Check for native protontricks, install flatpak if not found     #"
-echo "#   2. Apply patches to FF7's proton prefix to accomodate 7th Heaven   #"
-echo "#   3. Install 7th Heaven to a folder of your choosing                 #"
-echo "#   4. Add 7th Heaven to Steam using a custom launcher script          #"
-echo "#   5. Add a custom controller config for Steam Deck, to allow mouse   #"
+echo "#   1. Apply patches to FF7's proton prefix to accomodate 7th Heaven   #"
+echo "#   2. Install 7th Heaven to a folder of your choosing                 #"
+echo "#   3. Add 7th Heaven to Steam using a custom launcher script          #"
+echo "#   4. Add a custom controller config for Steam Deck, to allow mouse   #"
 echo "#      control with trackpad without holding down the STEAM button     #"
 echo "########################################################################"
 echo "#           For support, please open an issue on GitHub,               #"
@@ -84,17 +83,6 @@ while ! pgrep "FF7_Launcher" > /dev/null; do sleep 1; done
 pkill -9 "FF7_Launcher"
 echo
 
-# Install protontricks and apply patches
-if ! command -v protontricks > /dev/null; then
-  echo "Native Protontricks is not installed. Using flatpak..."
-  flatpak --system install com.github.Matoking.protontricks -y
-  flatpak --system update com.github.Matoking.protontricks -y
-  flatpak override --user --filesystem=host com.github.Matoking.protontricks
-  shopt -s expand_aliases
-  alias protontricks='flatpak run com.github.Matoking.protontricks'
-fi
-echo
-
 # Ask for install path
 promptUser "Choose an installation path for 7th Heaven. The folder must already exist."
 while true; do
@@ -106,15 +94,6 @@ while true; do
     -1) echo "An unexpected error has occurred. Exiting"; exit 1 ;;
   esac
 done
-echo
-
-# Install dependencies and patch dinput
-echo "Installing dependencies..."
-echo "Please follow the installation prompts that appear."
-echo "The script may appear to hang here. Be patient."
-[ -f "$WINEPATH/drive_c/windows/syswow64/dinput.dll" ] && rm "$WINEPATH/drive_c/windows/syswow64/dinput.dll"
-[ -f "$WINEPATH/drive_c/windows/system32/dinput.dll" ] && rm "$WINEPATH/drive_c/windows/system32/dinput.dll"
-protontricks 39140 dinput &>> "7thDeck.log"
 echo
 
 # Download 7th Heaven from Github

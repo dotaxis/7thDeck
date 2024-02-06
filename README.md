@@ -5,7 +5,6 @@ Installer &amp; launcher for 7th Heaven on SteamOS and other Linux distros using
 
 ## Purpose
 This script will:
-* Install protontricks from the Discover app if it is not found natively installed
 * Apply patches to FF7's proton prefix to accomodate 7th Heaven
 * Install 7th Heaven to a folder of your choosing (you must create this directory beforehand)
 * Add 7th Heaven to Steam and the KDE Launcher using a custom wrapper
