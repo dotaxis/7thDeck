@@ -1,7 +1,7 @@
 #!/bin/bash
 . deps/functions.sh
-export STEAM_COMPAT_MOUNTS="$(getSteamLibrary 1887720):$(getSteamLibrary 1391110):$(getSteamLibrary 39140)"
-PROTON=$(LIBRARY=$(getSteamLibrary 1887720) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/Proton 7.0/proton" || echo "NONE")
+export STEAM_COMPAT_MOUNTS="$(getSteamLibrary 1493710):$(getSteamLibrary 1391110):$(getSteamLibrary 39140)"
+PROTON=$(LIBRARY=$(getSteamLibrary 1493710) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/Proton - Experimental/proton" || echo "NONE")
 RUNTIME=$(LIBRARY=$(getSteamLibrary 1391110) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/SteamLinuxRuntime_soldier/run" || echo "NONE")
 FF7_LIBRARY=$(getSteamLibrary 39140 || echo "NONE")
 XDG_DESKTOP_DIR=$(xdg-user-dir DESKTOP)
@@ -27,11 +27,11 @@ echo "########################################################################"
 echo -e "\n"
 
 
-# Check for Proton 7
-echo -n "Checking if Proton 7 is installed... "
+# Check for Proton
+echo -n "Checking if Proton Experimental is installed... "
 if [ "$PROTON" = "NONE" ]; then
   echo -e "\nNot found! Launching Steam to install."
-  nohup steam steam://install/1887720 &> /dev/null &
+  nohup steam steam://install/1493710 &> /dev/null &
   echo "Re-run this script when Proton 7 is done installing."
   read -p "Press Enter to close this window."
   exit 1
