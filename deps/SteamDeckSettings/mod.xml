@@ -4,7 +4,7 @@
   <Name>Steam Deck Auto-Config</Name>
   <Category>Gameplay</Category>
   <Author>dotAXiS</Author>
-  <Version>1.02</Version>
+  <Version>1.05</Version>
   <Description>Automatically apply recommended settings for Steam Deck
 
     Resolution: Auto
@@ -45,6 +45,11 @@
       <ModID>7c6a0289-ae89-411d-836a-531e78938401</ModID>
       <TheirID>LIMITBREAK</TheirID>
       <Require>2</Require>
+    </Setting>
+    <Setting>
+      <ModID>2b49d831-6556-41df-9ddb-d1a6e937f548</ModID>
+      <TheirID>deck</TheirID>
+      <Forbid>0</Forbid>
     </Setting>
   </Compatibility>
 </ModInfo>
