@@ -83,6 +83,9 @@ while ! pgrep "FF7_Launcher" > /dev/null; do sleep 1; done
 pkill -9 "FF7_Launcher"
 echo
 
+# Fix infinite loop on "Verifying installed game is compatible"
+[ -L "$FF7_DIR/FINAL FANTASY VII" ] && unlink "$FF7_DIR/FINAL FANTASY VII"
+
 # Ask for install path
 promptUser "Choose an installation path for 7th Heaven. The folder must already exist."
 while true; do
