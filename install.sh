@@ -58,15 +58,7 @@ if [ "$FF7_LIBRARY" = "NONE" ]; then
 else
   FF7_DIR="$FF7_LIBRARY/steamapps/common/FINAL FANTASY VII"
   WINEPATH="$FF7_LIBRARY/steamapps/compatdata/39140/pfx"
-  if [ $IS_STEAMOS = true ]; then
-    WINEPATH="${HOME}/.steam/steam/steamapps/compatdata/39140/pfx"
-    if [ ! -d "$WINEPATH" ]; then
-      for dir in "/run/media/deck/"*; do
-        full_path="$dir/steamapps/compatdata/39140/pfx"
-        [ -d "$full_path" ] && WINEPATH="$full_path"; break
-      done
-    fi
-  fi
+  [ $IS_STEAMOS = true ] && WINEPATH="${HOME}/.steam/steam/steamapps/compatdata/39140/pfx"
 fi
 echo "OK!"
 echo
