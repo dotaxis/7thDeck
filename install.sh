@@ -90,6 +90,7 @@ echo
 [ -L "$FF7_DIR/FINAL FANTASY VII" ] && unlink "$FF7_DIR/FINAL FANTASY VII"
 
 # Ask for install path
+echo "Waiting for you to select an installation path..."
 promptUser "Choose an installation path for 7th Heaven. The folder must already exist."
 while true; do
   INSTALL_PATH=$(promptDirectory "Select 7th Heaven Install Folder") || { echo "No directory selected. Exiting."; exit 1; }
