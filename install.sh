@@ -32,7 +32,7 @@ echo -n "Checking if Proton Experimental is installed... "
 if [ "$PROTON" = "NONE" ]; then
   echo -e "\nNot found! Launching Steam to install."
   nohup steam steam://install/1493710 &> /dev/null &
-  echo "Re-run this script when Proton 7 is done installing."
+  echo "Re-run this script when Proton Experimental is done installing."
   read -p "Press Enter to close this window."
   exit 1
 fi
@@ -68,8 +68,8 @@ fi
 echo "OK!"
 echo
 
-# Force FF7 under Proton 7
-echo "Rebuilding Final Fantasy VII under Proton 7.0..."
+# Force FF7 under Proton Experimental
+echo "Rebuilding Final Fantasy VII under Proton Experimental..."
 pkill -9 steam
 cp ${XDG_DATA_HOME}/Steam/config/config.vdf ${XDG_DATA_HOME}/Steam/config/config.vdf.bak
 perl -0777 -i -pe 's/"CompatToolMapping"\n\s+{/"CompatToolMapping"\n\t\t\t\t{\n\t\t\t\t\t"39140"\n\t\t\t\t\t{\n\t\t\t\t\t\t"name"\t\t"proton_7"\n\t\t\t\t\t\t"config"\t\t""\n\t\t\t\t\t\t"priority"\t\t"250"\n\t\t\t\t\t}/gs' \
