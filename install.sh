@@ -1,8 +1,8 @@
 #!/bin/bash
 . deps/functions.sh
-export STEAM_COMPAT_MOUNTS="$(getSteamLibrary 1493710):$(getSteamLibrary 1391110):$(getSteamLibrary 39140)"
+export STEAM_COMPAT_MOUNTS="$(getSteamLibrary 1493710):$(getSteamLibrary 1628350):$(getSteamLibrary 39140)"
 PROTON=$(LIBRARY=$(getSteamLibrary 1493710) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/Proton - Experimental/proton" || echo "NONE")
-RUNTIME=$(LIBRARY=$(getSteamLibrary 1391110) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/SteamLinuxRuntime_soldier/run" || echo "NONE")
+RUNTIME=$(LIBRARY=$(getSteamLibrary 1628350) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/SteamLinuxRuntime_sniper/run" || echo "NONE")
 FF7_LIBRARY=$(getSteamLibrary 39140 || echo "NONE")
 XDG_DESKTOP_DIR=$(xdg-user-dir DESKTOP)
 XDG_DATA_HOME="${XDG_DATA_HOME:=${HOME}/.local/share}"
@@ -32,17 +32,17 @@ echo -n "Checking if Proton Experimental is installed... "
 if [ "$PROTON" = "NONE" ]; then
   echo -e "\nNot found! Launching Steam to install."
   nohup steam steam://install/1493710 &> /dev/null &
-  echo "Re-run this script when Proton 7 is done installing."
+  echo "Re-run this script when Proton Experimental is done installing."
   read -p "Press Enter to close this window."
   exit 1
 fi
 echo "OK!"
 # Check for SteamLinuxRuntime
-echo -n "Checking if SteamLinuxRuntime 2.0 is installed... "
+echo -n "Checking if SteamLinuxRuntime 3.0 is installed... "
 if [ "$RUNTIME" = "NONE" ]; then
   echo -e "\nNot found! Launching Steam to install."
-  nohup steam steam://install/1391110 &> /dev/null &
-  echo "Re-run this script when SteamLinuxRuntime 2.0 (Soldier) is done installing."
+  nohup steam steam://install/1628350 &> /dev/null &
+  echo "Re-run this script when SteamLinuxRuntime 3.0 (Sniper) is done installing."
   read -p "Press Enter to close this window."
   exit 1
 fi
@@ -68,11 +68,11 @@ fi
 echo "OK!"
 echo
 
-# Force FF7 under Proton 7
-echo "Rebuilding Final Fantasy VII under Proton 7.0..."
+# Force FF7 under Proton Experimental
+echo "Rebuilding Final Fantasy VII under Proton Experimental..."
 pkill -9 steam
 cp ${XDG_DATA_HOME}/Steam/config/config.vdf ${XDG_DATA_HOME}/Steam/config/config.vdf.bak
-perl -0777 -i -pe 's/"CompatToolMapping"\n\s+{/"CompatToolMapping"\n\t\t\t\t{\n\t\t\t\t\t"39140"\n\t\t\t\t\t{\n\t\t\t\t\t\t"name"\t\t"proton_7"\n\t\t\t\t\t\t"config"\t\t""\n\t\t\t\t\t\t"priority"\t\t"250"\n\t\t\t\t\t}/gs' \
+perl -0777 -i -pe 's/"CompatToolMapping"\n\s+{/"CompatToolMapping"\n\t\t\t\t{\n\t\t\t\t\t"39140"\n\t\t\t\t\t{\n\t\t\t\t\t\t"name"\t\t"proton_experimental"\n\t\t\t\t\t\t"config"\t\t""\n\t\t\t\t\t\t"priority"\t\t"250"\n\t\t\t\t\t}/gs' \
 ${XDG_DATA_HOME}/Steam/config/config.vdf
 while pgrep "steam" > /dev/null; do sleep 1; done
 rm -rf "${WINEPATH%/pfx}"
