@@ -1,8 +1,8 @@
 #!/bin/bash
 . deps/functions.sh
-export STEAM_COMPAT_MOUNTS="$(getSteamLibrary 1493710):$(getSteamLibrary 1391110):$(getSteamLibrary 39140)"
+export STEAM_COMPAT_MOUNTS="$(getSteamLibrary 1493710):$(getSteamLibrary 1628350):$(getSteamLibrary 39140)"
 PROTON=$(LIBRARY=$(getSteamLibrary 1493710) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/Proton - Experimental/proton" || echo "NONE")
-RUNTIME=$(LIBRARY=$(getSteamLibrary 1391110) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/SteamLinuxRuntime_soldier/run" || echo "NONE")
+RUNTIME=$(LIBRARY=$(getSteamLibrary 1628350) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/SteamLinuxRuntime_sniper/run" || echo "NONE")
 FF7_LIBRARY=$(getSteamLibrary 39140 || echo "NONE")
 XDG_DESKTOP_DIR=$(xdg-user-dir DESKTOP)
 XDG_DATA_HOME="${XDG_DATA_HOME:=${HOME}/.local/share}"
@@ -38,11 +38,11 @@ if [ "$PROTON" = "NONE" ]; then
 fi
 echo "OK!"
 # Check for SteamLinuxRuntime
-echo -n "Checking if SteamLinuxRuntime 2.0 is installed... "
+echo -n "Checking if SteamLinuxRuntime 3.0 is installed... "
 if [ "$RUNTIME" = "NONE" ]; then
   echo -e "\nNot found! Launching Steam to install."
-  nohup steam steam://install/1391110 &> /dev/null &
-  echo "Re-run this script when SteamLinuxRuntime 2.0 (Soldier) is done installing."
+  nohup steam steam://install/1628350 &> /dev/null &
+  echo "Re-run this script when SteamLinuxRuntime 3.0 (Sniper) is done installing."
   read -p "Press Enter to close this window."
   exit 1
 fi
