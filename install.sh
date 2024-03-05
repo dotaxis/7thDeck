@@ -36,6 +36,8 @@ while true; do
     read -p
     pkill -9 steam
     while pgrep steam >/dev/null; do sleep 1; done
+    rm $HOME/.steam/steam/steamapps/libraryfolders.vdf &>> "7thDeck.log"
+    rm $HOME/.steam/steam/config/libraryfolders.vdf &>> "7thDeck.log"
   else
     echo "Found Proton at $PROTON!"
     break
@@ -55,6 +57,8 @@ while true; do
     read -p
     pkill -9 steam
     while pgrep steam >/dev/null; do sleep 1; done
+    rm $HOME/.steam/steam/steamapps/libraryfolders.vdf &>> "7thDeck.log"
+    rm $HOME/.steam/steam/config/libraryfolders.vdf &>> "7thDeck.log"
   else
     echo "Found SLR at $RUNTIME!"
     break
@@ -74,6 +78,8 @@ while true; do
     read -p
     pkill -9 steam
     while pgrep steam > /dev/null; do sleep 1; done
+    rm $HOME/.steam/steam/steamapps/libraryfolders.vdf &>> "7thDeck.log"
+    rm $HOME/.steam/steam/config/libraryfolders.vdf &>> "7thDeck.log"
   else
     echo "Found FF7 at $FF7_LIBRARY!"
     break
