@@ -57,13 +57,8 @@ if [ "$FF7_LIBRARY" = "NONE" ]; then
   exit 1
 else
   FF7_DIR="$FF7_LIBRARY/steamapps/common/FINAL FANTASY VII"
-  if [ $IS_STEAMOS = true ]; then
-    WINEPATH=$(if [ -d "${HOME}/.local/share/Steam/steamapps/compatdata/39140/pfx" ]; \
-    then echo "${HOME}/.local/share/Steam/steamapps/compatdata/39140/pfx"; \
-    else echo "/run/media/mmcblk0p1/steamapps/compatdata/39140/pfx"; fi)
-  else
-    WINEPATH="$FF7_LIBRARY/steamapps/compatdata/39140/pfx"
-  fi
+  WINEPATH="$FF7_LIBRARY/steamapps/compatdata/39140/pfx"
+  [ $IS_STEAMOS = true ] && WINEPATH="${HOME}/.steam/steam/steamapps/compatdata/39140/pfx"
 fi
 echo "OK!"
 echo
@@ -75,7 +70,7 @@ cp ${XDG_DATA_HOME}/Steam/config/config.vdf ${XDG_DATA_HOME}/Steam/config/config
 perl -0777 -i -pe 's/"CompatToolMapping"\n\s+{/"CompatToolMapping"\n\t\t\t\t{\n\t\t\t\t\t"39140"\n\t\t\t\t\t{\n\t\t\t\t\t\t"name"\t\t"proton_experimental"\n\t\t\t\t\t\t"config"\t\t""\n\t\t\t\t\t\t"priority"\t\t"250"\n\t\t\t\t\t}/gs' \
 ${XDG_DATA_HOME}/Steam/config/config.vdf
 while pgrep "steam" > /dev/null; do sleep 1; done
-rm -rf "${WINEPATH%/pfx}"
+rm -rf "${WINEPATH%/pfx}"/*
 echo "Sign into the Steam account that owns FF7 if prompted."
 nohup steam steam://rungameid/39140 &> /dev/null &
 echo "Waiting for Steam..."
@@ -83,7 +78,11 @@ while ! pgrep "FF7_Launcher" > /dev/null; do sleep 1; done
 pkill -9 "FF7_Launcher"
 echo
 
+# Fix infinite loop on "Verifying installed game is compatible"
+[ -L "$FF7_DIR/FINAL FANTASY VII" ] && unlink "$FF7_DIR/FINAL FANTASY VII"
+
 # Ask for install path
+echo "Waiting for you to select an installation path..."
 promptUser "Choose an installation path for 7th Heaven. The folder must already exist."
 while true; do
   INSTALL_PATH=$(promptDirectory "Select 7th Heaven Install Folder") || { echo "No directory selected. Exiting."; exit 1; }
@@ -103,6 +102,7 @@ echo
 
 # Install 7th Heaven using EXE
 echo "Installing 7th Heaven..."
+mkdir -p "${WINEPATH}/drive_c/ProgramData" # fix vcredist install - infirit
 STEAM_COMPAT_APP_ID=39140 STEAM_COMPAT_DATA_PATH="${WINEPATH%/pfx}" \
 STEAM_COMPAT_CLIENT_INSTALL_PATH=$(readlink -f "$HOME/.steam/root") \
 "$RUNTIME" -- "$PROTON" waitforexitandrun \
