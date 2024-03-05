@@ -1,9 +1,5 @@
 #!/bin/bash
 . deps/functions.sh
-export STEAM_COMPAT_MOUNTS="$(getSteamLibrary 1493710):$(getSteamLibrary 1628350):$(getSteamLibrary 39140)"
-PROTON=$(LIBRARY=$(getSteamLibrary 1493710) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/Proton - Experimental/proton" || echo "NONE")
-RUNTIME=$(LIBRARY=$(getSteamLibrary 1628350) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/SteamLinuxRuntime_sniper/run" || echo "NONE")
-FF7_LIBRARY=$(getSteamLibrary 39140 || echo "NONE")
 XDG_DESKTOP_DIR=$(xdg-user-dir DESKTOP)
 XDG_DATA_HOME="${XDG_DATA_HOME:=${HOME}/.local/share}"
 IS_STEAMOS=$(grep -qi "SteamOS" /etc/os-release && echo true || echo false)
@@ -28,40 +24,67 @@ echo -e "\n"
 
 
 # Check for Proton
-echo -n "Checking if Proton Experimental is installed... "
-if [ "$PROTON" = "NONE" ]; then
-  echo -e "\nNot found! Launching Steam to install."
-  nohup steam steam://install/1493710 &> /dev/null &
-  echo "Re-run this script when Proton Experimental is done installing."
-  read -p "Press Enter to close this window."
-  exit 1
-fi
-echo "OK!"
+while true; do
+  if !pgrep steam > /dev/null; do nohup steam &> /dev/null; fi
+  while !pgrep steam > /dev/null; do sleep 1; done
+  PROTON=$(LIBRARY=$(getSteamLibrary 1493710) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/Proton - Experimental/proton" || echo "NONE")
+  echo -n "Checking if Proton Experimental is installed... "
+  if [ "$PROTON" = "NONE" ]; then
+    echo -e "\nNot found! Launching Steam to install."
+    nohup steam steam://install/1493710 &> /dev/null &
+    echo "Press Enter when Proton Experimental is done installing."
+    read -p
+    pkill -9 steam
+    while pgrep steam >/dev/null; do sleep 1; done
+  else
+    echo "Found Proton at $PROTON!"
+    break
+  fi
+done
+
 # Check for SteamLinuxRuntime
-echo -n "Checking if SteamLinuxRuntime 3.0 is installed... "
-if [ "$RUNTIME" = "NONE" ]; then
-  echo -e "\nNot found! Launching Steam to install."
-  nohup steam steam://install/1628350 &> /dev/null &
-  echo "Re-run this script when SteamLinuxRuntime 3.0 (Sniper) is done installing."
-  read -p "Press Enter to close this window."
-  exit 1
-fi
-echo "OK!"
+while true; do
+  if !pgrep steam > /dev/null; do nohup steam &> /dev/null; fi
+  while !pgrep steam > /dev/null; do sleep 1; done
+  RUNTIME=$(LIBRARY=$(getSteamLibrary 1628350) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/SteamLinuxRuntime_sniper/run" || echo "NONE")
+  echo -n "Checking if Steam Linux Runtime is installed... "
+  if [ "$RUNTIME" = "NONE" ]; then
+    echo -e "\nNot found! Launching Steam to install."
+    nohup steam steam://install/1628350 &> /dev/null &
+    echo "Press Enter when Steam Linux Runtime 3.0 (sniper) is done installing."
+    read -p
+    pkill -9 steam
+    while pgrep steam >/dev/null; do sleep 1; done
+  else
+    echo "Found SLR at $RUNTIME!"
+    break
+  fi
+done
+
 # Check for FF7 and set paths
-echo -n "Checking if FF7 is installed... "
-if [ "$FF7_LIBRARY" = "NONE" ]; then
-  echo -e "\nNot found! Launching Steam to install."
-  nohup steam steam://install/39140 &> /dev/null &
-  echo "Re-run this script when FINAL FANTASY VII is done installing."
-  read -p "Press Enter to close this window."
-  exit 1
-else
-  FF7_DIR="$FF7_LIBRARY/steamapps/common/FINAL FANTASY VII"
-  WINEPATH="$FF7_LIBRARY/steamapps/compatdata/39140/pfx"
-  [ $IS_STEAMOS = true ] && WINEPATH="${HOME}/.steam/steam/steamapps/compatdata/39140/pfx"
-fi
-echo "OK!"
-echo
+while true; do
+  if !pgrep steam > /dev/null; do nohup steam &> /dev/null; fi
+  while !pgrep steam > /dev/null; do sleep 1; done
+  echo -n "Checking if FF7 is installed... "
+  FF7_LIBRARY=$(getSteamLibrary 39140 || echo "NONE")
+  if [ "$FF7_LIBRARY" = "NONE" ]; then
+    echo -e "\nNot found! Launching Steam to install."
+    nohup steam steam://install/39140 &> /dev/null &
+    echo "Press Enter when FINAL FANTASY VII is done installing."
+    read -p
+    pkill -9 steam
+    while pgrep steam > /dev/null; do sleep 1; done
+  else
+    echo "Found FF7 at $FF7_LIBRARY!"
+    break
+  fi
+done
+
+# Set paths and compat_mounts after libraries have been properly detected
+FF7_DIR="$FF7_LIBRARY/steamapps/common/FINAL FANTASY VII"
+WINEPATH="$FF7_LIBRARY/steamapps/compatdata/39140/pfx"
+[ $IS_STEAMOS = true ] && WINEPATH="${HOME}/.steam/steam/steamapps/compatdata/39140/pfx"
+export STEAM_COMPAT_MOUNTS="$(getSteamLibrary 1493710):$(getSteamLibrary 1628350):$(getSteamLibrary 39140)"
 
 # Force FF7 under Proton Experimental
 echo "Rebuilding Final Fantasy VII under Proton Experimental..."
