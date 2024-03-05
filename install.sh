@@ -199,7 +199,7 @@ Terminal=false
 Type=Application
 StartupNotify=false" > "${XDG_DESKTOP_DIR}/7th Heaven.desktop"
 chmod +x "${XDG_DESKTOP_DIR}/7th Heaven.desktop"
-update-desktop-database ~/.local/share/applications &>> "7thDeck.log"
+update-desktop-database ${XDG_DATA_HOME}/applications &>> "7thDeck.log"
 echo
 
 # Add launcher to Steam
