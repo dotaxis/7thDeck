@@ -26,7 +26,7 @@ This script will:
 <br>
 
 ## Support
-* [Video Guide](https://www.youtube.com/watch?v=bQ3Md8HCPbY)
+* [Video Guide](https://www.youtube.com/watch?v=wNguRldtIqk)
 * [Tsunamods Discord](https://discord.gg/tsunamods-community-277610501721030656)
 
 <br>
