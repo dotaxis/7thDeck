@@ -25,8 +25,8 @@ echo -e "\n"
 
 # Check for Proton
 while true; do
-  if !pgrep steam > /dev/null; do nohup steam &> /dev/null; fi
-  while !pgrep steam > /dev/null; do sleep 1; done
+  if ! pgrep steam > /dev/null; then nohup steam &> /dev/null; fi
+  while ! pgrep steam > /dev/null; do sleep 1; done
   PROTON=$(LIBRARY=$(getSteamLibrary 1493710) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/Proton - Experimental/proton" || echo "NONE")
   echo -n "Checking if Proton Experimental is installed... "
   if [ "$PROTON" = "NONE" ]; then
@@ -39,15 +39,17 @@ while true; do
     rm $HOME/.steam/steam/steamapps/libraryfolders.vdf &>> "7thDeck.log"
     rm $HOME/.steam/steam/config/libraryfolders.vdf &>> "7thDeck.log"
   else
+    echo "OK!"
     echo "Found Proton at $PROTON!"
+    echo
     break
   fi
 done
 
 # Check for SteamLinuxRuntime
 while true; do
-  if !pgrep steam > /dev/null; do nohup steam &> /dev/null; fi
-  while !pgrep steam > /dev/null; do sleep 1; done
+  if ! pgrep steam > /dev/null; then nohup steam &> /dev/null; fi
+  while ! pgrep steam > /dev/null; do sleep 1; done
   RUNTIME=$(LIBRARY=$(getSteamLibrary 1628350) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/SteamLinuxRuntime_sniper/run" || echo "NONE")
   echo -n "Checking if Steam Linux Runtime is installed... "
   if [ "$RUNTIME" = "NONE" ]; then
@@ -60,15 +62,17 @@ while true; do
     rm $HOME/.steam/steam/steamapps/libraryfolders.vdf &>> "7thDeck.log"
     rm $HOME/.steam/steam/config/libraryfolders.vdf &>> "7thDeck.log"
   else
+    echo "OK!"
     echo "Found SLR at $RUNTIME!"
+    echo
     break
   fi
 done
 
 # Check for FF7 and set paths
 while true; do
-  if !pgrep steam > /dev/null; do nohup steam &> /dev/null; fi
-  while !pgrep steam > /dev/null; do sleep 1; done
+  if ! pgrep steam > /dev/null; then nohup steam &> /dev/null; fi
+  while ! pgrep steam > /dev/null; do sleep 1; done
   echo -n "Checking if FF7 is installed... "
   FF7_LIBRARY=$(getSteamLibrary 39140 || echo "NONE")
   if [ "$FF7_LIBRARY" = "NONE" ]; then
@@ -81,7 +85,9 @@ while true; do
     rm $HOME/.steam/steam/steamapps/libraryfolders.vdf &>> "7thDeck.log"
     rm $HOME/.steam/steam/config/libraryfolders.vdf &>> "7thDeck.log"
   else
+    echo "OK!"
     echo "Found FF7 at $FF7_LIBRARY!"
+    echo
     break
   fi
 done
@@ -136,10 +142,11 @@ STEAM_COMPAT_APP_ID=39140 STEAM_COMPAT_DATA_PATH="${WINEPATH%/pfx}" \
 STEAM_COMPAT_CLIENT_INSTALL_PATH=$(readlink -f "$HOME/.steam/root") \
 "$RUNTIME" -- "$PROTON" waitforexitandrun \
 $SEVENTH_INSTALLER /SILENT /DIR="Z:$INSTALL_PATH" &>> "7thDeck.log"
+echo
 
 # Tweaks to 7th Heaven and FF7 directories
 echo "Applying patches..."
-mkdir "$INSTALL_PATH/7thWorkshop"
+mkdir -p "$INSTALL_PATH/7thWorkshop"
 cp -f "$INSTALL_PATH/Resources/FF7_1.02_Eng_Patch/ff7.exe" "$FF7_DIR/ff7.exe"
 cp -f deps/dxvk.conf "$INSTALL_PATH/"
 cp -f "deps/7th Heaven.sh" "$INSTALL_PATH/"
@@ -157,7 +164,7 @@ echo
 # SteamOS only
 if [ $IS_STEAMOS = true ]; then
   # Steam Deck Auto-Config (mod)
-  mkdir "$INSTALL_PATH/mods"
+  mkdir -p "$INSTALL_PATH/mods"
   cp -rf deps/SteamDeckSettings "$INSTALL_PATH/mods/"
 
   # This allows moving and clicking the mouse by using the right track-pad without holding down the STEAM button
