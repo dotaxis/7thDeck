@@ -1,8 +1,16 @@
 #!/bin/bash
 . deps/functions.sh
-export STEAM_COMPAT_MOUNTS="$(getSteamLibrary 1887720):$(getSteamLibrary 1391110):$(getSteamLibrary 39140)"
-PROTON=$(LIBRARY=$(getSteamLibrary 1887720) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/Proton 7.0/proton" || echo "NONE")
-RUNTIME=$(LIBRARY=$(getSteamLibrary 1391110) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/SteamLinuxRuntime_soldier/run" || echo "NONE")
+PROTON_VERSION="7.0"
+PROTON_ID="1887720"
+RUNTIME_VERSION="2.0"
+RUNTIME_ID="1391110"
+RUMTIME_NAME="soldier"
+
+COMPAT_STRING="s/"CompatToolMapping"\\n\\s+{/"CompatToolMapping"\\n\\t\\t\\t\\t{\\n\\t\\t\\t\\t\\t"39140"\\n\\t\\t\\t\\t\\t{\\n\\t\\t\\t\\t\\t\\t"name"\\t\\t"proton_${PROTON_VERSION:0:1}"\\n\\t\\t\\t\\t\\t\\t"config"\\t\\t""\\n\\t\\t\\t\\t\\t\\t"priority"\\t\\t"250"\\n\\t\\t\\t\\t\\t}gs"
+
+export STEAM_COMPAT_MOUNTS="$(getSteamLibrary ${PROTON_ID}):$(getSteamLibrary ${RUNTIME_ID}):$(getSteamLibrary 39140)"
+PROTON=$(LIBRARY=$(getSteamLibrary ${PROTON_ID}) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/Proton ${PROTON_VERSION}/proton" || echo "NONE")
+RUNTIME=$(LIBRARY=$(getSteamLibrary ${RUNTIME_ID}) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/SteamLinuxRuntime_${RUMTIME_NAME}/run" || echo "NONE")
 FF7_LIBRARY=$(getSteamLibrary 39140 || echo "NONE")
 XDG_DESKTOP_DIR=$(xdg-user-dir DESKTOP)
 XDG_DATA_HOME="${XDG_DATA_HOME:=${HOME}/.local/share}"
@@ -37,21 +45,21 @@ while ! pgrep steam > /dev/null; do sleep 1; done
 echo
 
 # Check for Proton 7
-echo -n "Checking if Proton 7 is installed... "
+echo -n "Checking if Proton ${PROTON_VERSION:0:1} is installed... "
 if [ "$PROTON" = "NONE" ]; then
   echo -e "\nNot found! Launching Steam to install."
-  nohup steam steam://install/1887720 &> /dev/null &
-  echo "Re-run this script when Proton 7 is done installing."
+  nohup steam steam://install/${PROTON_ID} &> /dev/null &
+  echo "Re-run this script when Proton ${PROTON_VERSION:0:1} is done installing."
   read -p "Press Enter to close this window."
   exit 1
 fi
 echo "OK!"
-# Check for SteamLinuxRuntime
-echo -n "Checking if SteamLinuxRuntime 2.0 is installed... "
+# # Check for SteamLinuxRuntime
+echo -n "Checking if SteamLinuxRuntime ${RUNTIME_VERSION} is installed... "
 if [ "$RUNTIME" = "NONE" ]; then
   echo -e "\nNot found! Launching Steam to install."
-  nohup steam steam://install/1391110 &> /dev/null &
-  echo "Re-run this script when SteamLinuxRuntime 2.0 (Soldier) is done installing."
+  nohup steam steam://install/${RUNTIME_ID} &> /dev/null &
+  echo "Re-run this script when SteamLinuxRuntime ${RUNTIME_VERSION} (${RUNTIME_NAME^}) is done installing."
   read -p "Press Enter to close this window."
   exit 1
 fi
@@ -73,11 +81,10 @@ echo "OK!"
 echo
 
 # Force FF7 under Proton 7
-echo "Rebuilding Final Fantasy VII under Proton 7.0..."
+echo "Rebuilding Final Fantasy VII under Proton ${PROTON_VERSION}..."
 pkill -9 steam
 cp ${XDG_DATA_HOME}/Steam/config/config.vdf ${XDG_DATA_HOME}/Steam/config/config.vdf.bak
-perl -0777 -i -pe 's/"CompatToolMapping"\n\s+{/"CompatToolMapping"\n\t\t\t\t{\n\t\t\t\t\t"39140"\n\t\t\t\t\t{\n\t\t\t\t\t\t"name"\t\t"proton_7"\n\t\t\t\t\t\t"config"\t\t""\n\t\t\t\t\t\t"priority"\t\t"250"\n\t\t\t\t\t}/gs' \
-${XDG_DATA_HOME}/Steam/config/config.vdf
+perl -0777 -i -pe ${COMPAT_STRING} ${XDG_DATA_HOME}/Steam/config/config.vdf
 while pgrep "steam" > /dev/null; do sleep 1; done
 [ "${WINEPATH}" = */compatdata/39140/pfx ] && rm -rf "${WINEPATH%/pfx}"/*
 echo "Sign into the Steam account that owns FF7 if prompted."
