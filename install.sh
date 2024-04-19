@@ -8,7 +8,7 @@ echo "" > "7thDeck.log"
 exec > >(tee -ia "7thDeck.log") 2>&1
 
 echo "########################################################################"
-echo "#                             7thDeck v2.2                             #"
+echo "#                             7thDeck v2.3                             #"
 echo "########################################################################"
 echo "#    This script will:                                                 #"
 echo "#   1. Apply patches to FF7's proton prefix to accomodate 7th Heaven   #"
