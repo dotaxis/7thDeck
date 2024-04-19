@@ -22,6 +22,15 @@ echo "#   or ask in the #Steamdeck-Proton channel of the Tsunamods Discord   #"
 echo "########################################################################"
 echo -e "\n"
 
+# Rebuild libraryfolders.vdf
+echo "Rebuilding libraryfolders.vdf. Steam will restart."
+pkill -9 steam
+while pgrep steam > /dev/null; do sleep 1; done
+rm $HOME/.steam/steam/steamapps/libraryfolders.vdf &>> "7thDeck.log"
+nohup steam &> /dev/null &
+sleep 5
+while ! pgrep steam > /dev/null; do sleep 1; done
+echo
 
 # Check for Proton
 while true; do
