@@ -12,6 +12,7 @@ export STEAM_COMPAT_APP_ID=39140
 export STEAM_COMPAT_CLIENT_INSTALL_PATH=$(readlink -f "$HOME/.steam/root")
 export STEAM_COMPAT_MOUNTS="$(getSteamLibrary 1493710):$(getSteamLibrary 1628350):${STEAM_COMPAT_DATA_PATH%/steamapps/compatdata/39140}"
 export WINEDLLOVERRIDES="dinput=n,b"
+export DXVK_HDR=0
 export PATH=$(echo "${PATH}" | sed -e "s|:$HOME/dotnet||")
 unset DOTNET_ROOT
 
