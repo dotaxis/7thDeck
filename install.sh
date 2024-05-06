@@ -26,12 +26,12 @@ echo -e "\n"
 while true; do
   if ! pgrep steam > /dev/null; then nohup steam &> /dev/null; fi
   while ! pgrep steam > /dev/null; do sleep 1; done
-  PROTON=$(LIBRARY=$(getSteamLibrary 1493710) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/Proton - Experimental/proton" || echo "NONE")
-  echo -n "Checking if Proton Experimental is installed... "
+  PROTON=$(LIBRARY=$(getSteamLibrary 2805730) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/Proton 9.0 (Beta)/proton" || echo "NONE")
+  echo -n "Checking if Proton 9 is installed... "
   if [ "$PROTON" = "NONE" ]; then
     echo -e "\nNot found! Launching Steam to install."
-    nohup steam steam://install/1493710 &> /dev/null &
-    read -p "Press Enter when Proton Experimental is done installing."
+    nohup steam steam://install/2805730 &> /dev/null &
+    read -p "Press Enter when Proton 9 is done installing."
     pkill -9 steam
     while pgrep steam >/dev/null; do sleep 1; done
     rm $HOME/.steam/steam/steamapps/libraryfolders.vdf &>> "7thDeck.log"
@@ -92,13 +92,13 @@ done
 FF7_DIR="$FF7_LIBRARY/steamapps/common/FINAL FANTASY VII"
 WINEPATH="$FF7_LIBRARY/steamapps/compatdata/39140/pfx"
 [ $IS_STEAMOS = true ] && WINEPATH="${HOME}/.steam/steam/steamapps/compatdata/39140/pfx"
-export STEAM_COMPAT_MOUNTS="$(getSteamLibrary 1493710):$(getSteamLibrary 1628350):$(getSteamLibrary 39140)"
+export STEAM_COMPAT_MOUNTS="$(getSteamLibrary 2805730):$(getSteamLibrary 1628350):$(getSteamLibrary 39140)"
 
-# Force FF7 under Proton Experimental
-echo "Rebuilding Final Fantasy VII under Proton Experimental..."
+# Force FF7 under Proton 9
+echo "Rebuilding Final Fantasy VII under Proton 9..."
 pkill -9 steam
 cp ${XDG_DATA_HOME}/Steam/config/config.vdf ${XDG_DATA_HOME}/Steam/config/config.vdf.bak
-perl -0777 -i -pe 's/"CompatToolMapping"\n\s+{/"CompatToolMapping"\n\t\t\t\t{\n\t\t\t\t\t"39140"\n\t\t\t\t\t{\n\t\t\t\t\t\t"name"\t\t"proton_experimental"\n\t\t\t\t\t\t"config"\t\t""\n\t\t\t\t\t\t"priority"\t\t"250"\n\t\t\t\t\t}/gs' \
+perl -0777 -i -pe 's/"CompatToolMapping"\n\s+{/"CompatToolMapping"\n\t\t\t\t{\n\t\t\t\t\t"39140"\n\t\t\t\t\t{\n\t\t\t\t\t\t"name"\t\t"proton_9"\n\t\t\t\t\t\t"config"\t\t""\n\t\t\t\t\t\t"priority"\t\t"250"\n\t\t\t\t\t}/gs' \
 ${XDG_DATA_HOME}/Steam/config/config.vdf
 while pgrep "steam" > /dev/null; do sleep 1; done
 [ "${WINEPATH}" = */compatdata/39140/pfx ] && rm -rf "${WINEPATH%/pfx}"/*
