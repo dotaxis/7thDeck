@@ -13,6 +13,6 @@ fn main() {
     };
 
     let proton: &str = proton::find_highest_version(&proton_versions).unwrap().path.to_str().expect("Failed to get Proton");
-
+    println!("Proton bin: {}", proton);
     proton::launch_exe("7th Heaven.exe", proton);
 }

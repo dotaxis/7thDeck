@@ -65,7 +65,9 @@ pub fn find_prefix(appid: u32) -> Result<PathBuf, Box<dyn Error>> {
         let library = library?;
         for app in library.apps() {
             if app?.app_id == appid {
-                return Ok(library.path().join(format!("steamapps/compatdata/{}/pfx", appid)));
+                let prefix_path = library.path().join(format!("steamapps/compatdata/{}/pfx", appid));
+                println!("Prefix path: {:?}", prefix_path);
+                return Ok(prefix_path);
             }
         }
     }
