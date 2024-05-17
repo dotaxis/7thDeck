@@ -1,4 +1,4 @@
-use std::{env, error::Error, path::PathBuf, process::Command};
+use std::{env, error::Error, path::{PathBuf, Path}, process::Command};
 
 #[derive(Debug)]
 pub struct ProtonVersion {
@@ -65,7 +65,7 @@ pub fn find_prefix(appid: u32) -> Result<PathBuf, Box<dyn Error>> {
         let library = library?;
         for app in library.apps() {
             if app?.app_id == appid {
-                return Ok(PathBuf::from(library.path()));
+                return Ok(library.path().join(format!("steamapps/compatdata/{}/pfx", appid)));
             }
         }
     }
@@ -73,16 +73,11 @@ pub fn find_prefix(appid: u32) -> Result<PathBuf, Box<dyn Error>> {
 }
 
 pub fn launch_exe(exe_path: &str, proton_path: &str) -> Result<(), Box<dyn Error>> {
-    let display = env::var("DISPLAY").unwrap_or_else(|_| ":0".to_string());
     let prefix = find_prefix(39140);
-    if !prefix?.is_dir() {
-        //print!("{prefix:#?}");
-        panic!("We found the prefix but it's not a directory??");
-    }
 
     Command::new(proton_path)
         .env("STEAM_COMPAT_CLIENT_INSTALL_PATH", steamlocate::SteamDir::locate()?.path())
-        //.env("STEAM_COMPAT_DATA_PATH", prefix)
+        .env("STEAM_COMPAT_DATA_PATH", prefix?.as_path())
         .env("WINEDLLOVERRIDES", "dinput.dll=n,b")
         .arg("run")
         .arg(exe_path)
