@@ -3,4 +3,9 @@ name = "seventh-deck"
 version = "0.1.0"
 edition = "2021"
 
+[[bin]]
+name = "7thDeck"
+path = "src/main.rs"
+
 [dependencies]
+steamlocate = "2.0.0-beta.2"
