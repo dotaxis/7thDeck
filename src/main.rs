@@ -1,9 +1,12 @@
 mod proton;
 
 fn main() {
-    let ff7_id: u32 = 39140;
-    println!("{}", proton::find_prefix(ff7_id).unwrap().display());
+    let install_path = get_install_path();
+    install_7th(&install_path);
+    println!("yippee")
+}
 
+fn install_7th(install_path: &str) {
     let proton_versions = match proton::find_all_versions() {
         Ok(versions) => versions,
         Err(e) => {
@@ -12,7 +15,17 @@ fn main() {
         }
     };
 
+    let args: Vec<String> = vec![
+        "/VERYSILENT".to_string(),
+        format!("/DIR=\"Z:{}\"", install_path),
+        "/LOG=\"7thHeaven.log\"".to_string()
+    ];
+
     let proton: &str = proton::find_highest_version(&proton_versions).unwrap().path.to_str().expect("Failed to get Proton");
     println!("Proton bin: {}", proton);
-    proton::launch_exe("7th Heaven.exe", proton);
+    proton::launch_exe_in_prefix(39140, "7th Heaven.exe", proton, &args);
+}
+
+fn get_install_path() -> String {
+    "todo".to_string()
 }
