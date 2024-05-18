@@ -1,4 +1,4 @@
-use std::{env, error::Error, path::{PathBuf, Path}, process::Command};
+use std::{error::Error, path::PathBuf};
 
 #[derive(Debug)]
 pub struct ProtonVersion {
@@ -55,39 +55,4 @@ pub fn find_highest_version(versions: &[ProtonVersion]) -> Option<&ProtonVersion
             (0, 0) // Default for non-parsable or missing version numbers
         }
     })
-}
-
-pub fn find_prefix(app_id: u32) -> Result<PathBuf, Box<dyn Error>> {
-    let steam_dir = steamlocate::SteamDir::locate()?;
-    println!("Located Steam installation: {}", steam_dir.path().display());
-
-    for library in steam_dir.libraries()? {
-        let library = library?;
-        for app in library.apps() {
-            if app?.app_id == app_id {
-                let prefix_path = library.path().join(format!("steamapps/compatdata/{}/pfx", app_id));
-                println!("Prefix path: {:?}", prefix_path);
-                return Ok(prefix_path);
-            }
-        }
-    }
-    Err("Couldn't find proton prefix!".into())
-}
-
-pub fn launch_exe_in_prefix(app_id: u32, exe_path: &str, proton_path: &str, args: &Vec<String>) -> Result<(), Box<dyn Error>> {
-    let prefix = find_prefix(app_id);
-    let mut command = Command::new(proton_path);
-
-    command
-        .env("STEAM_COMPAT_CLIENT_INSTALL_PATH", steamlocate::SteamDir::locate()?.path())
-        .env("STEAM_COMPAT_DATA_PATH", prefix?.as_path())
-        .env("WINEDLLOVERRIDES", "dinput.dll=n,b")
-        .arg("run")
-        .arg(exe_path);
-
-    for arg in args { command.arg(arg); }
-
-    command.spawn()?.wait()?;
-
-    Ok(println!("Launched {exe_path}"))
 }
