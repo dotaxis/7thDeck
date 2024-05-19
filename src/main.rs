@@ -1,11 +1,14 @@
 mod steamhelper;
+mod dialog;
+
 use steamhelper::proton;
 use steamhelper::game;
 
 fn main() {
     let install_path = get_install_path();
+    let dialog_command = dialog::which_dialog();
     //install_7th(&install_path);
-    println!("{:#?}", game::get_game(39140).unwrap());
+    dialog::prompt_ok(&dialog_command, format!("{:?}", game::get_game(39140).unwrap()));
 }
 
 fn install_7th(install_path: &str) {

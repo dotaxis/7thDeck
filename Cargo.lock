@@ -58,12 +58,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "dialog-box"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "31eaa26cd5bd727727af2ecd667328a58440c1bf75eeb06b4c93d80b1cfe81bc"
-
-[[package]]
 name = "digest"
 version = "0.10.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -269,7 +263,6 @@ dependencies = [
 name = "seventh-deck"
 version = "0.1.0"
 dependencies = [
- "dialog-box",
  "steamlocate",
 ]
 
