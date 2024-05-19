@@ -1,14 +1,15 @@
 mod steamhelper;
-mod dialog;
 
 use steamhelper::proton;
 use steamhelper::game;
+use dialog::DialogBox;
 
 fn main() {
     let install_path = get_install_path();
-    let dialog_command = dialog::which_dialog();
     //install_7th(&install_path);
-    dialog::prompt_ok(&dialog_command, format!("{:?}", game::get_game(39140).unwrap()));
+    dialog::Message::new(format!("{:?}", game::get_game(39140).unwrap()))
+        .show()
+        .expect("Failed to display dialog box.");
 }
 
 fn install_7th(install_path: &str) {
