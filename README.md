@@ -1,5 +1,5 @@
 # 7thDeck
-Installer &amp; launcher for 7th Heaven on SteamOS and other Linux distros using KDE
+Installer &amp; launcher for 7th Heaven on SteamOS and other Linux distros
 
 <br>
 
