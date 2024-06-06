@@ -1,4 +1,5 @@
-use std::{error::Error, path::PathBuf, process::Command};
+use std::{io, error::Error, path::PathBuf, process::Command};
+use sysinfo::{ProcessExt, Signal, System, SystemExt};
 
 pub mod game;
 pub mod proton;
@@ -16,4 +17,27 @@ pub fn launch_exe_in_prefix(exe_to_launch: PathBuf, game: game::SteamGame, proto
     command.spawn()?.wait()?;
 
     Ok(println!("Launched {}", exe_to_launch.file_name().unwrap().to_string_lossy()))
+}
+
+pub fn kill_steam() {
+    loop {
+        let mut sys = System::new_all();
+        sys.refresh_all();
+
+        for (pid, process) in sys.processes() {
+            if process.name() == "steam" {
+                println!("Found 'steam' with PID: {}", pid);
+
+                if process.kill() {
+                    println!("Killed Steam successfully.");
+                    break;
+                } else {
+                    println!("Failed to kill Steam! Please exit Steam and press Enter to continue.");
+                    let mut input = String::new();
+                    io::stdin().read_line(&mut input).unwrap();
+                    continue;
+                }
+            }
+        }
+    }
 }
