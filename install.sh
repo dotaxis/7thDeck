@@ -32,7 +32,7 @@ while true; do
     echo -e "\nNot found! Launching Steam to install."
     nohup steam steam://install/2805730 &> /dev/null &
     read -p "Press Enter when Proton 9 is done installing."
-    pkill -9 steam
+    killall -9 steam
     while pgrep steam >/dev/null; do sleep 1; done
     rm $HOME/.steam/steam/steamapps/libraryfolders.vdf &>> "7thDeck.log"
     rm $HOME/.steam/steam/config/libraryfolders.vdf &>> "7thDeck.log"
@@ -54,7 +54,7 @@ while true; do
     echo -e "\nNot found! Launching Steam to install."
     nohup steam steam://install/1628350 &> /dev/null &
     read -p "Press Enter when Steam Linux Runtime 3.0 (sniper) is done installing."
-    pkill -9 steam
+    killall -9 steam
     while pgrep steam >/dev/null; do sleep 1; done
     rm $HOME/.steam/steam/steamapps/libraryfolders.vdf &>> "7thDeck.log"
     rm $HOME/.steam/steam/config/libraryfolders.vdf &>> "7thDeck.log"
@@ -76,7 +76,7 @@ while true; do
     echo -e "\nNot found! Launching Steam to install."
     nohup steam steam://install/39140 &> /dev/null &
     read -p "Press Enter when FINAL FANTASY VII is done installing."
-    pkill -9 steam
+    killall -9 steam
     while pgrep steam > /dev/null; do sleep 1; done
     rm $HOME/.steam/steam/steamapps/libraryfolders.vdf &>> "7thDeck.log"
     rm $HOME/.steam/steam/config/libraryfolders.vdf &>> "7thDeck.log"
@@ -96,7 +96,7 @@ export STEAM_COMPAT_MOUNTS="$(getSteamLibrary 2805730):$(getSteamLibrary 1628350
 
 # Force FF7 under Proton 9
 echo "Rebuilding Final Fantasy VII under Proton 9..."
-pkill -9 steam
+killall -9 steam
 cp ${XDG_DATA_HOME}/Steam/config/config.vdf ${XDG_DATA_HOME}/Steam/config/config.vdf.bak
 perl -0777 -i -pe 's/"CompatToolMapping"\n\s+{/"CompatToolMapping"\n\t\t\t\t{\n\t\t\t\t\t"39140"\n\t\t\t\t\t{\n\t\t\t\t\t\t"name"\t\t"proton_9"\n\t\t\t\t\t\t"config"\t\t""\n\t\t\t\t\t\t"priority"\t\t"250"\n\t\t\t\t\t}/gs' \
 ${XDG_DATA_HOME}/Steam/config/config.vdf
@@ -106,7 +106,7 @@ echo "Sign into the Steam account that owns FF7 if prompted."
 nohup steam steam://rungameid/39140 &> /dev/null &
 echo "Waiting for Steam..."
 while ! pgrep "FF7_Launcher" > /dev/null; do sleep 1; done
-pkill -9 "FF7_Launcher"
+killall -9 "FF7_Launcher.exe"
 echo
 
 # Fix infinite loop on "Verifying installed game is compatible"
