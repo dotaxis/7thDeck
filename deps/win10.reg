@@ -1,0 +1,11 @@
+REGEDIT4
+
+[HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion]
+"CSDVersion"=""
+"CurrentMajorVersionNumber"=dword:0000000a
+"CurrentBuild"="10240"
+"CurrentBuildNumber"="10240"
+"ProductName"="Microsoft Windows 10"
+
+[HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Windows]
+"CSDVersion"=dword:00000000

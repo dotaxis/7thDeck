@@ -72,6 +72,21 @@ while ! pgrep "FF7_Launcher" > /dev/null; do sleep 1; done
 killall -9 "FF7_Launcher.exe"
 echo
 
+# Set Windows version to Win10
+WINE="${PROTON%/proton}/files/bin/wine"
+WINEPREFIX="$WINEPATH"
+"$WINE" reg delete "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion" /v SubVersionNumber /f || true
+"$WINE" reg delete "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion" /v VersionNumber /f || true
+"$WINE" reg delete "HKLM\\Software\\Microsoft\\Windows NT\\CurrentVersion" /v CSDVersion /f || true
+"$WINE" reg delete "HKLM\\Software\\Microsoft\\Windows NT\\CurrentVersion" /v CurrentBuildNumber /f || true
+"$WINE" reg delete "HKLM\\Software\\Microsoft\\Windows NT\\CurrentVersion" /v CurrentVersion /f || true
+"$WINE" reg delete "HKLM\\System\\CurrentControlSet\\Control\\ProductOptions" /v ProductType /f || true
+"$WINE" reg delete "HKLM\\System\\CurrentControlSet\\Control\\ServiceCurrent" /v OS /f || true
+"$WINE" reg delete "HKLM\\System\\CurrentControlSet\\Control\\Windows" /v CSDVersion /f || true
+"$WINE" reg delete "HKCU\\Software\\Wine" /v Version /f || true
+"$WINE" reg delete "HKLM\\System\\CurrentControlSet\\Control\\ProductOptions" /v ProductType /f || true
+"$WINE" regedit /S "deps/win10.reg"
+
 # Fix infinite loop on "Verifying installed game is compatible"
 [ -L "$FF7_DIR/FINAL FANTASY VII" ] && unlink "$FF7_DIR/FINAL FANTASY VII"
 
