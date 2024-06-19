@@ -16,12 +16,10 @@ export DXVK_HDR=0
 export PATH=$(echo "${PATH}" | sed -e "s|:$HOME/dotnet||")
 unset DOTNET_ROOT
 
-RUNTIME=$(LIBRARY=$(getSteamLibrary 1628350) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/SteamLinuxRuntime_sniper/run" || echo "NONE")
-PROTON=$(LIBRARY=$(getSteamLibrary 2805730) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/Proton 9.0 (Beta)/proton" || echo "NONE")
+PROTON="$HOME/.steam/root/compatibilitytools.d/GE-Proton9-7/proton"
 
 [ ! -d "$STEAM_COMPAT_DATA_PATH" ] && { promptUser  "FF7 prefix not found!"; exit 1; }
-[ "$RUNTIME" = "NONE" ] && { promptUser  "Steam Linux Runtime not found!"; exit 1; }
 [ "$PROTON" = "NONE" ] && { promptUser  "Proton not found!"; exit 1; }
 
 
-"$RUNTIME" -- "$PROTON" waitforexitandrun "$PWD/7th Heaven.exe" $*
+"$PROTON" waitforexitandrun "$PWD/7th Heaven.exe" $*

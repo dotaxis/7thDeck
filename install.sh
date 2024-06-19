@@ -8,13 +8,14 @@ echo "" > "7thDeck.log"
 exec > >(tee -ia "7thDeck.log") 2>&1
 
 echo "########################################################################"
-echo "#                             7thDeck v2.3                             #"
+echo "#                             7thDeck v2.4                             #"
 echo "########################################################################"
 echo "#    This script will:                                                 #"
-echo "#   1. Apply patches to FF7's proton prefix to accomodate 7th Heaven   #"
-echo "#   2. Install 7th Heaven to a folder of your choosing                 #"
-echo "#   3. Add 7th Heaven to Steam using a custom launcher script          #"
-echo "#   4. Add a custom controller config for Steam Deck, to allow mouse   #"
+echo "#   1. Install GE-Proton 9.7                                           #"
+echo "#   2. Apply patches to FF7's proton prefix to accomodate 7th Heaven   #"
+echo "#   3. Install 7th Heaven to a folder of your choosing                 #"
+echo "#   4. Add 7th Heaven to Steam using a custom launcher script          #"
+echo "#   5. Add a custom controller config for Steam Deck, to allow mouse   #"
 echo "#      control with trackpad without holding down the STEAM button     #"
 echo "########################################################################"
 echo "#           For support, please open an issue on GitHub,               #"
@@ -22,49 +23,11 @@ echo "#   or ask in the #Steamdeck-Proton channel of the Tsunamods Discord   #"
 echo "########################################################################"
 echo -e "\n"
 
-# Check for Proton
-while true; do
-  if ! pgrep steam > /dev/null; then nohup steam &> /dev/null; fi
-  while ! pgrep steam > /dev/null; do sleep 1; done
-  PROTON=$(LIBRARY=$(getSteamLibrary 2805730) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/Proton 9.0 (Beta)/proton" || echo "NONE")
-  echo -n "Checking if Proton 9 is installed... "
-  if [ "$PROTON" = "NONE" ]; then
-    echo -e "\nNot found! Launching Steam to install."
-    nohup steam steam://install/2805730 &> /dev/null &
-    read -p "Press Enter when Proton 9 is done installing."
-    killall -9 steam
-    while pgrep steam >/dev/null; do sleep 1; done
-    rm $HOME/.steam/steam/steamapps/libraryfolders.vdf &>> "7thDeck.log"
-    rm $HOME/.steam/steam/config/libraryfolders.vdf &>> "7thDeck.log"
-  else
-    echo "OK!"
-    echo "Found Proton at $PROTON!"
-    echo
-    break
-  fi
-done
-
-# Check for SteamLinuxRuntime
-while true; do
-  if ! pgrep steam > /dev/null; then nohup steam &> /dev/null; fi
-  while ! pgrep steam > /dev/null; do sleep 1; done
-  RUNTIME=$(LIBRARY=$(getSteamLibrary 1628350) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/SteamLinuxRuntime_sniper/run" || echo "NONE")
-  echo -n "Checking if Steam Linux Runtime is installed... "
-  if [ "$RUNTIME" = "NONE" ]; then
-    echo -e "\nNot found! Launching Steam to install."
-    nohup steam steam://install/1628350 &> /dev/null &
-    read -p "Press Enter when Steam Linux Runtime 3.0 (sniper) is done installing."
-    killall -9 steam
-    while pgrep steam >/dev/null; do sleep 1; done
-    rm $HOME/.steam/steam/steamapps/libraryfolders.vdf &>> "7thDeck.log"
-    rm $HOME/.steam/steam/config/libraryfolders.vdf &>> "7thDeck.log"
-  else
-    echo "OK!"
-    echo "Found SLR at $RUNTIME!"
-    echo
-    break
-  fi
-done
+# Install GE-Proton 9-7
+echo "Installing GE-Proton 9-7..."
+. deps/install_ge-proton.sh
+PROTON="$HOME/.steam/root/compatibilitytools.d/GE-Proton9-7/proton"
+echo
 
 # Check for FF7 and set paths
 while true; do
@@ -94,11 +57,11 @@ WINEPATH="$FF7_LIBRARY/steamapps/compatdata/39140/pfx"
 [ $IS_STEAMOS = true ] && WINEPATH="${HOME}/.steam/steam/steamapps/compatdata/39140/pfx"
 export STEAM_COMPAT_MOUNTS="$(getSteamLibrary 2805730):$(getSteamLibrary 1628350):$(getSteamLibrary 39140)"
 
-# Force FF7 under Proton 9
-echo "Rebuilding Final Fantasy VII under Proton 9..."
+# Force FF7 under GE-Proton 9-7
+echo "Rebuilding Final Fantasy VII under GE-Proton 9-7..."
 killall -9 steam
 cp ${XDG_DATA_HOME}/Steam/config/config.vdf ${XDG_DATA_HOME}/Steam/config/config.vdf.bak
-perl -0777 -i -pe 's/"CompatToolMapping"\n\s+{/"CompatToolMapping"\n\t\t\t\t{\n\t\t\t\t\t"39140"\n\t\t\t\t\t{\n\t\t\t\t\t\t"name"\t\t"proton_9"\n\t\t\t\t\t\t"config"\t\t""\n\t\t\t\t\t\t"priority"\t\t"250"\n\t\t\t\t\t}/gs' \
+perl -0777 -i -pe 's/"CompatToolMapping"\n\s+{/"CompatToolMapping"\n\t\t\t\t{\n\t\t\t\t\t"39140"\n\t\t\t\t\t{\n\t\t\t\t\t\t"name"\t\t"GE-Proton9-7"\n\t\t\t\t\t\t"config"\t\t""\n\t\t\t\t\t\t"priority"\t\t"250"\n\t\t\t\t\t}/gs' \
 ${XDG_DATA_HOME}/Steam/config/config.vdf
 while pgrep "steam" > /dev/null; do sleep 1; done
 [ "${WINEPATH}" = */compatdata/39140/pfx ] && rm -rf "${WINEPATH%/pfx}"/*
@@ -136,7 +99,7 @@ echo "Installing 7th Heaven..."
 mkdir -p "${WINEPATH}/drive_c/ProgramData" # fix vcredist install - infirit
 STEAM_COMPAT_APP_ID=39140 STEAM_COMPAT_DATA_PATH="${WINEPATH%/pfx}" \
 STEAM_COMPAT_CLIENT_INSTALL_PATH=$(readlink -f "$HOME/.steam/root") \
-"$RUNTIME" -- "$PROTON" waitforexitandrun \
+"$PROTON" waitforexitandrun \
 "$SEVENTH_INSTALLER" /VERYSILENT /DIR="Z:$INSTALL_PATH" /LOG="7thHeaven.log" &>> "7thDeck.log"
 echo
 
