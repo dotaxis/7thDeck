@@ -144,7 +144,6 @@ echo
 echo "Applying patches..."
 mkdir -p "$INSTALL_PATH/7thWorkshop/profiles"
 cp -f "$INSTALL_PATH/Resources/FF7_1.02_Eng_Patch/ff7.exe" "$FF7_DIR/ff7.exe"
-cp -f deps/dxvk.conf "$INSTALL_PATH/"
 cp -f "deps/7th Heaven.sh" "$INSTALL_PATH/"
 cp -f "deps/functions.sh" "$INSTALL_PATH/"
 cp -f deps/settings.xml "$INSTALL_PATH/7thWorkshop/"
