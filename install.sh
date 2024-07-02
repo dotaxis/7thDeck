@@ -147,6 +147,7 @@ cp -f "$INSTALL_PATH/Resources/FF7_1.02_Eng_Patch/ff7.exe" "$FF7_DIR/ff7.exe"
 cp -f "deps/7th Heaven.sh" "$INSTALL_PATH/"
 cp -f "deps/functions.sh" "$INSTALL_PATH/"
 cp -f deps/settings.xml "$INSTALL_PATH/7thWorkshop/"
+[ -f "$INSTALL_PATH/dxvk.conf" ] && rm "$INSTALL_PATH/dxvk.conf" # fix freezing in Proton 9.0-2 - julianxhokaxhiu
 [ ! -f "$INSTALL_PATH/7thWorkshop/profiles/Default.xml" ] && cp "deps/Default.xml" "$INSTALL_PATH/7thWorkshop/profiles/" &>> "7thDeck.log"
 sed -i "s|@STEAMOS@|$IS_STEAMOS|" "$INSTALL_PATH/7th Heaven.sh"
 sed -i "s|<LibraryLocation>REPLACE_ME</LibraryLocation>|<LibraryLocation>Z:$INSTALL_PATH/mods</LibraryLocation>|" "$INSTALL_PATH/7thWorkshop/settings.xml"
