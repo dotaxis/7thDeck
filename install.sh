@@ -96,9 +96,8 @@ export STEAM_COMPAT_MOUNTS="$(getSteamLibrary 2805730):$(getSteamLibrary 1628350
 
 # Force FF7 under Proton 9
 echo "Rebuilding Final Fantasy VII under Proton 9..."
-echo "The script may ask for your root password. This is to kill the Steam process."
-while pgrep "steam" > /dev/null; do
-  sudo pkill -9 steam
+while pidof "steam" > /dev/null; do
+  killall -9 steam &>> "7thDeck.log"
   sleep 1
 done
 cp ${XDG_DATA_HOME}/Steam/config/config.vdf ${XDG_DATA_HOME}/Steam/config/config.vdf.bak
