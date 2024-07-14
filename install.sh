@@ -96,12 +96,14 @@ export STEAM_COMPAT_MOUNTS="$(getSteamLibrary 2805730):$(getSteamLibrary 1628350
 
 # Force FF7 under Proton 9
 echo "Rebuilding Final Fantasy VII under Proton 9..."
-echo "If the script hangs here, please exit Steam manually."
-killall -9 steam
+echo "The script may ask for your root password. This is to kill the Steam process."
+while pgrep "steam" > /dev/null; do
+  sudo pkill -9 steam
+  sleep 1
+done
 cp ${XDG_DATA_HOME}/Steam/config/config.vdf ${XDG_DATA_HOME}/Steam/config/config.vdf.bak
 perl -0777 -i -pe 's/"CompatToolMapping"\n\s+{/"CompatToolMapping"\n\t\t\t\t{\n\t\t\t\t\t"39140"\n\t\t\t\t\t{\n\t\t\t\t\t\t"name"\t\t"proton_9"\n\t\t\t\t\t\t"config"\t\t""\n\t\t\t\t\t\t"priority"\t\t"250"\n\t\t\t\t\t}/gs' \
 ${XDG_DATA_HOME}/Steam/config/config.vdf
-while pgrep "steam" > /dev/null; do sleep 1; done
 [ "${WINEPATH}" = */compatdata/39140/pfx ] && rm -rf "${WINEPATH%/pfx}"/*
 echo "Sign into the Steam account that owns FF7 if prompted."
 nohup steam steam://rungameid/39140 &> /dev/null &
