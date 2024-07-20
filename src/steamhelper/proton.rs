@@ -23,7 +23,7 @@ pub fn find_all_versions() -> Result<Vec<ProtonVersion>, Box<dyn Error>> {
                             }
                         );
                 } else {
-                    eprintln!("{:?}", app_path);
+                    eprintln!("Does not contain proton bin: {:?}", app_path);
                 }
             }
         }

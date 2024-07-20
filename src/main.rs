@@ -5,6 +5,9 @@ use std::path::{Path, PathBuf};
 use steamhelper::proton;
 use steamhelper::game;
 use dialog::DialogBox;
+use sysinfo::System;
+
+static FF7_APPID: u32 = 39140;
 
 fn main() {
     let install_path = get_install_path();
@@ -12,25 +15,56 @@ fn main() {
         .title("Path confirmed.")
         .show_with(dialog::backends::Dialog::new())
         .expect("Failed to display dialog box.");
-    install_7th(&install_path);
     steamhelper::kill_steam();
+    // TODO: steamhelper::game::set_runner(FF7_APPID, proton9)
+    steamhelper::game::wipe_prefix(FF7_APPID);
+    steamhelper::game::launch_game(FF7_APPID).expect("Failed to launch FF7?");
+    kill_ff7();
+    install_7th(&install_path);
+}
+
+fn kill_ff7(){
+    println!("Hello??");
+    'outer: loop {
+        let mut sys = System::new_all();
+        sys.refresh_all();
+
+        for (pid, process) in sys.processes() {
+            if process.name().contains("FF7_Launcher") {
+                println!("Found 'FF7_Launcher' with PID: {}", pid);
+
+                if process.kill() {
+                    println!("Killed FF7 successfully.");
+                    break 'outer;
+                } else {
+                    println!("Failed to kill FF7! Please exit the FF7 Launcher and press Enter to continue.");
+                    let mut input = String::new();
+                    std::io::stdin().read_line(&mut input).unwrap();
+                    continue;
+                }
+            }
+        }
+    }
+    println!("We made it out of the kill_ff7() loop!");
 }
 
 fn install_7th(install_path: &Path) {
-    let install_path = install_path.to_str();
+    let install_path = install_path.to_str().unwrap().to_string();
     let proton_versions = proton::find_all_versions().expect("Failed to find any Proton versions!");
 
     let args: Vec<String> = vec![
         "/VERYSILENT".to_string(),
-        format!("/DIR=Z:{}", install_path.unwrap().replace('/', "\\")),
+        format!("/DIR=Z:{}", install_path.replace('/', "\\")),
         "/LOG=7thHeaven.log".to_string()
     ];
 
-    let proton: &str = proton::find_highest_version(&proton_versions).unwrap().path.to_str().expect("Failed to get Proton");
+    let highest_proton_version = proton::find_highest_version(&proton_versions).unwrap();
+    let proton = highest_proton_version.path.to_str().expect("Failed to get Proton").to_string();
     println!("Proton bin: {}", proton);
 
-    let game = game::get_game(39140).unwrap();
-    match steamhelper::launch_exe_in_prefix("7th Heaven.exe".into(), game, proton, &args) {
+    let game = game::get_game(FF7_APPID).unwrap();
+
+    match steamhelper::game::launch_exe_in_prefix("7th Heaven.exe".into(), game, &proton, &args) {
         Ok(_) => println!("Ran 7th Heaven installer"),
         Err(e) => panic!("{}", e)
     }

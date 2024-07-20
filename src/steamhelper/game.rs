@@ -1,4 +1,9 @@
-use std::{error::Error, path::PathBuf};
+use std::{
+    error::Error,
+    fs::metadata,
+    path::{Path, PathBuf},
+    process::{Command, Stdio}
+};
 
 #[derive(Debug)]
 pub struct SteamGame {
@@ -38,3 +43,59 @@ pub fn get_game(app_id: u32) -> Result<SteamGame, Box<dyn Error>> {
 
     Err(format!("Couldn't find app_id {}!", app_id).into())
 }
+
+pub fn launch_exe_in_prefix(exe_to_launch: PathBuf, game: SteamGame, proton_path: &str, args: &Vec<String>) -> Result<(), Box<dyn Error>> {
+    let mut command = Command::new(proton_path);
+    command
+        .env("STEAM_COMPAT_CLIENT_INSTALL_PATH", game.client_path)
+        .env("STEAM_COMPAT_DATA_PATH", game.prefix.as_path())
+        .env("WINEDLLOVERRIDES", "dinput.dll=n,b")
+        .stdout(Stdio::null()) // &> /dev/null
+        .stderr(Stdio::null()) // &> /dev/null
+        .arg("waitforexitandrun")
+        .arg(&exe_to_launch);
+    for arg in args {
+        println!("launch_exe_in_prefix arg: {}", arg);
+        command.arg(arg);
+    }
+    command.spawn()?.wait()?;
+
+    Ok(println!("Launched {}", exe_to_launch.file_name().unwrap().to_string_lossy()))
+}
+
+pub fn launch_game(app_id: u32) -> Result<(), Box<dyn Error>> {
+    let game = get_game(app_id).unwrap();
+
+    let steam_command = format!("steam://rungameid/{:?}", app_id);
+    println!("Running command: steam {}", &steam_command);
+    // nohup steam steam://rungameid/39140 &> /dev/null
+    Command::new("steam")
+        .arg(steam_command)
+        .stdout(Stdio::null()) // &> /dev/null
+        .stderr(Stdio::null()) // &> /dev/null
+        .spawn()?;
+
+    Ok(println!("Launched {}", game.name))
+}
+
+
+pub fn wipe_prefix(app_id: u32) {
+    println!("Hello my name is WIPE_PREFIX");
+    let game = get_game(app_id).unwrap();
+    let prefix_dir = match metadata(Path::new(&game.prefix)).unwrap().is_dir() {
+        true => {
+            Path::new(&game.prefix)
+        },
+        false => panic!("{} is not a directory!", game.prefix.to_string_lossy())
+    };
+
+    // Make sure the path is indeed a compatdata directory
+    let pattern = format!("compatdata/{}/pfx", app_id);
+    if !prefix_dir.to_string_lossy().contains(&pattern) {
+        panic!("{} does not contain {}", prefix_dir.display(), pattern);
+    }
+
+    println!("Deleting path: {}", prefix_dir.display());
+    std::fs::remove_dir_all(prefix_dir).expect("Failed to delete path!");
+    println!("Wiped prefix for app_id: {}", app_id);
+ }
