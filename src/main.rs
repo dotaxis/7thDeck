@@ -1,6 +1,6 @@
 mod steamhelper;
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use steamhelper::proton;
 use steamhelper::game;
@@ -8,20 +8,22 @@ use dialog::DialogBox;
 
 fn main() {
     let install_path = get_install_path();
-    //install_7th(&install_path);
     dialog::Message::new(format!("Installing 7th Heaven to {:#?}", install_path.to_string_lossy()))
         .title("Path confirmed.")
-        .show()
+        .show_with(dialog::backends::Dialog::new())
         .expect("Failed to display dialog box.");
+    install_7th(&install_path);
+    steamhelper::kill_steam();
 }
 
-fn install_7th(install_path: &str) {
+fn install_7th(install_path: &Path) {
+    let install_path = install_path.to_str();
     let proton_versions = proton::find_all_versions().expect("Failed to find any Proton versions!");
 
     let args: Vec<String> = vec![
         "/VERYSILENT".to_string(),
-        format!("/DIR=\"Z:{}\"", install_path),
-        "/LOG=\"7thHeaven.log\"".to_string()
+        format!("/DIR=Z:{}", install_path.unwrap().replace('/', "\\")),
+        "/LOG=7thHeaven.log".to_string()
     ];
 
     let proton: &str = proton::find_highest_version(&proton_versions).unwrap().path.to_str().expect("Failed to get Proton");
@@ -39,13 +41,13 @@ fn get_install_path() -> PathBuf {
     loop {
         dialog::Message::new("Select an installation path for 7th Heaven.")
             .title("Select Destination")
-            .show()
+            .show_with(dialog::backends::Dialog::new())
             .expect("Failed to display dialog box.");
 
         let install_path = match dialog::FileSelection::new("Select install path")
             .title("Folder Selection")
-            .mode(dialog::FileSelectionMode::Save)
-            .show()
+            .mode(dialog::FileSelectionMode::Open)
+            .show_with(dialog::backends::Dialog::new())
             .expect("Failed to display file selection dialog box.") {
                 Some(path) => path,
                 None => {
@@ -56,7 +58,7 @@ fn get_install_path() -> PathBuf {
 
         let confirmed = dialog::Question::new(format!("7th Heaven will be installed to:\n{:#?}\nConfirm?", install_path))
             .title("Confirm Install Location")
-            .show()
+            .show_with(dialog::backends::Dialog::new())
             .expect("Failed to display dialog box.");
 
         if confirmed != dialog::Choice::Yes {

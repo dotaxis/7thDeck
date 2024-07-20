@@ -1,5 +1,5 @@
 use std::{io, error::Error, path::PathBuf, process::Command};
-use sysinfo::{ProcessExt, Signal, System, SystemExt};
+use sysinfo::System;
 
 pub mod game;
 pub mod proton;
@@ -11,9 +11,12 @@ pub fn launch_exe_in_prefix(exe_to_launch: PathBuf, game: game::SteamGame, proto
         .env("STEAM_COMPAT_CLIENT_INSTALL_PATH", game.client_path)
         .env("STEAM_COMPAT_DATA_PATH", game.prefix.as_path())
         .env("WINEDLLOVERRIDES", "dinput.dll=n,b")
-        .arg("run")
+        .arg("waitforexitandrun")
         .arg(&exe_to_launch);
-    for arg in args { command.arg(arg); }
+    for arg in args {
+        println!("{}", arg);
+        command.arg(arg);
+    }
     command.spawn()?.wait()?;
 
     Ok(println!("Launched {}", exe_to_launch.file_name().unwrap().to_string_lossy()))
