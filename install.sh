@@ -130,7 +130,7 @@ echo
 
 # Download 7th Heaven from Github
 echo "Downloading 7th Heaven..."
-downloadDependency "tsunamods-codes/7th-Heaven" "*.exe" SEVENTH_INSTALLER
+downloadDependency "tsunamods-codes/7th-Heaven" "*.exe" "3.5.1" SEVENTH_INSTALLER
 echo
 
 # Install 7th Heaven using EXE

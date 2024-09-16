@@ -30,14 +30,12 @@
   </Subscriptions>
   <LibraryLocation>REPLACE_ME</LibraryLocation>
   <FF7Exe>REPLACE_ME</FF7Exe>
-  <FF7InstalledVersion>Original98</FF7InstalledVersion>
   <FFNxUpdateChannel>Stable</FFNxUpdateChannel>
   <AppUpdateChannel>Stable</AppUpdateChannel>
   <Options>
     <GeneralOptions>AutoSortMods</GeneralOptions>
     <GeneralOptions>AutoActiveNewMods</GeneralOptions>
     <GeneralOptions>AutoImportMods</GeneralOptions>
-    <GeneralOptions>CheckForUpdates</GeneralOptions>
     <GeneralOptions>OpenIrosLinksWith7H</GeneralOptions>
     <GeneralOptions>OpenModFilesWith7H</GeneralOptions>
   </Options>

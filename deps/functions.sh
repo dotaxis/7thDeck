@@ -33,9 +33,10 @@ downloadDependency() {
   local XDG_CACHE_HOME="${XDG_CACHE_HOME:=${HOME}/.cache}"
   local REPO=$1
   local FILTER=$2
-  local RETURN_VARIABLE=$3
+  local TAG=$3
+  local RETURN_VARIABLE=$4
   local RELEASE_URL=$(
-    curl -s https://api.github.com/repos/"$REPO"/releases/latest  \
+    curl -s https://api.github.com/repos/"$REPO"/releases/tags/"$3"  \
     | grep "browser_download_url.$FILTER" \
     | head -1 \
     | cut -d : -f 2,3 \
