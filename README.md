@@ -18,6 +18,25 @@ This script will:
 
 <br>
 
+## Prerequisites
+
+### Ubuntu (23.10 and later)
+`bwrap` needs to have the proper permissions in AppArmor. Open the terminal and follow the steps:
+1. Install `apparmor-profiles`
+```bash
+sudo apt install apparmor-profiles
+```
+2. Link the `bwrap` profile to AppArmor
+```bash
+sudo ln -s /usr/share/apparmor/extra-profiles/bwrap-userns-restrict /etc/apparmor.d/
+```
+3. Load the profile into AppArmor
+```bash
+sudo apparmor_parser /etc/apparmor.d/bwrap-userns-restrict
+```
+
+<br>
+
 ## Usage
 1. Download and extract to a folder of your choosing
 2. Run install.sh (Right-click -> Run in Konsole)
