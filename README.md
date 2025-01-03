@@ -20,6 +20,13 @@ This script will:
 
 ## Prerequisites
 
+### GNU Awk
+Ubuntu-based distros ship a different version of awk which throws a syntax error when 7thDeck tries to detect FF7/Proton/SLR installation paths. Open the terminal and follow these steps:
+1. Install `gawk`
+```bash
+sudo apt install gawk
+```
+
 ### Ubuntu (23.10 and later)
 `bwrap` needs to have the proper permissions in AppArmor. Open the terminal and follow these steps:
 1. Install `apparmor-profiles`
@@ -33,15 +40,6 @@ sudo ln -s /usr/share/apparmor/extra-profiles/bwrap-userns-restrict /etc/apparmo
 3. Load the profile into AppArmor
 ```bash
 sudo apparmor_parser /etc/apparmor.d/bwrap-userns-restrict
-```
-
-<br>
-
-### Pop!_OS
-`gawk` needs to be installed or you will encounter a syntax error when 7thDeck tries to detect FF7's installation. Open the terminal and follow these steps:
-1. Install `gawk`
-```bash
-sudo apt install gawk
 ```
 
 <br>
