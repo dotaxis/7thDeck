@@ -18,7 +18,7 @@ echo "#   4. Add a custom controller config for Steam Deck, to allow mouse   #"
 echo "#      control with trackpad without holding down the STEAM button     #"
 echo "########################################################################"
 echo "#           For support, please open an issue on GitHub,               #"
-echo "#   or ask in the #Steamdeck-Proton channel of the Tsunamods Discord   #"
+echo "#      or ask in the #ff7-linux channel of the Tsunamods Discord       #"
 echo "########################################################################"
 echo -e "\n"
 
