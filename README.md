@@ -27,6 +27,8 @@ Ubuntu-based distros ship a different version of awk which throws a syntax error
 sudo apt install gawk
 ```
 
+<br>
+
 ### Ubuntu (23.10 and later)
 `bwrap` needs to have the proper permissions in AppArmor. Open the terminal and follow these steps:
 1. Install `apparmor-profiles`
