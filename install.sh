@@ -88,18 +88,35 @@ while true; do
   fi
 done
 
+
+# Kill Steam for next steps
+echo "Closing Steam..."
+while pidof "steam" > /dev/null; do
+  killall -9 steam &>> "7thDeck.log"
+  sleep 1
+done
+echo
+
 # Set paths and compat_mounts after libraries have been properly detected
 FF7_DIR="$FF7_LIBRARY/steamapps/common/FINAL FANTASY VII"
 WINEPATH="$FF7_LIBRARY/steamapps/compatdata/39140/pfx"
 [ $IS_STEAMOS = true ] && WINEPATH="${HOME}/.steam/steam/steamapps/compatdata/39140/pfx"
 export STEAM_COMPAT_MOUNTS="$(getSteamLibrary 2805730):$(getSteamLibrary 1628350):$(getSteamLibrary 39140)"
 
+# Set Launch Options for FF7
+echo "Setting FF7 Launch Options for all Steam accounts..."
+echo "echo \"%command%\" | sed 's/waitforexitandrun/run/g' | env WINEDLLOVERRIDES=\"dinput=n,b\" sh" > launch_options.txt
+for LOCALCONFIG in ${HOME}/.steam/steam/userdata/*/config/localconfig.vdf ; do
+  perl -0777 -i -pe "s@\"39140\"\n\s+\{@\"39140\"\n\t\{\n\t\"LaunchOptions\" \"echo \\\\\"%command%\\\\\" | sed 's/waitforexitandrun/run/g' | env WINEDLLOVERRIDES=\\\\\"dinput=n,b\\\\\" sh\"\n\t@gs" "$LOCALCONFIG"
+done
+echo
+
 # Force FF7 under Proton 9
 echo "Rebuilding Final Fantasy VII under Proton 9..."
-while pidof "steam" > /dev/null; do
-  killall -9 steam &>> "7thDeck.log"
-  sleep 1
-done
+# while pidof "steam" > /dev/null; do
+#   killall -9 steam &>> "7thDeck.log"
+#   sleep 1
+# done
 cp ${XDG_DATA_HOME}/Steam/config/config.vdf ${XDG_DATA_HOME}/Steam/config/config.vdf.bak
 perl -0777 -i -pe 's/"CompatToolMapping"\n\s+{/"CompatToolMapping"\n\t\t\t\t{\n\t\t\t\t\t"39140"\n\t\t\t\t\t{\n\t\t\t\t\t\t"name"\t\t"proton_9"\n\t\t\t\t\t\t"config"\t\t""\n\t\t\t\t\t\t"priority"\t\t"250"\n\t\t\t\t\t}/gs' \
 ${XDG_DATA_HOME}/Steam/config/config.vdf
@@ -160,22 +177,22 @@ echo "Applying patches to FF7..."
 cp -f "deps/timeout.exe" "$WINEPATH/drive_c/windows/system32/"
 echo "FF7DISC1" > "$WINEPATH/drive_c/.windows-label"
 echo "44000000" > "$WINEPATH/drive_c/.windows-serial"
-[ ! -d "$FF7_DIR/music/vgmstream" ] && mkdir -p "$FF7_DIR/music/vgmstream"
-[ -d "$FF7_DIR/data/music_ogg" ] && cp "$FF7_DIR/data/music_ogg/"* "$FF7_DIR/music/vgmstream/"
-if [ -d "$FF7_DIR/data/lang-en" ]; then
-  files=(
-    "battle/camdat0.bin"
-    "battle/camdat1.bin"
-    "battle/camdat2.bin"
-    "battle/co.bin"
-    "battle/scene.bin"
-    "kernel/KERNEL.BIN"
-    "kernel/kernel2.bin"
-    "kernel/WINDOW.BIN"
-  )
-  for file in "${files[@]}"; do
-    ln -fs "$FF7_DIR/data/lang-en/$file" "$FF7_DIR/data/$file"
-  done
+# [ ! -d "$FF7_DIR/music/vgmstream" ] && mkdir -p "$FF7_DIR/music/vgmstream"
+# [ -d "$FF7_DIR/data/music_ogg" ] && cp "$FF7_DIR/data/music_ogg/"* "$FF7_DIR/music/vgmstream/"
+# if [ -d "$FF7_DIR/data/lang-en" ]; then
+#   files=(
+#     "battle/camdat0.bin"
+#     "battle/camdat1.bin"
+#     "battle/camdat2.bin"
+#     "battle/co.bin"
+#     "battle/scene.bin"
+#     "kernel/KERNEL.BIN"
+#     "kernel/kernel2.bin"
+#     "kernel/WINDOW.BIN"
+#   )
+#   for file in "${files[@]}"; do
+#     ln -fs "$FF7_DIR/data/lang-en/$file" "$FF7_DIR/data/$file"
+#   done
 fi
 echo
 
