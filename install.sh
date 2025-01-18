@@ -158,14 +158,13 @@ echo
 # Tweaks to 7th Heaven install directory
 echo "Applying patches to 7th Heaven..."
 mkdir -p "$INSTALL_PATH/7thWorkshop/profiles"
-cp -f "$INSTALL_PATH/Resources/FF7_1.02_Eng_Patch/ff7.exe" "$FF7_DIR/ff7.exe"
 cp -f "deps/7th Heaven.sh" "$INSTALL_PATH/"
 cp -f "deps/functions.sh" "$INSTALL_PATH/"
 cp -f deps/settings.xml "$INSTALL_PATH/7thWorkshop/"
 [ ! -f "$INSTALL_PATH/7thWorkshop/profiles/Default.xml" ] && cp "deps/Default.xml" "$INSTALL_PATH/7thWorkshop/profiles/" &>> "7thDeck.log"
 sed -i "s|@STEAMOS@|$IS_STEAMOS|" "$INSTALL_PATH/7th Heaven.sh"
 sed -i "s|<LibraryLocation>REPLACE_ME</LibraryLocation>|<LibraryLocation>Z:$INSTALL_PATH/mods</LibraryLocation>|" "$INSTALL_PATH/7thWorkshop/settings.xml"
-sed -i "s|<FF7Exe>REPLACE_ME</FF7Exe>|<FF7Exe>Z:$FF7_DIR/ff7.exe</FF7Exe>|" "$INSTALL_PATH/7thWorkshop/settings.xml"
+sed -i "s|<FF7Exe>REPLACE_ME</FF7Exe>|<FF7Exe>Z:$FF7_DIR/ff7_en.exe</FF7Exe>|" "$INSTALL_PATH/7thWorkshop/settings.xml"
 echo
 
 # Tweaks to game
