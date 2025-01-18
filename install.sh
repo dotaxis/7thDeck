@@ -180,6 +180,7 @@ STEAM_COMPAT_APP_ID=39140 STEAM_COMPAT_DATA_PATH="${WINEPATH%/pfx}" \
 STEAM_COMPAT_CLIENT_INSTALL_PATH="$STEAM_ROOT" \
 "$RUNTIME" -- "$PROTON" waitforexitandrun \
 "$SEVENTH_INSTALLER" /VERYSILENT /DIR="Z:$INSTALL_PATH" /LOG="7thHeaven.log" &>> "7thDeck.log"
+cp launch_options.txt "$INSTALL_PATH/"
 echo
 
 # Tweaks to 7th Heaven install directory
