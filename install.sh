@@ -119,6 +119,15 @@ while true; do
   fi
 done
 
+
+# Kill Steam for next steps
+echo "Closing Steam..."
+while pidof "steam" > /dev/null; do
+  killall -9 steam &>> "7thDeck.log"
+  sleep 1
+done
+echo
+
 # Set paths and compat_mounts after libraries have been properly detected
 FF7_DIR="$FF7_LIBRARY/steamapps/common/FINAL FANTASY VII"
 WINEPATH="$FF7_LIBRARY/steamapps/compatdata/39140/pfx"
@@ -193,22 +202,22 @@ echo "Applying patches to FF7..."
 cp -f "deps/timeout.exe" "$WINEPATH/drive_c/windows/system32/"
 echo "FF7DISC1" > "$WINEPATH/drive_c/.windows-label"
 echo "44000000" > "$WINEPATH/drive_c/.windows-serial"
-[ ! -d "$FF7_DIR/music/vgmstream" ] && mkdir -p "$FF7_DIR/music/vgmstream"
-[ -d "$FF7_DIR/data/music_ogg" ] && cp "$FF7_DIR/data/music_ogg/"* "$FF7_DIR/music/vgmstream/"
-if [ -d "$FF7_DIR/data/lang-en" ]; then
-  files=(
-    "battle/camdat0.bin"
-    "battle/camdat1.bin"
-    "battle/camdat2.bin"
-    "battle/co.bin"
-    "battle/scene.bin"
-    "kernel/KERNEL.BIN"
-    "kernel/kernel2.bin"
-    "kernel/WINDOW.BIN"
-  )
-  for file in "${files[@]}"; do
-    ln -fs "$FF7_DIR/data/lang-en/$file" "$FF7_DIR/data/$file"
-  done
+# [ ! -d "$FF7_DIR/music/vgmstream" ] && mkdir -p "$FF7_DIR/music/vgmstream"
+# [ -d "$FF7_DIR/data/music_ogg" ] && cp "$FF7_DIR/data/music_ogg/"* "$FF7_DIR/music/vgmstream/"
+# if [ -d "$FF7_DIR/data/lang-en" ]; then
+#   files=(
+#     "battle/camdat0.bin"
+#     "battle/camdat1.bin"
+#     "battle/camdat2.bin"
+#     "battle/co.bin"
+#     "battle/scene.bin"
+#     "kernel/KERNEL.BIN"
+#     "kernel/kernel2.bin"
+#     "kernel/WINDOW.BIN"
+#   )
+#   for file in "${files[@]}"; do
+#     ln -fs "$FF7_DIR/data/lang-en/$file" "$FF7_DIR/data/$file"
+#   done
 fi
 echo
 
