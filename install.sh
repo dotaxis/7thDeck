@@ -100,9 +100,9 @@ while pidof "steam" > /dev/null; do
   killall -9 steam &>> "7thDeck.log"
   sleep 1
 done
-cp ${XDG_DATA_HOME}/Steam/config/config.vdf ${XDG_DATA_HOME}/Steam/config/config.vdf.bak
+cp $HOME/.steam/steam/config/config.vdf $HOME/.steam/steam/config/config.vdf.bak
 perl -0777 -i -pe 's/"CompatToolMapping"\n\s+{/"CompatToolMapping"\n\t\t\t\t{\n\t\t\t\t\t"39140"\n\t\t\t\t\t{\n\t\t\t\t\t\t"name"\t\t"proton_9"\n\t\t\t\t\t\t"config"\t\t""\n\t\t\t\t\t\t"priority"\t\t"250"\n\t\t\t\t\t}/gs' \
-${XDG_DATA_HOME}/Steam/config/config.vdf
+$HOME/.steam/steam/config/config.vdf
 [ "${WINEPATH}" = */compatdata/39140/pfx ] && rm -rf "${WINEPATH%/pfx}"/*
 echo "Sign into the Steam account that owns FF7 if prompted."
 nohup steam steam://rungameid/39140 &> /dev/null &
@@ -137,7 +137,7 @@ echo
 echo "Installing 7th Heaven..."
 mkdir -p "${WINEPATH}/drive_c/ProgramData" # fix vcredist install - infirit
 STEAM_COMPAT_APP_ID=39140 STEAM_COMPAT_DATA_PATH="${WINEPATH%/pfx}" \
-STEAM_COMPAT_CLIENT_INSTALL_PATH=$(readlink -f "$HOME/.steam/root") \
+STEAM_COMPAT_CLIENT_INSTALL_PATH=$(readlink -f "$HOME/.steam/steam") \
 "$RUNTIME" -- "$PROTON" waitforexitandrun \
 "$SEVENTH_INSTALLER" /VERYSILENT /DIR="Z:$INSTALL_PATH" /LOG="7thHeaven.log" &>> "7thDeck.log"
 echo
