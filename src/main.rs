@@ -10,6 +10,7 @@ use sysinfo::System;
 static FF7_APPID: u32 = 39140;
 
 fn main() {
+    let game = game::get_game(FF7_APPID).unwrap();
     let install_path = get_install_path();
     dialog::Message::new(format!("Installing 7th Heaven to {:#?}", install_path.to_string_lossy()))
         .title("Path confirmed.")
@@ -17,15 +18,16 @@ fn main() {
         .expect("Failed to display dialog box.");
     steamhelper::kill_steam();
     // TODO: steamhelper::game::set_runner(FF7_APPID, proton9)
-    steamhelper::game::wipe_prefix(FF7_APPID);
-    steamhelper::game::launch_game(FF7_APPID).expect("Failed to launch FF7?");
+    steamhelper::game::wipe_prefix(&game);
+    steamhelper::game::set_launch_options(&game).expect("Failed to set launch options");
+    steamhelper::game::launch_game(&game).expect("Failed to launch FF7?");
     kill_ff7();
-    install_7th(&install_path);
+    install_7th(&install_path, "7thHeaven.log");
 }
 
 fn kill_ff7(){
     println!("Hello??");
-    'outer: loop {
+    'kill: loop {
         let mut sys = System::new_all();
         sys.refresh_all();
 
@@ -35,7 +37,7 @@ fn kill_ff7(){
 
                 if process.kill() {
                     println!("Killed FF7 successfully.");
-                    break 'outer;
+                    break 'kill;
                 } else {
                     println!("Failed to kill FF7! Please exit the FF7 Launcher and press Enter to continue.");
                     let mut input = String::new();
@@ -45,17 +47,17 @@ fn kill_ff7(){
             }
         }
     }
-    println!("We made it out of the kill_ff7() loop!");
+    println!("We made it out of the kill loop!");
 }
 
-fn install_7th(install_path: &Path) {
+fn install_7th(install_path: &Path, log_file: &str) {
     let install_path = install_path.to_str().unwrap().to_string();
     let proton_versions = proton::find_all_versions().expect("Failed to find any Proton versions!");
 
     let args: Vec<String> = vec![
         "/VERYSILENT".to_string(),
         format!("/DIR=Z:{}", install_path.replace('/', "\\")),
-        "/LOG=7thHeaven.log".to_string()
+        format!("/LOG={}", log_file)
     ];
 
     let highest_proton_version = proton::find_highest_version(&proton_versions).unwrap();

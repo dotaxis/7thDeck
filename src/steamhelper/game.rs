@@ -2,8 +2,11 @@ use std::{
     error::Error,
     fs::metadata,
     path::{Path, PathBuf},
-    process::{Command, Stdio}
+    process::{Command, Stdio},
+    fs
 };
+use regex::Regex;
+use glob::glob;
 
 #[derive(Debug)]
 pub struct SteamGame {
@@ -50,8 +53,7 @@ pub fn launch_exe_in_prefix(exe_to_launch: PathBuf, game: SteamGame, proton_path
         .env("STEAM_COMPAT_CLIENT_INSTALL_PATH", game.client_path)
         .env("STEAM_COMPAT_DATA_PATH", game.prefix.as_path())
         .env("WINEDLLOVERRIDES", "dinput.dll=n,b")
-        .stdout(Stdio::null()) // &> /dev/null
-        .stderr(Stdio::null()) // &> /dev/null
+        .stdout(Stdio::null()).stderr(Stdio::null()) // &> /dev/null
         .arg("waitforexitandrun")
         .arg(&exe_to_launch);
     for arg in args {
@@ -63,10 +65,44 @@ pub fn launch_exe_in_prefix(exe_to_launch: PathBuf, game: SteamGame, proton_path
     Ok(println!("Launched {}", exe_to_launch.file_name().unwrap().to_string_lossy()))
 }
 
-pub fn launch_game(app_id: u32) -> Result<(), Box<dyn Error>> {
-    let game = get_game(app_id).unwrap();
+pub fn wipe_prefix(game: &SteamGame) {
+    println!("Hello my name is WIPE_PREFIX");
+    let prefix_dir = match metadata(Path::new(&game.prefix)).unwrap().is_dir() {
+        true => {
+            Path::new(&game.prefix)
+        },
+        false => panic!("{} is not a directory!", game.prefix.to_string_lossy())
+    };
 
-    let steam_command = format!("steam://rungameid/{:?}", app_id);
+    // Better safe than sorry
+    let pattern = format!("compatdata/{}/pfx", &game.app_id);
+    if !prefix_dir.to_string_lossy().contains(&pattern) {
+        panic!("{} does not contain {}", prefix_dir.display(), pattern);
+    }
+
+    println!("Deleting path: {}", prefix_dir.display());
+    std::fs::remove_dir_all(prefix_dir).expect("Failed to delete path!");
+    println!("Wiped prefix for app_id: {}", &game.app_id);
+ }
+
+pub fn set_launch_options(game: &SteamGame) -> Result<(), Box<dyn std::error::Error>> {
+    // Set launch options for Steam injection
+
+    let re = Regex::new(&format!(r#"("{}")\s*\{{)"#, &game.app_id))?;
+    let replacement = r#"$1
+    "LaunchOptions"		"echo \"%command%\" | sed 's/waitforexitandrun/run/g' | env WINEDLLOVERRIDES=\"dinput=n,b\" sh"
+    "#;
+
+    for entry in glob(&format!("{}/userdata/*/config/localconfig.vdf", &game.client_path.display()))? {
+        let path = entry?;
+        let content = fs::read_to_string(&path)?;
+        fs::write(&path, re.replace(&content, replacement).as_bytes())?;
+    }
+    Ok(())
+}
+
+pub fn launch_game(game: &SteamGame) -> Result<(), Box<dyn Error>> {
+    let steam_command = format!("steam://rungameid/{:?}", &game.app_id);
     println!("Running command: steam {}", &steam_command);
     // nohup steam steam://rungameid/39140 &> /dev/null
     Command::new("steam")
@@ -77,25 +113,3 @@ pub fn launch_game(app_id: u32) -> Result<(), Box<dyn Error>> {
 
     Ok(println!("Launched {}", game.name))
 }
-
-
-pub fn wipe_prefix(app_id: u32) {
-    println!("Hello my name is WIPE_PREFIX");
-    let game = get_game(app_id).unwrap();
-    let prefix_dir = match metadata(Path::new(&game.prefix)).unwrap().is_dir() {
-        true => {
-            Path::new(&game.prefix)
-        },
-        false => panic!("{} is not a directory!", game.prefix.to_string_lossy())
-    };
-
-    // Make sure the path is indeed a compatdata directory
-    let pattern = format!("compatdata/{}/pfx", app_id);
-    if !prefix_dir.to_string_lossy().contains(&pattern) {
-        panic!("{} does not contain {}", prefix_dir.display(), pattern);
-    }
-
-    println!("Deleting path: {}", prefix_dir.display());
-    std::fs::remove_dir_all(prefix_dir).expect("Failed to delete path!");
-    println!("Wiped prefix for app_id: {}", app_id);
- }

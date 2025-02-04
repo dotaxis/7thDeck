@@ -9,5 +9,7 @@ path = "src/main.rs"
 
 [dependencies]
 dialog = "0.3.0"
+glob = "0.3.2"
+regex = "1.11.1"
 steamlocate = "2.0.0-beta.2"
 sysinfo = "0.30.12"
