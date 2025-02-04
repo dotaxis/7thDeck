@@ -7,7 +7,7 @@ use std::{
 
 use steamhelper::proton;
 use steamhelper::game;
-use dialog::DialogBox;
+use native_dialog::{FileDialog, MessageDialog, MessageType};
 use sysinfo::System;
 
 static FF7_APPID: u32 = 39140;
@@ -25,16 +25,18 @@ fn main() {
     download_latest("tsunamods-codes/7th-Heaven", exe_name).expect("Failed to download 7th Heaven!");
 
     let install_path = get_install_path();
-    dialog::Message::new(format!("Installing 7th Heaven to {:#?}", install_path.to_string_lossy()))
-        .title("Path confirmed.")
-        .show_with(dialog::backends::Dialog::new())
-        .expect("Failed to display dialog box.");
+    MessageDialog::new()
+        .set_type(MessageType::Info)
+        .set_title("Path confirmed.")
+        .set_text(&format!("Installing 7th Heaven to {:#?}", install_path.to_string_lossy()))
+        .show_alert()
+        .unwrap();
 
     install_7th(exe_name, &install_path, "7thHeaven.log");
 }
 
 fn kill(pattern: &str){
-    println!("Hello??");
+    println!("Waiting for prefix to rebuild.");
     'kill: loop {
         let mut sys = System::new_all();
         sys.refresh_all();
@@ -83,16 +85,17 @@ fn install_7th(exe_path: &str, install_path: &Path, log_file: &str) {
 fn get_install_path() -> PathBuf {
     println!("Select an installation path for 7th Heaven.");
     loop {
-        dialog::Message::new("Select an installation path for 7th Heaven.")
-            .title("Select Destination")
-            .show_with(dialog::backends::Dialog::new())
-            .expect("Failed to display dialog box.");
+        MessageDialog::new()
+            .set_text("Select an installation path for 7th Heaven.")
+            .set_title("Select Destination")
+            .show_alert()
+            .unwrap();
 
-        let install_path = match dialog::FileSelection::new("Select install path")
-            .title("Folder Selection")
-            .mode(dialog::FileSelectionMode::Open)
-            .show_with(dialog::backends::Dialog::new())
-            .expect("Failed to display file selection dialog box.") {
+        let install_path = match FileDialog::new()
+            .set_location("~")
+            .set_title("Select Destination")
+            .show_open_single_dir()
+            .unwrap() {
                 Some(path) => path,
                 None => {
                     println!("No path selected. Retrying.");
@@ -100,17 +103,19 @@ fn get_install_path() -> PathBuf {
                 }
             };
 
-        let confirmed = dialog::Question::new(format!("7th Heaven will be installed to:\n{:#?}\nConfirm?", install_path))
-            .title("Confirm Install Location")
-            .show_with(dialog::backends::Dialog::new())
-            .expect("Failed to display dialog box.");
+        let confirmed = MessageDialog::new()
+            .set_type(MessageType::Info)
+            .set_title("Confirm Install Location")
+            .set_text(&format!("7th Heaven will be installed to:\n{:#?}\nConfirm?", install_path))
+            .show_confirm()
+            .unwrap();
 
-        if confirmed != dialog::Choice::Yes {
+        if !confirmed {
             println!("User did not confirm installation path. Retrying.");
             continue;
         }
 
-        return PathBuf::from(install_path);
+        return install_path;
     }
 }
 

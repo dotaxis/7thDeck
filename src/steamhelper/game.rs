@@ -88,17 +88,21 @@ pub fn wipe_prefix(game: &SteamGame) {
 pub fn set_launch_options(game: &SteamGame) -> Result<(), Box<dyn std::error::Error>> {
     // Set launch options for Steam injection
 
-    let re = Regex::new(&format!(r#"("{}")\s*\{{\}}"#, &game.app_id))?;
-    let replacement = r#"$1
-    "LaunchOptions"		"echo \"%command%\" | sed 's/waitforexitandrun/run/g' | env WINEDLLOVERRIDES=\"dinput=n,b\" sh"
-    "#;
+    let re = Regex::new(&format!(r#""{}"\s*\{{"#, &game.app_id))?;
+    let replacement = format!(
+        r#""{}"
+    {{
+        "LaunchOptions"		"echo \\"%command%\\" | sed 's/waitforexitandrun/run/g' | env WINEDLLOVERRIDES=\\"dinput=n,b\\" sh""#,
+        &game.app_id
+    );
 
     for entry in glob(&format!("{}/userdata/*/config/localconfig.vdf", &game.client_path.display()))? {
         let path = entry?;
+        println!("{:?}", path);
         let content = fs::read_to_string(&path)?;
-        fs::write(&path, re.replace(&content, replacement).as_bytes())?;
+        fs::write(&path, re.replace(&content, &replacement).as_bytes()).unwrap_or_else(|_| panic!("Couldn't write to {:?}", path));
     }
-    Ok(())
+    Ok(println!("Successfully set launch options for {}", game.name))
 }
 
 pub fn launch_game(game: &SteamGame) -> Result<(), Box<dyn Error>> {
