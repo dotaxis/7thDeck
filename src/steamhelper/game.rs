@@ -47,10 +47,10 @@ pub fn get_game(app_id: u32) -> Result<SteamGame, Box<dyn Error>> {
     Err(format!("Couldn't find app_id {}!", app_id).into())
 }
 
-pub fn launch_exe_in_prefix(exe_to_launch: PathBuf, game: SteamGame, proton_path: &str, args: &Vec<String>) -> Result<(), Box<dyn Error>> {
+pub fn launch_exe_in_prefix(exe_to_launch: PathBuf, game: &SteamGame, proton_path: &str, args: &Vec<String>) -> Result<(), Box<dyn Error>> {
     let mut command = Command::new(proton_path);
     command
-        .env("STEAM_COMPAT_CLIENT_INSTALL_PATH", game.client_path)
+        .env("STEAM_COMPAT_CLIENT_INSTALL_PATH", &game.client_path)
         .env("STEAM_COMPAT_DATA_PATH", game.prefix.as_path())
         .env("WINEDLLOVERRIDES", "dinput.dll=n,b")
         .stdout(Stdio::null()).stderr(Stdio::null()) // &> /dev/null
@@ -88,7 +88,7 @@ pub fn wipe_prefix(game: &SteamGame) {
 pub fn set_launch_options(game: &SteamGame) -> Result<(), Box<dyn std::error::Error>> {
     // Set launch options for Steam injection
 
-    let re = Regex::new(&format!(r#"("{}")\s*\{{)"#, &game.app_id))?;
+    let re = Regex::new(&format!(r#"("{}")\s*\{{\}}"#, &game.app_id))?;
     let replacement = r#"$1
     "LaunchOptions"		"echo \"%command%\" | sed 's/waitforexitandrun/run/g' | env WINEDLLOVERRIDES=\"dinput=n,b\" sh"
     "#;
