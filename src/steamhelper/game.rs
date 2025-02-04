@@ -87,12 +87,11 @@ pub fn wipe_prefix(game: &SteamGame) {
 
 pub fn set_launch_options(game: &SteamGame) -> Result<(), Box<dyn std::error::Error>> {
     // Set launch options for Steam injection
-
     let re = Regex::new(&format!(r#""{}"\s*\{{"#, &game.app_id))?;
     let replacement = format!(
         r#""{}"
-    {{
-        "LaunchOptions"		"echo \\"%command%\\" | sed 's/waitforexitandrun/run/g' | env WINEDLLOVERRIDES=\\"dinput=n,b\\" sh""#,
+					{{
+						"LaunchOptions"		"echo \"%command%\" | sed 's/waitforexitandrun/run/g' | env WINEDLLOVERRIDES=\"dinput=n,b\" sh""#,
         &game.app_id
     );
 
