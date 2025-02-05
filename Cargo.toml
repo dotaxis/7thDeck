@@ -13,10 +13,14 @@ name = "launcher"
 path = "src/launcher/main.rs"
 
 [dependencies]
+console = "0.15.10"
+dialoguer = "0.11.0"
 glob = "0.3.2"
+indicatif = "0.17.11"
 native-dialog = "0.7.0"
 regex = "1.11.1"
 reqwest = { version = "0.12.12", features = ["json", "blocking"] }
 serde_json = "1.0.138"
 steamlocate = "2.0.0-beta.2"
 sysinfo = "0.30.12"
+textwrap = "0.16.1"
