@@ -16,7 +16,7 @@ fn main() {
     let game = game::get_game(FF7_APPID).unwrap();
     steamhelper::kill_steam();
     steamhelper::game::set_runner(&game, "proton_9").expect("Failed to set runner"); // TODO: Expand this to allow Proton version selection
-    steamhelper::game::wipe_prefix(&game);
+    steamhelper::game::wipe_prefix(&game).expect("Failed to wipe prefix");
     steamhelper::game::set_launch_options(&game).expect("Failed to set launch options");
     steamhelper::game::launch_game(&game).expect("Failed to launch FF7?");
     kill("FF7_Launcher");

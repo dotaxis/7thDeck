@@ -65,13 +65,13 @@ pub fn launch_exe_in_prefix(exe_to_launch: PathBuf, game: &SteamGame, proton_pat
     Ok(println!("Launched {}", exe_to_launch.file_name().unwrap().to_string_lossy()))
 }
 
-pub fn wipe_prefix(game: &SteamGame) {
+pub fn wipe_prefix(game: &SteamGame) -> Result<(), Box<dyn std::error::Error>> {
     println!("Hello my name is WIPE_PREFIX");
-    let prefix_dir = match metadata(Path::new(&game.prefix)).unwrap().is_dir() {
-        true => {
-            Path::new(&game.prefix)
-        },
-        false => panic!("{} is not a directory!", game.prefix.to_string_lossy())
+    let prefix_dir = match metadata(Path::new(&game.prefix)) {
+        Ok(meta) if meta.is_dir() => Path::new(&game.prefix),
+        _ => {
+            return Ok(println!("{} doesn't exist. Continuing.", game.prefix.display()))
+        }
     };
 
     // Better safe than sorry
@@ -81,8 +81,9 @@ pub fn wipe_prefix(game: &SteamGame) {
     }
 
     println!("Deleting path: {}", prefix_dir.display());
-    std::fs::remove_dir_all(prefix_dir).expect("Failed to delete path!");
-    println!("Wiped prefix for app_id: {}", &game.app_id);
+    std::fs::remove_dir_all(prefix_dir)?;
+
+    Ok(println!("Wiped prefix for app_id: {}", &game.app_id))
  }
 
 pub fn set_launch_options(game: &SteamGame) -> Result<(), Box<dyn std::error::Error>> {
