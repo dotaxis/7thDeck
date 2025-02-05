@@ -15,7 +15,7 @@ static FF7_APPID: u32 = 39140;
 fn main() {
     let game = game::get_game(FF7_APPID).unwrap();
     steamhelper::kill_steam();
-    // TODO: steamhelper::game::set_runner(FF7_APPID, proton9)
+    steamhelper::game::set_runner(&game, "proton_9").expect("Failed to set runner"); // TODO: Expand this to allow Proton version selection
     steamhelper::game::wipe_prefix(&game);
     steamhelper::game::set_launch_options(&game).expect("Failed to set launch options");
     steamhelper::game::launch_game(&game).expect("Failed to launch FF7?");

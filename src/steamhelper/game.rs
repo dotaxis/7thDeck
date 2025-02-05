@@ -104,6 +104,26 @@ pub fn set_launch_options(game: &SteamGame) -> Result<(), Box<dyn std::error::Er
     Ok(println!("Successfully set launch options for {}", game.name))
 }
 
+pub fn set_runner(game: &SteamGame, runner: &str) -> Result<(), Box<dyn Error>> {
+    let re = Regex::new(r#""CompatToolMapping"\s*\{"#)?;
+    let replacement = format!(
+        r#""CompatToolMapping"
+				{{
+					"{}"
+					{{
+						"name"		"{}"
+						"config"		""
+						"priority"		"250"
+					}}"#,
+        &game.app_id, runner
+    );
+    let path = &game.client_path.join("config/config.vdf");
+    let content = fs::read_to_string(&path)?;
+    fs::write(&path, re.replace(&content, replacement).as_bytes()).unwrap_or_else(|_| panic!("Couldn't write to {:?}", path));
+
+    Ok(println!("Succcessfully set runner for {} to {}", &game.app_id, runner))
+}
+
 pub fn launch_game(game: &SteamGame) -> Result<(), Box<dyn Error>> {
     let steam_command = format!("steam://rungameid/{:?}", &game.app_id);
     println!("Running command: steam {}", &steam_command);
