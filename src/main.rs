@@ -1,19 +1,15 @@
-mod steamhelper;
-
+use seventh_deck::steamhelper;
 use std::{
     error::Error,
     path::{Path, PathBuf},
 };
-
-use steamhelper::proton;
-use steamhelper::game;
 use native_dialog::{FileDialog, MessageDialog, MessageType};
 use sysinfo::System;
 
 static FF7_APPID: u32 = 39140;
 
 fn main() {
-    let game = game::get_game(FF7_APPID).unwrap();
+    let game = steamhelper::game::get_game(FF7_APPID).unwrap();
     steamhelper::kill_steam();
     steamhelper::game::set_runner(&game, "proton_9").expect("Failed to set runner"); // TODO: Expand this to allow Proton version selection
     steamhelper::game::wipe_prefix(&game).expect("Failed to wipe prefix");
@@ -32,7 +28,7 @@ fn main() {
         .show_alert()
         .unwrap();
 
-    install_7th(exe_name, &install_path, "7thHeaven.log");
+    install_7th(exe_name, install_path, "7thHeaven.log");
 }
 
 fn kill(pattern: &str){
@@ -60,26 +56,28 @@ fn kill(pattern: &str){
     println!("We made it out of the kill loop!");
 }
 
-fn install_7th(exe_path: &str, install_path: &Path, log_file: &str) {
-    let install_path = install_path.to_str().unwrap().to_string();
-    let proton_versions = proton::find_all_versions().expect("Failed to find any Proton versions!");
-
-    let args: Vec<String> = vec![
-        "/VERYSILENT".to_string(),
-        format!("/DIR=Z:{}", install_path.replace('/', "\\")),
-        format!("/LOG={}", log_file)
-    ];
-
-    let highest_proton_version = proton::find_highest_version(&proton_versions).unwrap();
+fn install_7th(exe_path: &str, install_path: PathBuf, log_file: &str) {
+    let proton_versions = steamhelper::proton::find_all_versions().expect("Failed to find any Proton versions!");
+    let highest_proton_version = steamhelper::proton::find_highest_version(&proton_versions).unwrap();
     let proton = highest_proton_version.path.to_str().expect("Failed to get Proton").to_string();
     println!("Proton bin: {}", proton);
 
-    let game = game::get_game(FF7_APPID).unwrap();
+    let args: Vec<String> = vec![
+        "/VERYSILENT".to_string(),
+        format!("/DIR=Z:{}", install_path.to_string_lossy().replace('/', "\\")),
+        format!("/LOG={}", log_file)
+    ];
 
-    match steamhelper::game::launch_exe_in_prefix(exe_path.into(), &game, &proton, &args) {
+    let game = steamhelper::game::get_game(FF7_APPID).unwrap();
+
+    match steamhelper::game::launch_exe_in_prefix(exe_path.into(), &game, &proton, Some(args)) {
         Ok(_) => println!("Ran 7th Heaven installer"),
         Err(e) => panic!("{}", e)
     }
+
+    let profile = if cfg!(debug_assertions) { "debug" } else { "release" };
+    let launcher_path = format!("target/{}/launcher", profile);
+    std::fs::copy(launcher_path, install_path.join("launcher")).expect("Failed to copy launcher to install_path");
 }
 
 fn get_install_path() -> PathBuf {

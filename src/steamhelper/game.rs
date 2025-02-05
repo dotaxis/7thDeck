@@ -47,7 +47,7 @@ pub fn get_game(app_id: u32) -> Result<SteamGame, Box<dyn Error>> {
     Err(format!("Couldn't find app_id {}!", app_id).into())
 }
 
-pub fn launch_exe_in_prefix(exe_to_launch: PathBuf, game: &SteamGame, proton_path: &str, args: &Vec<String>) -> Result<(), Box<dyn Error>> {
+pub fn launch_exe_in_prefix(exe_to_launch: PathBuf, game: &SteamGame, proton_path: &str, args: Option<Vec<String>>) -> Result<(), Box<dyn Error>> {
     let mut command = Command::new(proton_path);
     command
         .env("STEAM_COMPAT_CLIENT_INSTALL_PATH", &game.client_path)
@@ -56,6 +56,7 @@ pub fn launch_exe_in_prefix(exe_to_launch: PathBuf, game: &SteamGame, proton_pat
         .stdout(Stdio::null()).stderr(Stdio::null()) // &> /dev/null
         .arg("waitforexitandrun")
         .arg(&exe_to_launch);
+    let args = args.unwrap_or_default();
     for arg in args {
         println!("launch_exe_in_prefix arg: {}", arg);
         command.arg(arg);
@@ -131,8 +132,7 @@ pub fn launch_game(game: &SteamGame) -> Result<(), Box<dyn Error>> {
     // nohup steam steam://rungameid/39140 &> /dev/null
     Command::new("steam")
         .arg(steam_command)
-        .stdout(Stdio::null()) // &> /dev/null
-        .stderr(Stdio::null()) // &> /dev/null
+        .stdout(Stdio::null()).stderr(Stdio::null()) // &> /dev/null
         .spawn()?;
 
     Ok(println!("Launched {}", game.name))
