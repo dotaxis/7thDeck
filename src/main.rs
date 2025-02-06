@@ -1,8 +1,8 @@
 use seventh_deck::steamhelper;
 use std::{
-    error::Error, fmt::Write, fs::File, path::PathBuf
+    error::Error, fmt::Write, fs::File, path::PathBuf, time::Duration
 };
-use native_dialog::{FileDialog, MessageDialog, MessageType};
+use rfd::FileDialog;
 use sysinfo::System;
 use indicatif::{ProgressBar, ProgressState, ProgressStyle};
 use console::Style;
@@ -13,26 +13,20 @@ static FF7_APPID: u32 = 39140;
 
 fn main() {
     draw_header();
-    // let game = steamhelper::game::get_game(FF7_APPID).unwrap();
-    // steamhelper::kill_steam();
-    // steamhelper::game::set_runner(&game, "proton_9").expect("Failed to set runner"); // TODO: Expand this to allow Proton version selection
-    // steamhelper::game::wipe_prefix(&game).expect("Failed to wipe prefix");
-    // steamhelper::game::set_launch_options(&game).expect("Failed to set launch options");
-    // steamhelper::game::launch_game(&game).expect("Failed to launch FF7?");
-    // kill("FF7_Launcher");
 
     let exe_name = "7th_Heaven.exe";
-    // download_latest("tsunamods-codes/7th-Heaven", exe_name).expect("Failed to download 7th Heaven!");
+    download_latest("tsunamods-codes/7th-Heaven", exe_name).expect("Failed to download 7th Heaven!");
 
-    // let install_path = get_install_path();
-    // MessageDialog::new()
-    //     .set_type(MessageType::Info)
-    //     .set_title("Path confirmed.")
-    //     .set_text(&format!("Installing 7th Heaven to {:#?}", install_path.to_string_lossy()))
-    //     .show_alert()
-    //     .unwrap();
+    let game = with_spinner("Finding FF7...", "Done!", || steamhelper::game::get_game(FF7_APPID).unwrap());
+    with_spinner("Killing Steam...", "Done!", steamhelper::kill_steam);
+    with_spinner("Setting Proton version...", "Done!", || steamhelper::game::set_runner(&game, "proton_9").expect("Failed to set runner")); // TODO: Expand this to allow Proton version selection
+    with_spinner("Wiping prefix...", "Done!", || steamhelper::game::wipe_prefix(&game).expect("Failed to wipe prefix"));
+    with_spinner("Setting Launch Options...", "Done!", || steamhelper::game::set_launch_options(&game).expect("Failed to set launch options"));
+    with_spinner("Launching FF7...", "Done!", || steamhelper::game::launch_game(&game).expect("Failed to launch FF7?"));
+    with_spinner("Waiting for prefix to rebuild...", "Done!", || kill("FF7_Launcher"));
 
-    // install_7th(exe_name, install_path, "7thHeaven.log");
+    let install_path = get_install_path();
+    with_spinner("Installing 7th Heaven...", "Done!", || install_7th(exe_name, install_path, "7thHeaven.log"));
 }
 
 fn draw_header() {
@@ -43,7 +37,7 @@ fn draw_header() {
         "2. Install 7th Heaven to a folder of your choosing",
         "3. Add 7th Heaven to Steam using a custom launcher script",
         "4. Add a custom controller config for Steam Deck, to allow mouse",
-        "    control with trackpad without holding down the STEAM button",
+        "   control with trackpad without holding down the STEAM button",
     ];
     let footer = "For support, please open an issue on GitHub,or ask in the #ff7-linux channel of the Tsunamods Discord";
 
@@ -133,17 +127,17 @@ fn draw_header() {
 }
 
 fn kill(pattern: &str){
-    println!("Waiting for prefix to rebuild.");
+    // LOG: println!("Waiting for prefix to rebuild.");
     'kill: loop {
         let mut sys = System::new_all();
         sys.refresh_all();
 
         for (pid, process) in sys.processes() {
             if process.name().contains(pattern) {
-                println!("Found '{}' with PID: {}", pattern, pid);
+                // LOG: println!("Found '{}' with PID: {}", pattern, pid);
 
                 if process.kill() {
-                    println!("Killed {} successfully.", pattern);
+                    // LOG: println!("Killed {} successfully.", pattern);
                     break 'kill;
                 } else {
                     println!("Failed to kill {}!\nPlease exit {} manually and press Enter to continue.", pattern, pattern);
@@ -154,14 +148,14 @@ fn kill(pattern: &str){
             }
         }
     }
-    println!("We made it out of the kill loop!");
+    // LOG: println!("We made it out of the kill loop!");
 }
 
 fn install_7th(exe_path: &str, install_path: PathBuf, log_file: &str) {
     let proton_versions = steamhelper::proton::find_all_versions().expect("Failed to find any Proton versions!");
     let highest_proton_version = steamhelper::proton::find_highest_version(&proton_versions).unwrap();
     let proton = highest_proton_version.path.to_str().expect("Failed to get Proton").to_string();
-    println!("Proton bin: {}", proton);
+    // LOG: println!("Proton bin: {}", proton);
 
     let args: Vec<String> = vec![
         "/VERYSILENT".to_string(),
@@ -182,39 +176,37 @@ fn install_7th(exe_path: &str, install_path: PathBuf, log_file: &str) {
 }
 
 fn get_install_path() -> PathBuf {
-    println!("Select an installation path for 7th Heaven.");
+    let term = console::Term::stdout();
+    println!("{} Select a destination for 7th Heaven.", console::style("+").yellow());
+
     loop {
-        MessageDialog::new()
-            .set_text("Select an installation path for 7th Heaven.")
+        let install_path = FileDialog::new()
             .set_title("Select Destination")
-            .show_alert()
+            .pick_folder();
+
+        if let Some(path) = install_path {
+            let choices = &["Yes", "No"];
+            let confirm = dialoguer::Select::with_theme(&ColorfulTheme::default())
+            .with_prompt(format!("Do you want to install 7th Heaven to '{}'?",
+                console::style(path.display()).bold().underlined())) 
+            .default(0) // Default to "Yes"
+            .items(choices)
+            .interact()
             .unwrap();
 
-        let install_path = match FileDialog::new()
-            .set_location("~")
-            .set_title("Select Destination")
-            .show_open_single_dir()
-            .unwrap() {
-                Some(path) => path,
-                None => {
-                    println!("No path selected. Retrying.");
+            match confirm {
+                0 => {
+                    term.clear_last_lines(2).unwrap();
+                    println!("{} Installing to '{}'", console::style("✔").green(),
+                        console::style(path.display()).bold().underlined().white());
+                    return path;
+                },
+                _ => {
+                    term.clear_last_lines(1).unwrap();
                     continue
                 }
-            };
-
-        let confirmed = MessageDialog::new()
-            .set_type(MessageType::Info)
-            .set_title("Confirm Install Location")
-            .set_text(&format!("7th Heaven will be installed to:\n{:#?}\nConfirm?", install_path))
-            .show_confirm()
-            .unwrap();
-
-        if !confirmed {
-            println!("User did not confirm installation path. Retrying.");
-            continue;
+            }
         }
-
-        return install_path;
     }
 }
 
@@ -241,20 +233,46 @@ fn download_latest(repo: &str, output_path: &str) -> Result<(), Box<dyn Error>> 
         .as_u64()
         .unwrap_or(0);
 
-    println!("Downloading {}", exe_asset["name"]);
-
     let pb = ProgressBar::new(size);
-    pb.set_style(ProgressStyle::with_template("{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue}] {bytes}/{total_bytes} ({eta})")
+    pb.set_style(ProgressStyle::with_template("{spinner:.green} {msg} [{elapsed_precise}] [{wide_bar:.cyan/blue}] {bytes}/{total_bytes} ({eta})")
         .unwrap()
         .with_key("eta", |state: &ProgressState, w: &mut dyn Write| write!(w, "{:.1}s", state.eta().as_secs_f64()).unwrap())
         .progress_chars("#>-"));
+    pb.set_message(format!("Downloading {}", exe_asset["name"]));
+
 
     let mut response = client.get(download_url).send()?;
     let mut file = File::create(output_path)?;
     let mut writer = pb.wrap_write(&mut file);
     let downloaded = response.copy_to(&mut writer)?;
     pb.set_position(downloaded);
-    pb.finish();
+    pb.finish_and_clear();
+    pb.println(format!("{} Download complete", console::style("✔").green()));
 
-    Ok(println!("Download complete"))
+    Ok(())
+}
+
+fn with_spinner<F, T>(message: &str, success_message: &str, func: F) -> T where
+    F: FnOnce() -> T,
+{
+    let pb = ProgressBar::new_spinner();
+    pb.set_style(
+        ProgressStyle::default_spinner()
+            .template("{spinner:.green} {msg}")
+            .unwrap()
+            .tick_chars("⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏ "),
+    );
+
+    pb.set_message(message.to_string());
+    pb.enable_steady_tick(Duration::from_millis(100));
+
+    // Execute the function and store the result
+    let result = func();
+
+    pb.finish_and_clear();
+
+    // Print success message with green checkmark
+    println!("{} {} {}", console::style("✔").green(), message, success_message);
+
+    result // Return the function's result
 }

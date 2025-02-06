@@ -1,9 +1,8 @@
 use std::{
     error::Error,
-    fs::metadata,
+    fs::{self, metadata},
     path::{Path, PathBuf},
     process::{Command, Stdio},
-    fs
 };
 use regex::Regex;
 use glob::glob;
@@ -20,8 +19,7 @@ pub struct SteamGame {
 pub fn get_game(app_id: u32) -> Result<SteamGame, Box<dyn Error>> {
     let steam_dir = steamlocate::SteamDir::locate()?;
     let steam_dir_pathbuf = PathBuf::from(steam_dir.path());
-    println!("Located Steam installation: {}", steam_dir_pathbuf.display());
-
+    // LOG: term.write_line(&format!("Located Steam installation: {}", steam_dir_pathbuf.display())).unwrap();
     for library in steam_dir.libraries()? {
         let library = library?;
         for app_result in library.apps() {
@@ -58,20 +56,22 @@ pub fn launch_exe_in_prefix(exe_to_launch: PathBuf, game: &SteamGame, proton_pat
         .arg(&exe_to_launch);
     let args = args.unwrap_or_default();
     for arg in args {
-        println!("launch_exe_in_prefix arg: {}", arg);
+        // LOG: println!("launch_exe_in_prefix arg: {}", arg);
         command.arg(arg);
     }
     command.spawn()?.wait()?;
 
-    Ok(println!("Launched {}", exe_to_launch.file_name().unwrap().to_string_lossy()))
+    // LOG: println!("Launched {}", exe_to_launch.file_name().unwrap().to_string_lossy())
+    Ok(())
 }
 
 pub fn wipe_prefix(game: &SteamGame) -> Result<(), Box<dyn std::error::Error>> {
-    println!("Hello my name is WIPE_PREFIX");
+    // LOG: println!("Hello my name is WIPE_PREFIX");
     let prefix_dir = match metadata(Path::new(&game.prefix)) {
         Ok(meta) if meta.is_dir() => Path::new(&game.prefix),
         _ => {
-            return Ok(println!("{} doesn't exist. Continuing.", game.prefix.display()))
+            // LOG: println!("{} doesn't exist. Continuing.", game.prefix.display());
+            return Ok(())
         }
     };
 
@@ -81,10 +81,10 @@ pub fn wipe_prefix(game: &SteamGame) -> Result<(), Box<dyn std::error::Error>> {
         panic!("{} does not contain {}", prefix_dir.display(), pattern);
     }
 
-    println!("Deleting path: {}", prefix_dir.display());
+    // LOG: println!("Deleting path: {}", prefix_dir.display());
     std::fs::remove_dir_all(prefix_dir)?;
-
-    Ok(println!("Wiped prefix for app_id: {}", &game.app_id))
+    // LOG: println!("Wiped prefix for app_id: {}", &game.app_id)
+    Ok(())
  }
 
 pub fn set_launch_options(game: &SteamGame) -> Result<(), Box<dyn std::error::Error>> {
@@ -99,11 +99,12 @@ pub fn set_launch_options(game: &SteamGame) -> Result<(), Box<dyn std::error::Er
 
     for entry in glob(&format!("{}/userdata/*/config/localconfig.vdf", &game.client_path.display()))? {
         let path = entry?;
-        println!("{:?}", path);
+        // LOG: println!("localconfig.vdf found at {:?}", path);
         let content = fs::read_to_string(&path)?;
         fs::write(&path, re.replace(&content, &replacement).as_bytes()).unwrap_or_else(|_| panic!("Couldn't write to {:?}", path));
     }
-    Ok(println!("Successfully set launch options for {}", game.name))
+    // LOG: println!("Successfully set launch options for {}", game.name)
+    Ok(())
 }
 
 pub fn set_runner(game: &SteamGame, runner: &str) -> Result<(), Box<dyn Error>> {
@@ -122,18 +123,19 @@ pub fn set_runner(game: &SteamGame, runner: &str) -> Result<(), Box<dyn Error>> 
     let path = &game.client_path.join("config/config.vdf");
     let content = fs::read_to_string(&path)?;
     fs::write(&path, re.replace(&content, replacement).as_bytes()).unwrap_or_else(|_| panic!("Couldn't write to {:?}", path));
-
-    Ok(println!("Succcessfully set runner for {} to {}", &game.app_id, runner))
+    // LOG: println!("Succcessfully set runner for {} to {}", &game.app_id, runner);
+    Ok(())
 }
 
 pub fn launch_game(game: &SteamGame) -> Result<(), Box<dyn Error>> {
     let steam_command = format!("steam://rungameid/{:?}", &game.app_id);
-    println!("Running command: steam {}", &steam_command);
+    // LOG: println!("Running command: steam {}", &steam_command);
     // nohup steam steam://rungameid/39140 &> /dev/null
     Command::new("steam")
         .arg(steam_command)
         .stdout(Stdio::null()).stderr(Stdio::null()) // &> /dev/null
         .spawn()?;
 
-    Ok(println!("Launched {}", game.name))
+    // LOG: println!("Launched {}", game.name);
+    Ok(())
 }
