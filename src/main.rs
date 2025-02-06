@@ -166,7 +166,7 @@ fn install_7th(exe_path: &str, install_path: PathBuf, log_file: &str) {
     let game = steamhelper::game::get_game(FF7_APPID).unwrap();
 
     match steamhelper::game::launch_exe_in_prefix(exe_path.into(), &game, &proton, Some(args)) {
-        Ok(_) => println!("Ran 7th Heaven installer"),
+        Ok(_) => {} // LOG: println!("Ran 7th Heaven installer"),
         Err(e) => panic!("{}", e)
     }
 
