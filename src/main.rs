@@ -22,8 +22,8 @@ fn main() {
     with_spinner("Setting Proton version...", "Done!", || steamhelper::game::set_runner(&game, "proton_9").expect("Failed to set runner")); // TODO: Expand this to allow Proton version selection
     with_spinner("Wiping prefix...", "Done!", || steamhelper::game::wipe_prefix(&game).expect("Failed to wipe prefix"));
     with_spinner("Setting Launch Options...", "Done!", || steamhelper::game::set_launch_options(&game).expect("Failed to set launch options"));
-    with_spinner("Launching FF7...", "Done!", || steamhelper::game::launch_game(&game).expect("Failed to launch FF7?"));
-    with_spinner("Waiting for prefix to rebuild...", "Done!", || kill("FF7_Launcher"));
+    steamhelper::game::launch_game(&game).expect("Failed to launch FF7?");
+    with_spinner("Rebuilding prefix...", "Done!", || kill("FF7_Launcher"));
 
     let install_path = get_install_path();
     with_spinner("Installing 7th Heaven...", "Done!", || install_7th(exe_name, install_path, "7thHeaven.log"));
