@@ -13,6 +13,30 @@ else
   IS_FLATPAK=true
   STEAMROOT="$HOME/.var/app/com.valvesoftware.Steam/.local/share/Steam"
 fi
+
+if [ "$(command -v steam)" != "" ] && [ "$IS_FLATPAK" = "true" ]; then
+  echo "Both a flatpak and regular steam install has been detected. "
+  while true; do
+      echo "Please press 1 to continue with flatpak installation or press 2 for regular steam: "
+      read -p "" input
+      if [[ $input != "1" && $input != "2" ]]; then
+          continue
+      fi
+      case $input in
+          1)
+              echo "Proceeding with Flatpak Steam installation"
+              break;;
+          2)
+              echo "Proceeding with Steam installation"
+              IS_FLATPAK=false;
+              STEAMROOT=$(readlink -f "$HOME/.steam/root")
+              break;;
+          *)
+              continue;;
+      esac
+  done
+fi
+
 echo "" > "7thDeck.log"
 exec > >(tee -ia "7thDeck.log") 2>&1
 
