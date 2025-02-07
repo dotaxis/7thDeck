@@ -4,14 +4,14 @@ XDG_DESKTOP_DIR=$(xdg-user-dir DESKTOP)
 XDG_DATA_HOME="${XDG_DATA_HOME:=${HOME}/.local/share}"
 IS_STEAMOS=$(grep -qi "SteamOS" /etc/os-release && echo true || echo false)
 IS_FLATPAK=false
-STEAMROOT=$(echo $HOME/.steam/steam)
+STEAMROOT=$(readlink -f "$HOME/.steam/root")
 
 if ! $(flatpak list --app | grep -q Steam && echo true || echo false); then
   echo "Steam is not installed via Flatpak."
 else
   echo "Steam is installed via Flatpak."
   IS_FLATPAK=true
-  STEAMROOT=$(echo $HOME/.var/app/com.valvesoftware.Steam/.local/share/Steam)
+  STEAMROOT="$HOME/.var/app/com.valvesoftware.Steam/.local/share/Steam"
 fi
 echo "" > "7thDeck.log"
 exec > >(tee -ia "7thDeck.log") 2>&1
@@ -35,9 +35,7 @@ echo -e "\n"
 while true; do
   if ! pgrep steam > /dev/null; then nohup steam &> /dev/null; fi
   while ! pgrep steam > /dev/null; do sleep 1; done
-  echo -n "Steam running"
   PROTON=$(LIBRARY=$(getSteamLibrary 2805730) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/Proton 9.0 (Beta)/proton" || echo "NONE")
-  echo -n "Library $LIBRARY"
   echo -n "Checking if Proton 9 is installed... "
   if [ "$PROTON" = "NONE" ]; then
     echo -e "\nNot found! Launching Steam to install."
@@ -112,20 +110,15 @@ while pidof "steam" > /dev/null; do
   sleep 1
 done
 
-if [ $IS_FLATPAK = true ]; then
-  cp $STEAMROOT/config/config.vdf $STEAMROOT/config/config.vdf.bak
-   perl -0777 -i -pe 's/"CompatToolMapping"\n\s+{/"CompatToolMapping"\n\t\t\t\t{\n\t\t\t\t\t"39140"\n\t\t\t\t\t{\n\t\t\t\t\t\t"name"\t\t"proton_9"\n\t\t\t\t\t\t"config"\t\t""\n\t\t\t\t\t\t"priority"\t\t"250"\n\t\t\t\t\t}/gs' \
-    $STEAMROOT/config/config.vdf
-else
-  cp $STEAMROOT/config/config.vdf $STEAMROOT/config/config.vdf.bak
-  perl -0777 -i -pe 's/"CompatToolMapping"\n\s+{/"CompatToolMapping"\n\t\t\t\t{\n\t\t\t\t\t"39140"\n\t\t\t\t\t{\n\t\t\t\t\t\t"name"\t\t"proton_9"\n\t\t\t\t\t\t"config"\t\t""\n\t\t\t\t\t\t"priority"\t\t"250"\n\t\t\t\t\t}/gs' \
-  $STEAMROOT/config/config.vdf
-fi
+cp $STEAMROOT/config/config.vdf $STEAMROOT/config/config.vdf.bak
+perl -0777 -i -pe 's/"CompatToolMapping"\n\s+{/"CompatToolMapping"\n\t\t\t\t{\n\t\t\t\t\t"39140"\n\t\t\t\t\t{\n\t\t\t\t\t\t"name"\t\t"proton_9"\n\t\t\t\t\t\t"config"\t\t""\n\t\t\t\t\t\t"priority"\t\t"250"\n\t\t\t\t\t}/gs' \
+$STEAMROOT/config/config.vdf
 
 [ "${WINEPATH}" = */compatdata/39140/pfx ] && rm -rf "${WINEPATH%/pfx}"/*
 echo "Sign into the Steam account that owns FF7 if prompted."
 if [ $IS_FLATPAK = true ]; then
-  input "Please run FF7 on steam and then press enter to continue:"
+  nohup flatpak run com.valvesoftware.Steam 2>&1 > steam_output.log 2>&1 &
+  read -p "Please run FF7 on steam and then press enter to continue:"
 else
   nohup steam steam://rungameid/39140 &> /dev/null &
   echo "Waiting for Steam..."
@@ -133,7 +126,6 @@ else
   killall -9 "FF7_Launcher.exe"
   echo
 fi
-
 
 # Fix infinite loop on "Verifying installed game is compatible"
 [ -L "$FF7_DIR/FINAL FANTASY VII" ] && unlink "$FF7_DIR/FINAL FANTASY VII"
@@ -156,8 +148,6 @@ echo
 echo "Downloading 7th Heaven..."
 downloadDependency "tsunamods-codes/7th-Heaven" "*.exe" SEVENTH_INSTALLER
 echo
-
-
 
 # Install 7th Heaven using EXE
 echo "Installing 7th Heaven..."
@@ -183,7 +173,6 @@ echo
 
 # Tweaks to game
 echo "Applying patches to FF7..."
-
 cp -f "deps/timeout.exe" "$WINEPATH/drive_c/windows/system32/"
 echo "FF7DISC1" > "$WINEPATH/drive_c/.windows-label"
 echo "44000000" > "$WINEPATH/drive_c/.windows-serial"
