@@ -3,7 +3,16 @@
 XDG_DESKTOP_DIR=$(xdg-user-dir DESKTOP)
 XDG_DATA_HOME="${XDG_DATA_HOME:=${HOME}/.local/share}"
 IS_STEAMOS=$(grep -qi "SteamOS" /etc/os-release && echo true || echo false)
+IS_FLATPAK=false
+STEAMROOT=$(echo $HOME/.steam/steam)
 
+if ! $(flatpak list --app | grep -q Steam && echo true || echo false); then
+  echo "Steam is not installed via Flatpak."
+else
+  echo "Steam is installed via Flatpak."
+  IS_FLATPAK=true
+  STEAMROOT=$(echo $HOME/.var/app/com.valvesoftware.Steam/.local/share/Steam)
+fi
 echo "" > "7thDeck.log"
 exec > >(tee -ia "7thDeck.log") 2>&1
 
@@ -26,7 +35,9 @@ echo -e "\n"
 while true; do
   if ! pgrep steam > /dev/null; then nohup steam &> /dev/null; fi
   while ! pgrep steam > /dev/null; do sleep 1; done
+  echo -n "Steam running"
   PROTON=$(LIBRARY=$(getSteamLibrary 2805730) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/Proton 9.0 (Beta)/proton" || echo "NONE")
+  echo -n "Library $LIBRARY"
   echo -n "Checking if Proton 9 is installed... "
   if [ "$PROTON" = "NONE" ]; then
     echo -e "\nNot found! Launching Steam to install."
@@ -34,8 +45,8 @@ while true; do
     read -p "Press Enter when Proton 9 is done installing."
     killall -9 steam
     while pgrep steam >/dev/null; do sleep 1; done
-    rm $HOME/.steam/steam/steamapps/libraryfolders.vdf &>> "7thDeck.log"
-    rm $HOME/.steam/steam/config/libraryfolders.vdf &>> "7thDeck.log"
+    rm $STEAMROOT/steamapps/libraryfolders.vdf &>> "7thDeck.log"
+    rm $STEAMROOT/config/libraryfolders.vdf &>> "7thDeck.log"
   else
     echo "OK!"
     echo "Found Proton at $PROTON!"
@@ -56,8 +67,8 @@ while true; do
     read -p "Press Enter when Steam Linux Runtime 3.0 (sniper) is done installing."
     killall -9 steam
     while pgrep steam >/dev/null; do sleep 1; done
-    rm $HOME/.steam/steam/steamapps/libraryfolders.vdf &>> "7thDeck.log"
-    rm $HOME/.steam/steam/config/libraryfolders.vdf &>> "7thDeck.log"
+    rm $STEAMROOT/steamapps/libraryfolders.vdf &>> "7thDeck.log"
+    rm $STEAMROOT/config/libraryfolders.vdf &>> "7thDeck.log"
   else
     echo "OK!"
     echo "Found SLR at $RUNTIME!"
@@ -78,8 +89,8 @@ while true; do
     read -p "Press Enter when FINAL FANTASY VII is done installing."
     killall -9 steam
     while pgrep steam > /dev/null; do sleep 1; done
-    rm $HOME/.steam/steam/steamapps/libraryfolders.vdf &>> "7thDeck.log"
-    rm $HOME/.steam/steam/config/libraryfolders.vdf &>> "7thDeck.log"
+    rm $STEAMROOT/steamapps/libraryfolders.vdf &>> "7thDeck.log"
+    rm $STEAMROOT/config/libraryfolders.vdf &>> "7thDeck.log"
   else
     echo "OK!"
     echo "Found FF7 at $FF7_LIBRARY!"
@@ -100,16 +111,29 @@ while pidof "steam" > /dev/null; do
   killall -9 steam &>> "7thDeck.log"
   sleep 1
 done
-cp $HOME/.steam/steam/config/config.vdf $HOME/.steam/steam/config/config.vdf.bak
-perl -0777 -i -pe 's/"CompatToolMapping"\n\s+{/"CompatToolMapping"\n\t\t\t\t{\n\t\t\t\t\t"39140"\n\t\t\t\t\t{\n\t\t\t\t\t\t"name"\t\t"proton_9"\n\t\t\t\t\t\t"config"\t\t""\n\t\t\t\t\t\t"priority"\t\t"250"\n\t\t\t\t\t}/gs' \
-$HOME/.steam/steam/config/config.vdf
+
+if [ $IS_FLATPAK = true ]; then
+  cp $STEAMROOT/config/config.vdf $STEAMROOT/config/config.vdf.bak
+   perl -0777 -i -pe 's/"CompatToolMapping"\n\s+{/"CompatToolMapping"\n\t\t\t\t{\n\t\t\t\t\t"39140"\n\t\t\t\t\t{\n\t\t\t\t\t\t"name"\t\t"proton_9"\n\t\t\t\t\t\t"config"\t\t""\n\t\t\t\t\t\t"priority"\t\t"250"\n\t\t\t\t\t}/gs' \
+    $STEAMROOT/config/config.vdf
+else
+  cp $STEAMROOT/config/config.vdf $STEAMROOT/config/config.vdf.bak
+  perl -0777 -i -pe 's/"CompatToolMapping"\n\s+{/"CompatToolMapping"\n\t\t\t\t{\n\t\t\t\t\t"39140"\n\t\t\t\t\t{\n\t\t\t\t\t\t"name"\t\t"proton_9"\n\t\t\t\t\t\t"config"\t\t""\n\t\t\t\t\t\t"priority"\t\t"250"\n\t\t\t\t\t}/gs' \
+  $STEAMROOT/config/config.vdf
+fi
+
 [ "${WINEPATH}" = */compatdata/39140/pfx ] && rm -rf "${WINEPATH%/pfx}"/*
 echo "Sign into the Steam account that owns FF7 if prompted."
-nohup steam steam://rungameid/39140 &> /dev/null &
-echo "Waiting for Steam..."
-while ! pgrep "FF7_Launcher" > /dev/null; do sleep 1; done
-killall -9 "FF7_Launcher.exe"
-echo
+if [ $IS_FLATPAK = true ]; then
+  input "Please run FF7 on steam and then press enter to continue:"
+else
+  nohup steam steam://rungameid/39140 &> /dev/null &
+  echo "Waiting for Steam..."
+  while ! pgrep "FF7_Launcher" > /dev/null; do sleep 1; done
+  killall -9 "FF7_Launcher.exe"
+  echo
+fi
+
 
 # Fix infinite loop on "Verifying installed game is compatible"
 [ -L "$FF7_DIR/FINAL FANTASY VII" ] && unlink "$FF7_DIR/FINAL FANTASY VII"
@@ -133,11 +157,13 @@ echo "Downloading 7th Heaven..."
 downloadDependency "tsunamods-codes/7th-Heaven" "*.exe" SEVENTH_INSTALLER
 echo
 
+
+
 # Install 7th Heaven using EXE
 echo "Installing 7th Heaven..."
 mkdir -p "${WINEPATH}/drive_c/ProgramData" # fix vcredist install - infirit
 STEAM_COMPAT_APP_ID=39140 STEAM_COMPAT_DATA_PATH="${WINEPATH%/pfx}" \
-STEAM_COMPAT_CLIENT_INSTALL_PATH=$(readlink -f "$HOME/.steam/steam") \
+STEAM_COMPAT_CLIENT_INSTALL_PATH=$(readlink -f "$STEAMROOT") \
 "$RUNTIME" -- "$PROTON" waitforexitandrun \
 "$SEVENTH_INSTALLER" /VERYSILENT /DIR="Z:$INSTALL_PATH" /LOG="7thHeaven.log" &>> "7thDeck.log"
 echo
@@ -157,6 +183,7 @@ echo
 
 # Tweaks to game
 echo "Applying patches to FF7..."
+
 cp -f "deps/timeout.exe" "$WINEPATH/drive_c/windows/system32/"
 echo "FF7DISC1" > "$WINEPATH/drive_c/.windows-label"
 echo "44000000" > "$WINEPATH/drive_c/.windows-serial"
@@ -187,8 +214,8 @@ if [ $IS_STEAMOS = true ]; then
 
   # This allows moving and clicking the mouse by using the right track-pad without holding down the STEAM button
   echo "Adding controller config..."
-  cp -f deps/controller_neptune_gamepad+mouse+click.vdf ${HOME}/.steam/steam/controller_base/templates/controller_neptune_gamepad+mouse+click.vdf
-  for CONTROLLERCONFIG in ${HOME}/.steam/steam/steamapps/common/Steam\ Controller\ Configs/*/config/configset_controller_neptune.vdf ; do
+  cp -f deps/controller_neptune_gamepad+mouse+click.vdf $STEAMROOT/controller_base/templates/controller_neptune_gamepad+mouse+click.vdf
+  for CONTROLLERCONFIG in $STEAMROOT/steamapps/common/Steam\ Controller\ Configs/*/config/configset_controller_neptune.vdf ; do
     if grep -q "\"39140\"" "$CONTROLLERCONFIG"; then
       perl -0777 -i -pe 's/"39140"\n\s+\{\n\s+"template"\s+"controller_neptune_gamepad_fps.vdf"\n\s+\}/"39140"\n\t\{\n\t\t"template"\t\t"controller_neptune_gamepad+mouse+click.vdf"\n\t\}\n\t"7th heaven"\n\t\{\n\t\t"template"\t\t"controller_neptune_gamepad+mouse+click.vdf"\n\t\}/gs' "$CONTROLLERCONFIG"
     else
