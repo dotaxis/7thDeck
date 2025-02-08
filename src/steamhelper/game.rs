@@ -19,7 +19,7 @@ pub struct SteamGame {
 pub fn get_game(app_id: u32) -> Result<SteamGame, Box<dyn Error>> {
     let steam_dir = steamlocate::SteamDir::locate()?;
     let steam_dir_pathbuf = PathBuf::from(steam_dir.path());
-    // LOG: term.write_line(&format!("Located Steam installation: {}", steam_dir_pathbuf.display())).unwrap();
+    log::info!("Located Steam installation: {}", steam_dir_pathbuf.display());
     for library in steam_dir.libraries()? {
         let library = library?;
         for app_result in library.apps() {

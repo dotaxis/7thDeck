@@ -1,4 +1,4 @@
-use seventh_deck::steamhelper;
+use seventh_deck::{steamhelper, logging};
 use std::{
     error::Error, fmt::Write, fs::File, path::PathBuf, time::Duration
 };
@@ -12,6 +12,12 @@ pub static VERSION: &str = "2.5.0";
 static FF7_APPID: u32 = 39140;
 
 fn main() {
+    logging::init();
+
+    log::info!("Testing info logs");
+    log::warn!("Testing warning logs");
+    log::error!("Testing error logs");
+
     draw_header();
 
     let exe_name = "7th_Heaven.exe";
@@ -127,17 +133,17 @@ fn draw_header() {
 }
 
 fn kill(pattern: &str){
-    // LOG: println!("Waiting for prefix to rebuild.");
+    log::info!("Waiting for prefix to rebuild.");
     'kill: loop {
         let mut sys = System::new_all();
         sys.refresh_all();
 
         for (pid, process) in sys.processes() {
             if process.name().contains(pattern) {
-                // LOG: println!("Found '{}' with PID: {}", pattern, pid);
+                log::info!("Found '{}' with PID: {}", pattern, pid);
 
                 if process.kill() {
-                    // LOG: println!("Killed {} successfully.", pattern);
+                    log::info!("Killed {} successfully.", pattern);
                     break 'kill;
                 } else {
                     println!("Failed to kill {}!\nPlease exit {} manually and press Enter to continue.", pattern, pattern);
@@ -148,14 +154,14 @@ fn kill(pattern: &str){
             }
         }
     }
-    // LOG: println!("We made it out of the kill loop!");
+    log::info!("We made it out of the kill loop!");
 }
 
 fn install_7th(exe_path: &str, install_path: PathBuf, log_file: &str) {
     let proton_versions = steamhelper::proton::find_all_versions().expect("Failed to find any Proton versions!");
     let highest_proton_version = steamhelper::proton::find_highest_version(&proton_versions).unwrap();
     let proton = highest_proton_version.path.to_str().expect("Failed to get Proton").to_string();
-    // LOG: println!("Proton bin: {}", proton);
+    log::info!("Proton bin: {}", proton);
 
     let args: Vec<String> = vec![
         "/VERYSILENT".to_string(),
@@ -166,7 +172,7 @@ fn install_7th(exe_path: &str, install_path: PathBuf, log_file: &str) {
     let game = steamhelper::game::get_game(FF7_APPID).unwrap();
 
     match steamhelper::game::launch_exe_in_prefix(exe_path.into(), &game, &proton, Some(args)) {
-        Ok(_) => {} // LOG: println!("Ran 7th Heaven installer"),
+        Ok(_) => log::info!("Ran 7th Heaven installer"),
         Err(e) => panic!("{}", e)
     }
 
@@ -262,17 +268,11 @@ fn with_spinner<F, T>(message: &str, success_message: &str, func: F) -> T where
             .unwrap()
             .tick_chars("⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏ "),
     );
-
     pb.set_message(message.to_string());
     pb.enable_steady_tick(Duration::from_millis(100));
 
-    // Execute the function and store the result
-    let result = func();
-
+    let result = func(); // run the function and store result
     pb.finish_and_clear();
-
-    // Print success message with green checkmark
     println!("{} {} {}", console::style("✔").green(), message, success_message);
-
-    result // Return the function's result
+    result
 }
