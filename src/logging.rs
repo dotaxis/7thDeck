@@ -13,6 +13,7 @@ pub fn init() {
 
     let file = FileAppender::builder()
         .encoder(Box::new(PatternEncoder::new("{d} {l} {t} - {m}{n}")))
+        .append(false)
         .build("7thDeck.log")
         .unwrap();
 
