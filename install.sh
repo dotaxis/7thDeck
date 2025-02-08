@@ -5,19 +5,35 @@ XDG_DATA_HOME="${XDG_DATA_HOME:=${HOME}/.local/share}"
 IS_STEAMOS=$(grep -qi "SteamOS" /etc/os-release && echo true || echo false)
 IS_FLATPAK=false
 STEAMROOT=$(readlink -f "$HOME/.steam/root")
+echo "" > "7thDeck.log"
+exec > >(tee -ia "7thDeck.log") 2>&1
 
+echo "########################################################################"
+echo "#                             7thDeck v2.4                             #"
+echo "########################################################################"
+echo "#    This script will:                                                 #"
+echo "#   1. Apply patches to FF7's proton prefix to accomodate 7th Heaven   #"
+echo "#   2. Install 7th Heaven to a folder of your choosing                 #"
+echo "#   3. Add 7th Heaven to Steam using a custom launcher script          #"
+echo "#   4. Add a custom controller config for Steam Deck, to allow mouse   #"
+echo "#      control with trackpad without holding down the STEAM button     #"
+echo "########################################################################"
+echo "#           For support, please open an issue on GitHub,               #"
+echo "#      or ask in the #ff7-linux channel of the Tsunamods Discord       #"
+echo "########################################################################"
+echo -e "\n"
 if ! $(flatpak list --app | grep -q Steam && echo true || echo false); then
-  echo "Steam is not installed via Flatpak."
+  echo "Steam is not installed via Flatpak." &>> "7thDeck.log"
 else
-  echo "Steam is installed via Flatpak."
+  echo "Steam is installed via Flatpak." &>> "7thDeck.log"
   IS_FLATPAK=true
   STEAMROOT="$HOME/.var/app/com.valvesoftware.Steam/.local/share/Steam"
 fi
 
 if [ "$(command -v steam)" != "" ] && [ "$IS_FLATPAK" = "true" ]; then
-  echo "Both a flatpak and regular steam install has been detected. "
+  echo "Both a flatpak and regular steam install has been detected."
   while true; do
-      echo "Please press 1 to continue with flatpak installation or press 2 for regular steam: "
+      echo "Please press 1 to continue with flatpak installation or press 2 for regular Steam: "
       read -p "" input
       if [[ $input != "1" && $input != "2" ]]; then
           continue
@@ -36,25 +52,6 @@ if [ "$(command -v steam)" != "" ] && [ "$IS_FLATPAK" = "true" ]; then
       esac
   done
 fi
-
-echo "" > "7thDeck.log"
-exec > >(tee -ia "7thDeck.log") 2>&1
-
-echo "########################################################################"
-echo "#                             7thDeck v2.4                             #"
-echo "########################################################################"
-echo "#    This script will:                                                 #"
-echo "#   1. Apply patches to FF7's proton prefix to accomodate 7th Heaven   #"
-echo "#   2. Install 7th Heaven to a folder of your choosing                 #"
-echo "#   3. Add 7th Heaven to Steam using a custom launcher script          #"
-echo "#   4. Add a custom controller config for Steam Deck, to allow mouse   #"
-echo "#      control with trackpad without holding down the STEAM button     #"
-echo "########################################################################"
-echo "#           For support, please open an issue on GitHub,               #"
-echo "#      or ask in the #ff7-linux channel of the Tsunamods Discord       #"
-echo "########################################################################"
-echo -e "\n"
-
 # Check for Proton
 while true; do
   if ! pgrep steam > /dev/null; then nohup steam &> /dev/null; fi
@@ -133,11 +130,9 @@ while pidof "steam" > /dev/null; do
   killall -9 steam &>> "7thDeck.log"
   sleep 1
 done
-
 cp $STEAMROOT/config/config.vdf $STEAMROOT/config/config.vdf.bak
 perl -0777 -i -pe 's/"CompatToolMapping"\n\s+{/"CompatToolMapping"\n\t\t\t\t{\n\t\t\t\t\t"39140"\n\t\t\t\t\t{\n\t\t\t\t\t\t"name"\t\t"proton_9"\n\t\t\t\t\t\t"config"\t\t""\n\t\t\t\t\t\t"priority"\t\t"250"\n\t\t\t\t\t}/gs' \
 $STEAMROOT/config/config.vdf
-
 [ "${WINEPATH}" = */compatdata/39140/pfx ] && rm -rf "${WINEPATH%/pfx}"/*
 echo "Sign into the Steam account that owns FF7 if prompted."
 if [ $IS_FLATPAK = true ]; then
