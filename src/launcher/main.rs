@@ -9,7 +9,8 @@ fn main() {
     let seventh_heaven_exe = launcher_dir.join("7th Heaven.exe");
 
     if !seventh_heaven_exe.exists() {
-        panic!("Couldn't find '7th Heaven.exe'!")
+        log::error!("Couldn't find '7th Heaven.exe'!");
+        std::process::exit(1);
     }
 
     let game = steamhelper::game::get_game(FF7_APPID).unwrap();

@@ -1,4 +1,4 @@
-use seventh_deck::{steamhelper, logging};
+use seventh_deck::{logging, steamhelper::{self, game::SteamGame}};
 use std::{
     error::Error, fmt::Write, fs::File, path::PathBuf, time::Duration
 };
@@ -14,10 +14,6 @@ static FF7_APPID: u32 = 39140;
 fn main() {
     logging::init();
 
-    log::info!("Testing info logs");
-    log::warn!("Testing warning logs");
-    log::error!("Testing error logs");
-
     draw_header();
 
     let exe_name = "7th_Heaven.exe";
@@ -32,7 +28,7 @@ fn main() {
     with_spinner("Rebuilding prefix...", "Done!", || kill("FF7_Launcher"));
 
     let install_path = get_install_path();
-    with_spinner("Installing 7th Heaven...", "Done!", || install_7th(exe_name, install_path, "7thHeaven.log"));
+    with_spinner("Installing 7th Heaven...", "Done!", || install_7th(game, exe_name, install_path, "7thHeaven.log"));
 }
 
 fn draw_header() {
@@ -157,7 +153,7 @@ fn kill(pattern: &str){
     log::info!("We made it out of the kill loop!");
 }
 
-fn install_7th(exe_path: &str, install_path: PathBuf, log_file: &str) {
+fn install_7th(game: SteamGame, exe_path: &str, install_path: PathBuf, log_file: &str) {
     let proton_versions = steamhelper::proton::find_all_versions().expect("Failed to find any Proton versions!");
     let highest_proton_version = steamhelper::proton::find_highest_version(&proton_versions).unwrap();
     let proton = highest_proton_version.path.to_str().expect("Failed to get Proton").to_string();
@@ -169,11 +165,12 @@ fn install_7th(exe_path: &str, install_path: PathBuf, log_file: &str) {
         format!("/LOG={}", log_file)
     ];
 
-    let game = steamhelper::game::get_game(FF7_APPID).unwrap();
-
     match steamhelper::game::launch_exe_in_prefix(exe_path.into(), &game, &proton, Some(args)) {
         Ok(_) => log::info!("Ran 7th Heaven installer"),
-        Err(e) => panic!("{}", e)
+        Err(e) => {
+            log::error!("{}", e);
+            std::process::exit(1);
+        }
     }
 
     let profile = if cfg!(debug_assertions) { "debug" } else { "release" };

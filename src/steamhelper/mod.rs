@@ -1,5 +1,4 @@
-use std::{error::Error, io, path::PathBuf, process::Command, time::Duration};
-use indicatif::{ProgressBar, ProgressStyle};
+use std::io;
 use sysinfo::System;
 
 pub mod game;
@@ -15,13 +14,13 @@ pub fn kill_steam() {
         for (pid, process) in sys.processes() {
             if process.name() == "steam" {
                 steam_running = true;
-                // LOG: pb.println(format!("Found 'steam' with PID: {}", pid));
+                log::info!("Found 'steam' with PID: {}", pid);
                 if process.kill() {
-                    // LOG: pb.println("Killed Steam successfully.");
+                    log::info!("Killed Steam successfully.");
                     return;
                 } else {
-                    // todo: use dialoguer
-                    println!("Failed to kill Steam! Please exit Steam and press Enter to continue.");
+                    // todo: use dialoguer -- or should we leave this?
+                    log::error!("Failed to kill Steam! Please exit Steam and press A or Enter to continue.");
                     let mut input = String::new();
                     io::stdin().read_line(&mut input).unwrap();
                     continue;
@@ -29,7 +28,7 @@ pub fn kill_steam() {
             }
         }
         if !steam_running {
-            // LOG: println!("I guess Steam isn't running. Continuing.");
+            log::warn!("I guess Steam isn't running. Continuing.");
             break;
         }
     }

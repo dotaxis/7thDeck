@@ -8,11 +8,11 @@ use log4rs::{
 
 pub fn init() {
     let stdout = ConsoleAppender::builder()
-        .encoder(Box::new(PatternEncoder::new("{d} {l} {t} - {m}{n}")))
+        .encoder(Box::new(PatternEncoder::new("[{h({l})}] {m}{n}")))
         .build();
 
     let file = FileAppender::builder()
-        .encoder(Box::new(PatternEncoder::new("{d} {l} {t} - {m}{n}")))
+        .encoder(Box::new(PatternEncoder::new("{d(%Y-%m-%d %H:%M:%S)} [{l}] {t} - {m}{n}")))
         .append(false)
         .build("7thDeck.log")
         .unwrap();

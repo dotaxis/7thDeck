@@ -56,21 +56,20 @@ pub fn launch_exe_in_prefix(exe_to_launch: PathBuf, game: &SteamGame, proton_pat
         .arg(&exe_to_launch);
     let args = args.unwrap_or_default();
     for arg in args {
-        // LOG: println!("launch_exe_in_prefix arg: {}", arg);
+        log::info!("launch_exe_in_prefix arg: {}", arg);
         command.arg(arg);
     }
     command.spawn()?.wait()?;
 
-    // LOG: println!("Launched {}", exe_to_launch.file_name().unwrap().to_string_lossy())
+    log::info!("Launched {}", exe_to_launch.file_name().unwrap().to_string_lossy());
     Ok(())
 }
 
 pub fn wipe_prefix(game: &SteamGame) -> Result<(), Box<dyn std::error::Error>> {
-    // LOG: println!("Hello my name is WIPE_PREFIX");
     let prefix_dir = match metadata(Path::new(&game.prefix)) {
         Ok(meta) if meta.is_dir() => Path::new(&game.prefix),
         _ => {
-            // LOG: println!("{} doesn't exist. Continuing.", game.prefix.display());
+            log::info!("{} doesn't exist. Continuing.", game.prefix.display());
             return Ok(())
         }
     };
@@ -78,12 +77,13 @@ pub fn wipe_prefix(game: &SteamGame) -> Result<(), Box<dyn std::error::Error>> {
     // Better safe than sorry
     let pattern = format!("compatdata/{}/pfx", &game.app_id);
     if !prefix_dir.to_string_lossy().contains(&pattern) {
-        panic!("{} does not contain {}", prefix_dir.display(), pattern);
+        log::error!("{} does not contain {}", prefix_dir.display(), pattern);
+        std::process::exit(1);
     }
 
-    // LOG: println!("Deleting path: {}", prefix_dir.display());
+    log::info!("Deleting path: {}", prefix_dir.display());
     std::fs::remove_dir_all(prefix_dir)?;
-    // LOG: println!("Wiped prefix for app_id: {}", &game.app_id)
+    log::info!("Wiped prefix for app_id: {}", &game.app_id);
     Ok(())
  }
 
@@ -99,11 +99,15 @@ pub fn set_launch_options(game: &SteamGame) -> Result<(), Box<dyn std::error::Er
 
     for entry in glob(&format!("{}/userdata/*/config/localconfig.vdf", &game.client_path.display()))? {
         let path = entry?;
-        // LOG: println!("localconfig.vdf found at {:?}", path);
+        log::info!("localconfig.vdf found at {:?}", path);
         let content = fs::read_to_string(&path)?;
-        fs::write(&path, re.replace(&content, &replacement).as_bytes()).unwrap_or_else(|_| panic!("Couldn't write to {:?}", path));
+        fs::write(&path, re.replace(&content, &replacement).as_bytes())
+            .unwrap_or_else(|e| {
+                log::error!("Couldn't write to {:?}: {}", path, e);
+                std::process::exit(1);
+            });
     }
-    // LOG: println!("Successfully set launch options for {}", game.name)
+    log::info!("Successfully set launch options for {}", game.name);
     Ok(())
 }
 
@@ -122,20 +126,24 @@ pub fn set_runner(game: &SteamGame, runner: &str) -> Result<(), Box<dyn Error>> 
     );
     let path = &game.client_path.join("config/config.vdf");
     let content = fs::read_to_string(&path)?;
-    fs::write(&path, re.replace(&content, replacement).as_bytes()).unwrap_or_else(|_| panic!("Couldn't write to {:?}", path));
-    // LOG: println!("Succcessfully set runner for {} to {}", &game.app_id, runner);
+    fs::write(path, re.replace(&content, replacement).as_bytes())
+        .unwrap_or_else(|e| {
+            log::error!("Couldn't write to {:?}: {}", path, e);
+            std::process::exit(1);
+        });
+    log::info!("Succcessfully set runner for {} to {}", &game.app_id, runner);
     Ok(())
 }
 
 pub fn launch_game(game: &SteamGame) -> Result<(), Box<dyn Error>> {
     let steam_command = format!("steam://rungameid/{:?}", &game.app_id);
-    // LOG: println!("Running command: steam {}", &steam_command);
+    log::info!("Running command: steam {}", &steam_command);
     // nohup steam steam://rungameid/39140 &> /dev/null
     Command::new("steam")
         .arg(steam_command)
         .stdout(Stdio::null()).stderr(Stdio::null()) // &> /dev/null
         .spawn()?;
 
-    // LOG: println!("Launched {}", game.name);
+    log::info!("Launched {}", game.name);
     Ok(())
 }
