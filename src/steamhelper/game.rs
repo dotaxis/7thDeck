@@ -77,8 +77,7 @@ pub fn wipe_prefix(game: &SteamGame) -> Result<(), Box<dyn std::error::Error>> {
     // Better safe than sorry
     let pattern = format!("compatdata/{}/pfx", &game.app_id);
     if !prefix_dir.to_string_lossy().contains(&pattern) {
-        log::error!("{} does not contain {}", prefix_dir.display(), pattern);
-        std::process::exit(1);
+        panic!("{} does not contain {}", prefix_dir.display(), pattern);
     }
 
     log::info!("Deleting path: {}", prefix_dir.display());
@@ -102,10 +101,7 @@ pub fn set_launch_options(game: &SteamGame) -> Result<(), Box<dyn std::error::Er
         log::info!("localconfig.vdf found at {:?}", path);
         let content = fs::read_to_string(&path)?;
         fs::write(&path, re.replace(&content, &replacement).as_bytes())
-            .unwrap_or_else(|e| {
-                log::error!("Couldn't write to {:?}: {}", path, e);
-                std::process::exit(1);
-            });
+            .unwrap_or_else(|e| panic!("Couldn't write to {:?}: {}", path, e));
     }
     log::info!("Successfully set launch options for {}", game.name);
     Ok(())
@@ -125,12 +121,9 @@ pub fn set_runner(game: &SteamGame, runner: &str) -> Result<(), Box<dyn Error>> 
         &game.app_id, runner
     );
     let path = &game.client_path.join("config/config.vdf");
-    let content = fs::read_to_string(&path)?;
+    let content = fs::read_to_string(path)?;
     fs::write(path, re.replace(&content, replacement).as_bytes())
-        .unwrap_or_else(|e| {
-            log::error!("Couldn't write to {:?}: {}", path, e);
-            std::process::exit(1);
-        });
+        .unwrap_or_else(|e| panic!("Couldn't write to {:?}: {}", path, e));
     log::info!("Succcessfully set runner for {} to {}", &game.app_id, runner);
     Ok(())
 }

@@ -122,9 +122,9 @@ fn draw_header() {
         .interact()
         .unwrap();
 
-    if selection == 1 { // "No" is selected
+    if selection == 1 { // No
         println!("Understood. Exiting.");
-        std::process::exit(1);
+        std::process::exit(0);
     }
 }
 
@@ -167,15 +167,12 @@ fn install_7th(game: SteamGame, exe_path: &str, install_path: PathBuf, log_file:
 
     match steamhelper::game::launch_exe_in_prefix(exe_path.into(), &game, &proton, Some(args)) {
         Ok(_) => log::info!("Ran 7th Heaven installer"),
-        Err(e) => {
-            log::error!("{}", e);
-            std::process::exit(1);
-        }
+        Err(e) => panic!("Couldn't run 7th Heaven installer: {}", e)
     }
 
     let profile = if cfg!(debug_assertions) { "debug" } else { "release" };
     let launcher_path = format!("target/{}/launcher", profile);
-    std::fs::copy(launcher_path, install_path.join("launcher")).expect("Failed to copy launcher to install_path");
+    std::fs::copy(launcher_path, install_path.join("Launch 7th Heaven")).expect("Failed to copy launcher to install_path");
 }
 
 fn get_install_path() -> PathBuf {

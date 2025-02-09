@@ -1,3 +1,4 @@
+use std::panic;
 use log::LevelFilter;
 use log4rs::{
     append::{console::ConsoleAppender, file::FileAppender},
@@ -33,4 +34,20 @@ pub fn init() {
         .unwrap();
 
     log4rs::init_config(config).unwrap();
+
+    panic::set_hook(Box::new(|panic_info| {
+        let message = if let Some(s) = panic_info.payload().downcast_ref::<&str>() {
+            s.to_string()
+        } else if let Some(s) = panic_info.payload().downcast_ref::<String>() {
+            s.to_string()
+        } else {
+            "Panic occurred (unknown payload)".to_string()
+        };
+
+        let location = panic_info.location()
+            .map(|loc| format!("{}:{}:{}", loc.file(), loc.line(), loc.column()))
+            .unwrap_or_else(|| " (location unknown)".to_string());
+
+        log::error!("Panic at {}: {}", location, message);
+    }));
 }
