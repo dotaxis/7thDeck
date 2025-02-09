@@ -1,4 +1,4 @@
-use seventh_deck::{logging, steamhelper::{self, game::SteamGame}};
+use seventh_deck::{logging, steam_helper::{self, game::SteamGame}};
 use std::{
     error::Error, fmt::Write, fs::File, path::PathBuf, time::Duration
 };
@@ -19,12 +19,12 @@ fn main() {
     let exe_name = "7th_Heaven.exe";
     download_latest("tsunamods-codes/7th-Heaven", exe_name).expect("Failed to download 7th Heaven!");
 
-    let game = with_spinner("Finding FF7...", "Done!", || steamhelper::game::get_game(FF7_APPID).unwrap());
-    with_spinner("Killing Steam...", "Done!", steamhelper::kill_steam);
-    with_spinner("Setting Proton version...", "Done!", || steamhelper::game::set_runner(&game, "proton_9").expect("Failed to set runner")); // TODO: Expand this to allow Proton version selection
-    with_spinner("Wiping prefix...", "Done!", || steamhelper::game::wipe_prefix(&game).expect("Failed to wipe prefix"));
-    with_spinner("Setting Launch Options...", "Done!", || steamhelper::game::set_launch_options(&game).expect("Failed to set launch options"));
-    steamhelper::game::launch_game(&game).expect("Failed to launch FF7?");
+    let game = with_spinner("Finding FF7...", "Done!", || steam_helper::game::get_game(FF7_APPID).unwrap());
+    with_spinner("Killing Steam...", "Done!", steam_helper::kill_steam);
+    with_spinner("Setting Proton version...", "Done!", || steam_helper::game::set_runner(&game, "proton_9").expect("Failed to set runner")); // TODO: Expand this to allow Proton version selection
+    with_spinner("Wiping prefix...", "Done!", || steam_helper::game::wipe_prefix(&game).expect("Failed to wipe prefix"));
+    with_spinner("Setting Launch Options...", "Done!", || steam_helper::game::set_launch_options(&game).expect("Failed to set launch options"));
+    steam_helper::game::launch_game(&game).expect("Failed to launch FF7?");
     with_spinner("Rebuilding prefix...", "Done!", || kill("FF7_Launcher"));
 
     let install_path = get_install_path();
@@ -154,8 +154,8 @@ fn kill(pattern: &str){
 }
 
 fn install_7th(game: SteamGame, exe_path: &str, install_path: PathBuf, log_file: &str) {
-    let proton_versions = steamhelper::proton::find_all_versions().expect("Failed to find any Proton versions!");
-    let highest_proton_version = steamhelper::proton::find_highest_version(&proton_versions).unwrap();
+    let proton_versions = steam_helper::proton::find_all_versions().expect("Failed to find any Proton versions!");
+    let highest_proton_version = steam_helper::proton::find_highest_version(&proton_versions).unwrap();
     let proton = highest_proton_version.path.to_str().expect("Failed to get Proton").to_string();
     log::info!("Proton bin: {}", proton);
 
@@ -165,7 +165,7 @@ fn install_7th(game: SteamGame, exe_path: &str, install_path: PathBuf, log_file:
         format!("/LOG={}", log_file)
     ];
 
-    match steamhelper::game::launch_exe_in_prefix(exe_path.into(), &game, &proton, Some(args)) {
+    match steam_helper::game::launch_exe_in_prefix(exe_path.into(), &game, &proton, Some(args)) {
         Ok(_) => log::info!("Ran 7th Heaven installer"),
         Err(e) => panic!("Couldn't run 7th Heaven installer: {}", e)
     }

@@ -1,4 +1,4 @@
-use seventh_deck::steamhelper;
+use seventh_deck::steam_helper;
 use std::env;
 
 static FF7_APPID: u32 = 39140;
@@ -13,11 +13,11 @@ fn main() {
         std::process::exit(1);
     }
 
-    let game = steamhelper::game::get_game(FF7_APPID).unwrap();
-    let proton_versions = steamhelper::proton::find_all_versions().expect("Failed to find any Proton versions!");
-    let highest_proton_version = steamhelper::proton::find_highest_version(&proton_versions).unwrap();
+    let game = steam_helper::game::get_game(FF7_APPID).unwrap();
+    let proton_versions = steam_helper::proton::find_all_versions().expect("Failed to find any Proton versions!");
+    let highest_proton_version = steam_helper::proton::find_highest_version(&proton_versions).unwrap();
     let proton = highest_proton_version.path.to_str().expect("Failed to get Proton").to_string();
     println!("Proton bin: {}", proton);
 
-    steamhelper::game::launch_exe_in_prefix(seventh_heaven_exe, &game, &proton, None).expect("Failed to launch 7th Heaven.");
+    steam_helper::game::launch_exe_in_prefix(seventh_heaven_exe, &game, &proton, None).expect("Failed to launch 7th Heaven.");
 }
