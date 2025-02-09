@@ -6,13 +6,6 @@ STEAM_ROOT=@STEAM_ROOT@
 
 . "$SCRIPT_DIR"/functions.sh
 
-IS_GAMESCOPE=$(pgrep gamescope > /dev/null && echo true || echo false)
-if [ $IS_GAMESCOPE = true ]; then
-  echo "d3d9.shaderModel = 1" > dxvk.conf
-else
-  [ -f "dxvk.conf" ] && rm dxvk.conf
-fi
-
 if [ $IS_STEAMOS = true ] ; then
   export STEAM_COMPAT_DATA_PATH=${HOME}/.steam/steam/steamapps/compatdata/39140
 else
