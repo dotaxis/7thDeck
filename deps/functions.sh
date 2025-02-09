@@ -1,18 +1,12 @@
 #!/bin/bash
 
-# Locate SteamLibrary containing app_id
-getSteamLibrary() {
-  local app_id="$1"
-
-  # Check if Steam is running as a Flatpak application
-  if flatpak list --app | grep -q Steam; then
-    local steam_path="${HOME}/.var/app/com.valvesoftware.Steam/.local/share/Steam"
-  else
-    local steam_path="${HOME}/.steam/root"
-  fi
+# Locate Steam Library containing APP_ID
+steam_library() {
+  local STEAM_ROOT="$1"
+  local APP_ID="$2"
 
   local path=$(
-    awk -v app_id="$app_id" '
+    awk -v app_id="$APP_ID" '
       /^[[:space:]]*"[0-9]+"$/ {
         in_block = 1;
         block = $0;
@@ -29,14 +23,14 @@ getSteamLibrary() {
           }
         }
       }
-    ' "${steam_path}/steamapps/libraryfolders.vdf"
+    ' "${STEAM_ROOT}/steamapps/libraryfolders.vdf"
   )
 
   echo "$path"
 }
 
 # Download from GitHub
-downloadDependency() {
+download_dependency() {
   local XDG_CACHE_HOME="${XDG_CACHE_HOME:=${HOME}/.cache}"
   local REPO=$1
   local FILTER=$2
@@ -58,7 +52,7 @@ downloadDependency() {
 }
 
 # Dialog compatibility
-promptUser() {
+prompt_message() {
   local message="$1"
 
   if command -v kdialog &> /dev/null; then
@@ -70,7 +64,7 @@ promptUser() {
   fi
 }
 
-promptYesNo() {
+prompt_confirm() {
   local message="$1"
 
   if command -v kdialog &> /dev/null; then
@@ -82,7 +76,7 @@ promptYesNo() {
   fi
 }
 
-promptDirectory() {
+prompt_destination() {
   local title="$1"
 
   if command -v kdialog &> /dev/null; then

@@ -1,44 +1,18 @@
 #! /bin/sh
-# I stole this from Valve
+# Taken from SteamOS and modified for partial flatpak support
+FILE=$1
+FILE_DIR="$(dirname "$FILE")"
+STEAM_BIN=$2
+TMP="/tmp"
 
-add_to_steam() {
-    encodedUrl="steam://addnonsteamgame/$(python3 -c "import urllib.parse;print(urllib.parse.quote(\"$1\", safe=''))")"
-    touch /tmp/addnonsteamgamefile
-    xdg-open $encodedUrl
-}
-
-show_error() {
-    if [ "$show_dialog" = "1" ]; then
-        kdialog --title Error --error "$1"
-    else
-        echo "$1" >&2
-    fi
-}
-
-if [ "$1" = "-ui" ]; then
-    show_dialog=1
-    shift
+if [[ "$STEAM_BIN" == *"flatpak"* ]]; then
+    TMP="/run/user/$(id -u)/.flatpak/com.valvesoftware.Steam/tmp"
+    flatpak override --user --filesystem="$FILE_DIR" com.valvesoftware.Steam
+    killall -9 steam
 fi
 
-file=$1
-if [ ! -e "$file" ]
-then
-    echo "Usage: steamos-add-to-steam [-ui] <path>"
-    exit 1
-fi
-mime=$(xdg-mime query filetype "$file")
-case "$mime" in
-    "application/x-desktop"|"application/x-ms-dos-executable")
-        add_to_steam "$file"
-        ;;
-    "application/x-executable"|"application/vnd.appimage"|"application/x-shellscript")
-        if [ -x "$file" ]; then
-            add_to_steam "$file"
-        else
-            show_error "Unable to add non-Steam game. Is the file executable?"
-        fi
-        ;;
-    *)
-        show_error "Unsupported file type"
-        ;;
-esac
+encodedUrl="steam://addnonsteamgame/$(python3 -c "import urllib.parse;print(urllib.parse.quote(\"$FILE\", safe=''))")"
+touch ${TMP}/addnonsteamgamefile
+nohup $STEAM_BIN $encodedUrl &> /dev/null & disown
+while ! pgrep steam > /dev/null; do sleep 1; done
+echo "Added $FILE to Steam!"
