@@ -4,6 +4,13 @@
 getSteamLibrary() {
   local app_id="$1"
 
+  # Check if Steam is running as a Flatpak application
+  if flatpak list --app | grep -q Steam; then
+    local steam_path="${HOME}/.var/app/com.valvesoftware.Steam/.local/share/Steam"
+  else
+    local steam_path="${HOME}/.steam/root"
+  fi
+
   local path=$(
     awk -v app_id="$app_id" '
       /^[[:space:]]*"[0-9]+"$/ {
@@ -22,7 +29,7 @@ getSteamLibrary() {
           }
         }
       }
-    ' "${HOME}/.steam/root/steamapps/libraryfolders.vdf"
+    ' "${steam_path}/steamapps/libraryfolders.vdf"
   )
 
   echo "$path"
