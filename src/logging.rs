@@ -1,4 +1,4 @@
-use std::panic;
+use std::{env, panic};
 use log::LevelFilter;
 use log4rs::{
     append::{console::ConsoleAppender, file::FileAppender},
@@ -8,6 +8,10 @@ use log4rs::{
 };
 
 pub fn init() {
+    let current_bin = env::current_exe().expect("Failed to get binary path");
+    let current_dir = current_bin.parent().expect("Failed to get binary directory");
+    let log_path = current_dir.join("7thDeck.log");
+
     let stdout = ConsoleAppender::builder()
         .encoder(Box::new(PatternEncoder::new("[{h({l})}] {m}{n}")))
         .build();
@@ -15,7 +19,7 @@ pub fn init() {
     let file = FileAppender::builder()
         .encoder(Box::new(PatternEncoder::new("{d(%Y-%m-%d %H:%M:%S)} [{l}] {t} - {m}{n}")))
         .append(false)
-        .build("7thDeck.log")
+        .build(log_path)
         .unwrap();
 
         let config = Config::builder()
