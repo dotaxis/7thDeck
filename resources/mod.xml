@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModInfo xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <ID>e1a9773f-b7e4-461b-860c-73b8cf8875d6</ID>
+  <Name>Steam Deck Auto-Config</Name>
+  <Category>Gameplay</Category>
+  <Author>dotAXiS</Author>
+  <Version>1.05</Version>
+  <Description>Automatically apply recommended settings for Steam Deck
+
+    Resolution: Auto
+    Window Mode: Fullscreen
+    Aspect Ratio: 16:10
+    Antialiasing: 4x MSAA
+    Anisotropic Filtering: On
+    Internal Resolution Scaling: 4x
+    Vertical Sync: Off
+    Advanced Lighting: Enabled
+    Analogue Controls: Enabled
+    Steam Compatibility: Enabled
+    Auto Run: Enabled
+  </Description>
+  <ReleaseNotes>Disable show_version and show_renderer_backend because sometimes they get turned on by default</ReleaseNotes>
+  <ReleaseDate>2023-10-23T18:03:43.8183594-06:00</ReleaseDate>
+  <Link />
+  <DonationLink>https://ko-fi.com/dotaxis</DonationLink>
+  <FFNxConfig>
+    <fullscreen>true</fullscreen>
+    <window_size_x>0</window_size_x>
+    <window_size_y>0</window_size_y>
+    <internal_resolution_scale>2</internal_resolution_scale>
+    <aspect_ratio>3</aspect_ratio>
+    <enable_vsync>false</enable_vsync>
+    <enable_antialiasing>2</enable_antialiasing>
+    <enable_anisotropic>true</enable_anisotropic>
+    <enable_lighting>true</enable_lighting>
+    <enable_analogue_controls>true</enable_analogue_controls>
+    <enable_auto_run>true</enable_auto_run>
+    <enable_steam_achievements>true</enable_steam_achievements>
+    <show_version>false</show_version>
+    <show_renderer_backend>false</show_renderer_backend>
+  </FFNxConfig>
+  <Variables />
+  <Compatibility>
+    <Setting>
+      <ModID>7c6a0289-ae89-411d-836a-531e78938401</ModID>
+      <TheirID>LIMITBREAK</TheirID>
+      <Require>2</Require>
+    </Setting>
+    <Setting>
+      <ModID>2b49d831-6556-41df-9ddb-d1a6e937f548</ModID>
+      <TheirID>deck</TheirID>
+      <Forbid>0</Forbid>
+    </Setting>
+  </Compatibility>
+</ModInfo>
