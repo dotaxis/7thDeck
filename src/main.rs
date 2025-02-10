@@ -23,7 +23,10 @@ fn main() {
     let mut config = HashMap::new();
     config.insert("steam_dir", steam_dir.path().display().to_string());
     let toml_string = toml::to_string(&config).expect("Couldn't serialize to TOML!");
-    std::fs::write("7thDeck.toml", toml_string).unwrap();
+    let current_bin = env::current_exe().expect("Failed to get binary path");
+    let current_dir = current_bin.parent().expect("Failed to get binary directory");
+    let toml_path = current_dir.join("7thDeck.toml");
+    std::fs::write(toml_path, toml_string).unwrap();
 
     let cache_dir = home::home_dir().expect("Couldn't find $HOME?").join(".cache");
     let exe_path = download_latest("tsunamods-codes/7th-Heaven", cache_dir).expect("Failed to download 7th Heaven!");
@@ -182,7 +185,7 @@ fn install_7th(game: SteamGame, exe_path: PathBuf, install_path: PathBuf, log_fi
     let current_bin = env::current_exe().expect("Failed to get binary path");
     let current_dir = current_bin.parent().expect("Failed to get binary directory");
     let toml_path = current_dir.join("7thDeck.toml");
-    std::fs::copy(toml_path, install_path.join("7thDeck.toml")).expect("Failed to copy launcher to install_path");
+    std::fs::copy(toml_path, install_path.join("7thDeck.toml")).expect("Failed to copy TOML to install_path");
 
     let profile = if cfg!(debug_assertions) { "debug" } else { "release" };
     let launcher_path = format!("target/{}/launcher", profile);
