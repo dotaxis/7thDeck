@@ -1,6 +1,6 @@
 use seventh_deck::{logging, steam_helper::{self, game::SteamGame}};
 use std::{
-    error::Error, fmt::Write, fs::File, path::PathBuf, time::Duration
+    collections::HashMap, env, error::Error, fmt::Write, fs::File, path::PathBuf, time::Duration
 };
 use rfd::FileDialog;
 use sysinfo::System;
@@ -16,10 +16,19 @@ fn main() {
 
     draw_header();
 
-    let exe_name = "7th_Heaven.exe";
-    download_latest("tsunamods-codes/7th-Heaven", exe_name).expect("Failed to download 7th Heaven!");
+    let steam_dir = steam_helper::get_library().expect("Couldn't get Steam directory!");
 
-    let game = with_spinner("Finding FF7...", "Done!", || steam_helper::game::get_game(FF7_APPID).unwrap());
+    // Write this to a TOML so our launcher knows what's up
+    // We are jumping back and forth between types a lot here, so may need a refactor later on
+    let mut config = HashMap::new();
+    config.insert("steam_dir", steam_dir.path().display().to_string());
+    let toml_string = toml::to_string(&config).expect("Couldn't serialize to TOML!");
+    std::fs::write("7thDeck.toml", toml_string).unwrap();
+
+    let cache_dir = home::home_dir().expect("Couldn't find $HOME?").join(".cache");
+    let exe_path = download_latest("tsunamods-codes/7th-Heaven", cache_dir).expect("Failed to download 7th Heaven!");
+
+    let game = with_spinner("Finding FF7...", "Done!", || steam_helper::game::get_game(FF7_APPID, steam_dir).unwrap());
     with_spinner("Killing Steam...", "Done!", steam_helper::kill_steam);
     with_spinner("Setting Proton version...", "Done!", || steam_helper::game::set_runner(&game, "proton_9").expect("Failed to set runner")); // TODO: Expand this to allow Proton version selection
     with_spinner("Wiping prefix...", "Done!", || steam_helper::game::wipe_prefix(&game).expect("Failed to wipe prefix"));
@@ -28,7 +37,7 @@ fn main() {
     with_spinner("Rebuilding prefix...", "Done!", || kill("FF7_Launcher"));
 
     let install_path = get_install_path();
-    with_spinner("Installing 7th Heaven...", "Done!", || install_7th(game, exe_name, install_path, "7thHeaven.log"));
+    with_spinner("Installing 7th Heaven...", "Done!", || install_7th(game, exe_path, install_path, "7thHeaven.log"));
 }
 
 fn draw_header() {
@@ -153,7 +162,7 @@ fn kill(pattern: &str){
     log::info!("We made it out of the kill loop!");
 }
 
-fn install_7th(game: SteamGame, exe_path: &str, install_path: PathBuf, log_file: &str) {
+fn install_7th(game: SteamGame, exe_path: PathBuf, install_path: PathBuf, log_file: &str) {
     let proton_versions = steam_helper::proton::find_all_versions().expect("Failed to find any Proton versions!");
     let highest_proton_version = steam_helper::proton::find_highest_version(&proton_versions).unwrap();
     let proton = highest_proton_version.path.to_str().expect("Failed to get Proton").to_string();
@@ -165,10 +174,15 @@ fn install_7th(game: SteamGame, exe_path: &str, install_path: PathBuf, log_file:
         format!("/LOG={}", log_file)
     ];
 
-    match steam_helper::game::launch_exe_in_prefix(exe_path.into(), &game, &proton, Some(args)) {
+    match steam_helper::game::launch_exe_in_prefix(exe_path, &game, &proton, Some(args)) {
         Ok(_) => log::info!("Ran 7th Heaven installer"),
         Err(e) => panic!("Couldn't run 7th Heaven installer: {}", e)
     }
+
+    let current_bin = env::current_exe().expect("Failed to get binary path");
+    let current_dir = current_bin.parent().expect("Failed to get binary directory");
+    let toml_path = current_dir.join("7thDeck.toml");
+    std::fs::copy(toml_path, install_path.join("7thDeck.toml")).expect("Failed to copy launcher to install_path");
 
     let profile = if cfg!(debug_assertions) { "debug" } else { "release" };
     let launcher_path = format!("target/{}/launcher", profile);
@@ -197,7 +211,7 @@ fn get_install_path() -> PathBuf {
             match confirm {
                 0 => {
                     term.clear_last_lines(2).unwrap();
-                    println!("{} Installing to '{}'", console::style("✔").green(),
+                    println!("{} Installing to '{}'", console::style("!").yellow(),
                         console::style(path.display()).bold().underlined().white());
                     return path;
                 },
@@ -210,7 +224,7 @@ fn get_install_path() -> PathBuf {
     }
 }
 
-fn download_latest(repo: &str, output_path: &str) -> Result<(), Box<dyn Error>> {
+fn download_latest(repo: &str, destination: PathBuf) -> Result<PathBuf, Box<dyn Error>> {
     let client = reqwest::blocking::Client::new();
     let release_url = format!("https://api.github.com/repos/{}/releases/latest", repo);
     let response: serde_json::Value = client
@@ -240,16 +254,19 @@ fn download_latest(repo: &str, output_path: &str) -> Result<(), Box<dyn Error>> 
         .progress_chars("#>-"));
     pb.set_message(format!("Downloading {}", exe_asset["name"]));
 
+    std::fs::create_dir_all(&destination)?;
+    let file_name = exe_asset["name"].as_str().ok_or("Invalid file name")?;
+    let file_path = destination.join(file_name);
 
     let mut response = client.get(download_url).send()?;
-    let mut file = File::create(output_path)?;
+    let mut file = File::create(&file_path)?;
     let mut writer = pb.wrap_write(&mut file);
     let downloaded = response.copy_to(&mut writer)?;
     pb.set_position(downloaded);
     pb.finish_and_clear();
     pb.println(format!("{} Download complete", console::style("✔").green()));
 
-    Ok(())
+    Ok(file_path)
 }
 
 fn with_spinner<F, T>(message: &str, success_message: &str, func: F) -> T where

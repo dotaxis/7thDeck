@@ -1,9 +1,14 @@
 use seventh_deck::steam_helper;
-use std::env;
+use std::{env, path::Path};
 
 static FF7_APPID: u32 = 39140;
 
 fn main() {
+    let toml_string = std::fs::read_to_string("7thDeck.toml").expect("Couldn't read the TOML file");
+    let toml_value: toml::Value = toml::from_str(&toml_string).expect("Couldn't deserialize TOML");
+    let steam_dir = toml_value.as_str().expect("Couldn't get steam_dir from TOML");
+    let steam_dir = steamlocate::SteamDir::from_dir(Path::new(steam_dir)).unwrap();
+
     let launcher_bin = env::current_exe().expect("Failed to get binary path");
     let launcher_dir = launcher_bin.parent().expect("Failed to get binary directory");
     let seventh_heaven_exe = launcher_dir.join("7th Heaven.exe");
@@ -13,7 +18,7 @@ fn main() {
         std::process::exit(1);
     }
 
-    let game = steam_helper::game::get_game(FF7_APPID).unwrap();
+    let game = steam_helper::game::get_game(FF7_APPID, steam_dir).unwrap();
     let proton_versions = steam_helper::proton::find_all_versions().expect("Failed to find any Proton versions!");
     let highest_proton_version = steam_helper::proton::find_highest_version(&proton_versions).unwrap();
     let proton = highest_proton_version.path.to_str().expect("Failed to get Proton").to_string();
