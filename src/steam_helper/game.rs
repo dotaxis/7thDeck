@@ -110,6 +110,7 @@ pub fn set_launch_options(game: &SteamGame) -> Result<(), Box<dyn std::error::Er
 pub fn get_runner(game: &SteamGame) -> Result<String, Box<dyn Error>> {
     let path = game.client_path.join("config/config.vdf");
     let vdf_data = fs::read_to_string(path).expect("Failed to read config.vdf");
+    let app_id: &str = &game.app_id.to_string();
 
     if let Ok(vdf) = Vdf::parse(&vdf_data) {
         let name_str = {
@@ -130,7 +131,7 @@ pub fn get_runner(game: &SteamGame) -> Result<String, Box<dyn Error>> {
                     .and_then(|compat| compat.as_slice().first())
                     .and_then(|game_obj|
                 if let Value::Obj(game_obj) = game_obj { Some(game_obj) } else { None })
-                    .and_then(|game_obj| game_obj.get("39140"))
+                    .and_then(|game_obj| game_obj.get(app_id))
                     .and_then(|game| game.as_slice().first())
                     .and_then(|props_obj|
                 if let Value::Obj(props_obj) = props_obj { Some(props_obj) } else { None })
@@ -145,7 +146,7 @@ pub fn get_runner(game: &SteamGame) -> Result<String, Box<dyn Error>> {
 
         match name_str {
             Some(name) => {
-                log::info!("Found runner for app_id {}: {}", game.app_id, name.to_string());
+                log::info!("Found runner for app_id {}: {}", app_id, name.to_string());
                 return Ok(name.to_string());
             },
             _ => panic!("Couldn't find runner in config.vdf"),
