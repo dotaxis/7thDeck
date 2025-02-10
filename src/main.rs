@@ -13,25 +13,27 @@ static FF7_APPID: u32 = 39140;
 
 fn main() {
     logging::init();
+    let mut config = HashMap::new();
+    let current_bin = env::current_exe().expect("Failed to get binary path");
+    let current_dir = current_bin.parent().expect("Failed to get binary directory");
+    let toml_path = current_dir.join("7thDeck.toml");
 
     draw_header();
 
     let steam_dir = steam_helper::get_library().expect("Couldn't get Steam directory!");
-
-    // Write this to a TOML so our launcher knows what's up
-    // We are jumping back and forth between types a lot here, so may need a refactor later on
-    let mut config = HashMap::new();
     config.insert("steam_dir", steam_dir.path().display().to_string());
-    let toml_string = toml::to_string(&config).expect("Couldn't serialize to TOML!");
-    let current_bin = env::current_exe().expect("Failed to get binary path");
-    let current_dir = current_bin.parent().expect("Failed to get binary directory");
-    let toml_path = current_dir.join("7thDeck.toml");
-    std::fs::write(toml_path, toml_string).unwrap();
 
     let cache_dir = home::home_dir().expect("Couldn't find $HOME?").join(".cache");
     let exe_path = download_latest("tsunamods-codes/7th-Heaven", cache_dir).expect("Failed to download 7th Heaven!");
 
     let game = with_spinner("Finding FF7...", "Done!", || steam_helper::game::get_game(FF7_APPID, steam_dir).unwrap());
+
+    let runner = steam_helper::game::get_runner(&game).unwrap();
+    config.insert("runner", runner);
+
+    let toml_string = toml::to_string(&config).expect("Couldn't serialize to TOML!");
+    std::fs::write(toml_path, toml_string).unwrap();
+
     with_spinner("Killing Steam...", "Done!", steam_helper::kill_steam);
     with_spinner("Setting Proton version...", "Done!", || steam_helper::game::set_runner(&game, "proton_9").expect("Failed to set runner")); // TODO: Expand this to allow Proton version selection
     with_spinner("Wiping prefix...", "Done!", || steam_helper::game::wipe_prefix(&game).expect("Failed to wipe prefix"));
