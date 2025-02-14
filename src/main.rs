@@ -26,10 +26,12 @@ fn main() {
     let cache_dir = home::home_dir().expect("Couldn't find $HOME?").join(".cache");
     let exe_path = download_latest("tsunamods-codes/7th-Heaven", cache_dir).expect("Failed to download 7th Heaven!");
 
-    let game = with_spinner("Finding FF7...", "Done!", || steam_helper::game::get_game(FF7_APPID, steam_dir).unwrap());
+    let game = with_spinner("Finding FF7...", "Done!", || steam_helper::game::get_game(FF7_APPID, steam_dir.clone()).unwrap());
 
-    let runner = steam_helper::game::get_runner(&game).unwrap();
-    config.insert("runner", runner);
+    let runner = steam_helper::game::get_runner(&game, steam_dir).unwrap();
+    if let Some(name) = runner {
+        config.insert("runner", name);  
+    }
 
     let toml_string = toml::to_string(&config).expect("Couldn't serialize to TOML!");
     std::fs::write(toml_path, toml_string).unwrap();

@@ -107,53 +107,18 @@ pub fn set_launch_options(game: &SteamGame) -> Result<(), Box<dyn std::error::Er
     Ok(())
 }
 
-pub fn get_runner(game: &SteamGame) -> Result<String, Box<dyn Error>> {
-    let path = game.client_path.join("config/config.vdf");
-    let vdf_data = fs::read_to_string(path).expect("Failed to read config.vdf");
-    let app_id: &str = &game.app_id.to_string();
+pub fn get_runner(game: &SteamGame, steam_dir: steamlocate::SteamDir) -> Result<Option<String>, Box<dyn Error>> {
+    let compat_tool_mapping = steam_dir.compat_tool_mapping().unwrap();
+    let runner = compat_tool_mapping
+        .get(&game.app_id)
+        .and_then(|tool| tool.name.clone());
 
-    if let Ok(vdf) = Vdf::parse(&vdf_data) {
-        let name_str = {
-            if let Value::Obj(root_obj) = &vdf.value {
-                root_obj.get("Software")
-                    .and_then(|software| software.as_slice().first())
-                    .and_then(|valve_obj|
-                if let Value::Obj(valve_obj) = valve_obj { Some(valve_obj) } else { None })
-                    .and_then(|valve_obj| valve_obj.get("Valve"))
-                    .and_then(|valve| valve.as_slice().first())
-                    .and_then(|steam_obj|
-                if let Value::Obj(steam_obj) = steam_obj { Some(steam_obj) } else { None })
-                    .and_then(|steam_obj| steam_obj.get("Steam"))
-                    .and_then(|steam| steam.as_slice().first())
-                    .and_then(|compat_obj|
-                if let Value::Obj(compat_obj) = compat_obj { Some(compat_obj) } else { None })
-                    .and_then(|compat_obj| compat_obj.get("CompatToolMapping"))
-                    .and_then(|compat| compat.as_slice().first())
-                    .and_then(|game_obj|
-                if let Value::Obj(game_obj) = game_obj { Some(game_obj) } else { None })
-                    .and_then(|game_obj| game_obj.get(app_id))
-                    .and_then(|game| game.as_slice().first())
-                    .and_then(|props_obj|
-                if let Value::Obj(props_obj) = props_obj { Some(props_obj) } else { None })
-                    .and_then(|props_obj| props_obj.get("name"))
-                    .and_then(|name| name.as_slice().first())
-                    .and_then(|name_str|
-                if let Value::Str(name_str) = name_str { Some(name_str) } else { None })
-            } else {
-                None
-            }
-        };
-
-        match name_str {
-            Some(name) => {
-                log::info!("Found runner for app_id {}: {}", app_id, name.to_string());
-                return Ok(name.to_string());
-            },
-            _ => panic!("Couldn't find runner in config.vdf"),
-        }
+    match &runner {
+        Some(name) => log::info!("Runner for {}: {}", &game.app_id, name),
+        None => log::info!("No runner set for {}", &game.app_id)
     }
 
-    panic!("Failed to parse config.vdf");
+    Ok(runner)
 }
 
 pub fn set_runner(game: &SteamGame, runner: &str) -> Result<(), Box<dyn Error>> {
