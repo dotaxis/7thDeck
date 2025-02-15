@@ -63,8 +63,11 @@ pub fn get_game(app_id: u32, steam_dir: steamlocate::SteamDir) -> Result<SteamGa
     Err(format!("Couldn't find app_id {}!", app_id).into())
 }
 
-pub fn launch_exe_in_prefix(exe_to_launch: PathBuf, game: &SteamGame, proton_path: &str, args: Option<Vec<String>>) -> Result<(), Box<dyn Error>> {
-    let mut command = Command::new(proton_path);
+pub fn launch_exe_in_prefix(exe_to_launch: PathBuf, game: &SteamGame, args: Option<Vec<String>>) -> Result<(), Box<dyn Error>> {
+    let proton = game.runner.clone().unwrap().path;
+    log::info!("Proton bin: {:?}", proton);
+
+    let mut command = Command::new(proton);
     command
         .env("STEAM_COMPAT_CLIENT_INSTALL_PATH", &game.client_path)
         .env("STEAM_COMPAT_DATA_PATH", game.prefix.as_path())

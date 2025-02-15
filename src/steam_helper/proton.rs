@@ -1,6 +1,6 @@
 use std::{error::Error, path::PathBuf};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Runner {
     pub name: String,
     pub pretty_name: String,
