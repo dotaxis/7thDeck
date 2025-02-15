@@ -1,4 +1,3 @@
-use keyvalues_parser::{Vdf, Value};
 use std::{
     error::Error,
     fs::{self, metadata},

@@ -1,4 +1,4 @@
-use std::{error::Error, io, path::{Path, PathBuf}};
+use std::{error::Error, io, path::PathBuf};
 use dialoguer::theme::ColorfulTheme;
 use sysinfo::System;
 
