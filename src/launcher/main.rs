@@ -27,10 +27,8 @@ fn main() {
     log::info!("Steam path: {}", steam_dir.path().display());
 
     let game = steam_helper::game::get_game(FF7_APPID, steam_dir).unwrap();
-    let proton_versions = steam_helper::proton::find_all_versions().expect("Failed to find any Proton versions!");
-    let highest_proton_version = steam_helper::proton::find_highest_version(&proton_versions).unwrap();
-    let proton = highest_proton_version.path.to_str().expect("Failed to get Proton").to_string();
-    log::info!("Proton bin: {}", proton);
+    let proton = game.runner.clone().unwrap().path;
+    log::info!("Proton bin: {:?}", proton);
 
-    steam_helper::game::launch_exe_in_prefix(seventh_heaven_exe, &game, &proton, None).expect("Failed to launch 7th Heaven.");
+    steam_helper::game::launch_exe_in_prefix(seventh_heaven_exe, &game, None).expect("Failed to launch 7th Heaven.");
 }
