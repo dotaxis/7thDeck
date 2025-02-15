@@ -1,4 +1,4 @@
-use seventh_deck::{logging, steam_helper::{self, game::SteamGame}};
+use seventh_deck::{logging, config_handler, steam_helper::{self, game::SteamGame}};
 use std::{
     collections::HashMap, env, error::Error, fmt::Write, fs::File, path::PathBuf, time::Duration
 };
@@ -12,12 +12,8 @@ pub static VERSION: &str = "2.5.0";
 static FF7_APPID: u32 = 39140;
 
 fn main() {
-    // TODO: Break out TOML handling and clean up our flow here
     logging::init();
     let mut config = HashMap::new();
-    let current_bin = env::current_exe().expect("Failed to get binary path");
-    let current_dir = current_bin.parent().expect("Failed to get binary directory");
-    let toml_path = current_dir.join("7thDeck.toml");
 
     draw_header();
 
@@ -34,8 +30,7 @@ fn main() {
         config.insert("runner", runner.name.clone());
     }
 
-    let toml_string = toml::to_string(&config).expect("Couldn't serialize to TOML!");
-    std::fs::write(toml_path, toml_string).unwrap();
+    config_handler::write(config).expect("Failed to write TOML!");
 
     with_spinner("Killing Steam...", "Done!",
         steam_helper::kill_steam);

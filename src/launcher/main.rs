@@ -1,4 +1,4 @@
-use seventh_deck::{logging, steam_helper};
+use seventh_deck::{logging, config_handler, steam_helper};
 use std::{env, path::Path};
 
 static FF7_APPID: u32 = 39140;
@@ -14,15 +14,7 @@ fn main() {
         panic!("Couldn't find '7th Heaven.exe'!");
     }
 
-    let toml_path = launcher_dir.join("7thDeck.toml");
-    log::info!("TOML path: {}", toml_path.display());
-
-    let toml_string = std::fs::read_to_string(toml_path).expect("Couldn't read the TOML file");
-    let toml_value: toml::Value = toml::from_str(&toml_string).expect("Couldn't deserialize TOML");
-    let steam_dir_str = toml_value.get("steam_dir")
-        .expect("Couldn't find steam_dir key")
-        .as_str()
-        .expect("steam_dir value is not a string");
+    let steam_dir_str = &config_handler::read_value("steam_dir");
     let steam_dir = steamlocate::SteamDir::from_dir(Path::new(steam_dir_str)).unwrap();
     log::info!("Steam path: {}", steam_dir.path().display());
 
