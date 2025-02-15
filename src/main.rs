@@ -23,25 +23,30 @@ fn main() {
     let cache_dir = home::home_dir().expect("Couldn't find $HOME?").join(".cache");
     let exe_path = download_latest("tsunamods-codes/7th-Heaven", cache_dir).expect("Failed to download 7th Heaven!");
 
-    let game = with_spinner("Finding FF7...", "Done!", || steam_helper::game::get_game(FF7_APPID, steam_dir.clone()).unwrap());
+    let game = with_spinner("Finding FF7...", "Done!", ||
+        steam_helper::game::get_game(FF7_APPID, steam_dir.clone())
+        .unwrap_or_else(|e| panic!("Couldn't get FF7: {}", e)));
 
     if let Some(runner) = &game.runner {
         log::info!("Runner set for {}: {}", game.name, runner.pretty_name);
         config.insert("runner", runner.name.clone());
     }
 
-    config_handler::write(config).expect("Failed to write TOML!");
+    config_handler::write(config).unwrap_or_else(|e| panic!("Failed to write config: {}", e));
 
     with_spinner("Killing Steam...", "Done!",
         steam_helper::kill_steam);
     with_spinner("Setting Proton version...", "Done!", ||
-        steam_helper::game::set_runner(&game, "proton_9").expect("Failed to set runner")); // TODO: Expand this to allow Proton version selection
+        steam_helper::game::set_runner(&game, "proton_9") // TODO: Expand this to allow Proton version selection
+        .unwrap_or_else(|e| panic!("Failed to set runner: {}", e)));
     with_spinner("Wiping prefix...", "Done!", ||
-        steam_helper::game::wipe_prefix(&game).expect("Failed to wipe prefix"));
+        steam_helper::game::wipe_prefix(&game)
+        .unwrap_or_else(|e| panic!("Failed to wipe prefix: {}", e)));
     with_spinner("Setting Launch Options...", "Done!", ||
-        steam_helper::game::set_launch_options(&game).expect("Failed to set launch options"));
-
-    steam_helper::game::launch_game(&game).expect("Failed to launch FF7?");
+        steam_helper::game::set_launch_options(&game)
+        .unwrap_or_else(|e| panic!("Failed to set launch options: {}", e)));
+    steam_helper::game::launch_game(&game)
+        .unwrap_or_else(|e| panic!("Failed to launch FF7: {}", e));
     with_spinner("Rebuilding prefix...", "Done!", ||
         kill("FF7_Launcher"));
 
