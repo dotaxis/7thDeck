@@ -7,6 +7,7 @@ use std::{
 };
 use regex::Regex;
 use glob::glob;
+use super::proton::{self, Runner};
 
 #[derive(Debug)]
 pub struct SteamGame {
@@ -15,7 +16,7 @@ pub struct SteamGame {
     pub path: PathBuf,
     pub prefix: PathBuf,
     pub client_path: PathBuf,
-    pub runner: Option<String>,
+    pub runner: Option<Runner>,
 }
 
 pub fn get_game(app_id: u32, steam_dir: steamlocate::SteamDir) -> Result<SteamGame, Box<dyn Error>> {
@@ -38,7 +39,12 @@ pub fn get_game(app_id: u32, steam_dir: steamlocate::SteamDir) -> Result<SteamGa
                 let runner = steam_dir.compat_tool_mapping()
                     .unwrap_or_default()
                     .get(&app_id)
-                    .and_then(|tool| tool.name.clone());
+                    .and_then(|tool| {
+                        let tool_name = tool.name.clone()?;
+                        let proton_versions = proton::find_all_versions(steam_dir.clone()).ok()?;
+                        proton_versions.into_iter()
+                            .find(|runner| runner.name == tool_name)
+                    });
 
                 let steam_game = SteamGame {
                     app_id,

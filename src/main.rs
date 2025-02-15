@@ -28,10 +28,10 @@ fn main() {
 
     let game = with_spinner("Finding FF7...", "Done!", || steam_helper::game::get_game(FF7_APPID, steam_dir.clone()).unwrap());
 
-    // let runner = steam_helper::game::get_runner(&game, steam_dir).unwrap();
-    // if let Some(name) = runner {
-    //     config.insert("runner", name);
-    // }
+    if let Some(runner) = game.runner {
+        log::info!("Runner set for {}: {}", game.name, runner.pretty_name);
+        config.insert("runner", runner.name);
+    }
 
     let toml_string = toml::to_string(&config).expect("Couldn't serialize to TOML!");
     std::fs::write(toml_path, toml_string).unwrap();

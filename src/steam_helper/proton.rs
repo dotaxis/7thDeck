@@ -3,8 +3,8 @@ use std::{error::Error, path::PathBuf};
 #[derive(Debug)]
 pub struct Runner {
     pub name: String,
+    pub pretty_name: String,
     pub path: PathBuf,
-    pub config_name: String,
 }
 
 pub fn find_all_versions(steam_dir: steamlocate::SteamDir) -> Result<Vec<Runner>, Box<dyn Error>> {
@@ -16,7 +16,7 @@ pub fn find_all_versions(steam_dir: steamlocate::SteamDir) -> Result<Vec<Runner>
             if app_name.contains("Proton") {
                 let app_path = library.resolve_app_dir(&app).join("proton");
                 if app_path.is_file() {
-                    let config_name = app_name
+                    let name = app_name
                         .to_lowercase()
                         .split(".")
                         .next()
@@ -25,9 +25,9 @@ pub fn find_all_versions(steam_dir: steamlocate::SteamDir) -> Result<Vec<Runner>
 
                     proton_versions.push(
                             Runner {
-                                name: app_name.to_string(),
+                                name,
+                                pretty_name: app_name.to_string(),
                                 path: app_path,
-                                config_name,
                             }
                         );
                 } else {
