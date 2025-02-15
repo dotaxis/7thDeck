@@ -27,8 +27,6 @@ fn main() {
     log::info!("Steam path: {}", steam_dir.path().display());
 
     let game = steam_helper::game::get_game(FF7_APPID, steam_dir).unwrap();
-    let proton = game.runner.clone().unwrap().path;
-    log::info!("Proton bin: {:?}", proton);
 
     steam_helper::game::launch_exe_in_prefix(seventh_heaven_exe, &game, None).expect("Failed to launch 7th Heaven.");
 }
