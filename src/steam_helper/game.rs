@@ -14,27 +14,39 @@ pub struct SteamGame {
     pub name: String,
     pub path: PathBuf,
     pub prefix: PathBuf,
-    pub client_path: PathBuf
+    pub client_path: PathBuf,
+    pub runner: Option<String>,
 }
 
 pub fn get_game(app_id: u32, steam_dir: steamlocate::SteamDir) -> Result<SteamGame, Box<dyn Error>> {
     let steam_dir_pathbuf = PathBuf::from(steam_dir.path());
     log::info!("Located Steam installation: {}", steam_dir_pathbuf.display());
     for library in steam_dir.libraries()? {
-        let library = library?;
+        let library = match library {
+            Ok(library) => library,
+            Err(e) => {
+                log::warn!("Couldn't access library: {}", e);
+                continue
+            }
+        };
         for app_result in library.apps() {
             let app = app_result?;
             if app.app_id == app_id {
                 let name = app.name.ok_or("No app name?")?;
                 let path = library.path().join(format!("steamapps/common/{}", name));
                 let prefix = library.path().join(format!("steamapps/compatdata/{}/pfx", app_id));
+                let runner = steam_dir.compat_tool_mapping()
+                    .unwrap_or_default()
+                    .get(&app_id)
+                    .and_then(|tool| tool.name.clone());
 
                 let steam_game = SteamGame {
                     app_id,
                     name,
                     path,
                     prefix,
-                    client_path: steam_dir_pathbuf
+                    client_path: steam_dir_pathbuf,
+                    runner,
                 };
 
                 return Ok(steam_game);
@@ -105,20 +117,6 @@ pub fn set_launch_options(game: &SteamGame) -> Result<(), Box<dyn std::error::Er
     }
     log::info!("Successfully set launch options for {}", game.name);
     Ok(())
-}
-
-pub fn get_runner(game: &SteamGame, steam_dir: steamlocate::SteamDir) -> Result<Option<String>, Box<dyn Error>> {
-    let compat_tool_mapping = steam_dir.compat_tool_mapping().unwrap();
-    let runner = compat_tool_mapping
-        .get(&game.app_id)
-        .and_then(|tool| tool.name.clone());
-
-    match &runner {
-        Some(name) => log::info!("Runner for {}: {}", &game.app_id, name),
-        None => log::info!("No runner set for {}", &game.app_id)
-    }
-
-    Ok(runner)
 }
 
 pub fn set_runner(game: &SteamGame, runner: &str) -> Result<(), Box<dyn Error>> {

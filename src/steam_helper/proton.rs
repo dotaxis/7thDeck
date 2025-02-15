@@ -1,25 +1,33 @@
 use std::{error::Error, path::PathBuf};
 
 #[derive(Debug)]
-pub struct ProtonVersion {
+pub struct Runner {
     pub name: String,
-    pub path: PathBuf
+    pub path: PathBuf,
+    pub config_name: String,
 }
 
-pub fn find_all_versions() -> Result<Vec<ProtonVersion>, Box<dyn Error>> {
-    let steam_dir = steamlocate::SteamDir::locate()?;
-    let mut proton_versions: Vec<ProtonVersion> = Vec::new();
+pub fn find_all_versions(steam_dir: steamlocate::SteamDir) -> Result<Vec<Runner>, Box<dyn Error>> {
+    // TODO: custom runner support via compatibilitytools.d
+    let mut proton_versions: Vec<Runner> = Vec::new();
     for library in (steam_dir.libraries()?).flatten() {
         for app in library.apps().flatten() {
             let app_name = app.name.as_ref().unwrap();
             if app_name.contains("Proton") {
                 let app_path = library.resolve_app_dir(&app).join("proton");
                 if app_path.is_file() {
-                    proton_versions
-                        .push(
-                            ProtonVersion {
+                    let config_name = app_name
+                        .to_lowercase()
+                        .split(".")
+                        .next()
+                        .unwrap()
+                        .replace(" ", "_");
+
+                    proton_versions.push(
+                            Runner {
                                 name: app_name.to_string(),
-                                path: app_path
+                                path: app_path,
+                                config_name,
                             }
                         );
                 } else {
@@ -28,14 +36,14 @@ pub fn find_all_versions() -> Result<Vec<ProtonVersion>, Box<dyn Error>> {
             }
         }
     }
-    if proton_versions.is_empty() {
-        Err("No Proton versions found".into())
-    } else {
-        Ok(proton_versions)
-    }
+
+    proton_versions
+        .is_empty()
+        .then(|| Err("No Proton versions found".into()))
+        .unwrap_or(Ok(proton_versions))
 }
 
-pub fn find_highest_version(versions: &[ProtonVersion]) -> Option<&ProtonVersion> {
+pub fn find_highest_version(versions: &[Runner]) -> Option<&Runner> {
     versions.iter().max_by_key(|proton| {
         let version_parts: Vec<&str> = proton.name.split_whitespace().collect();
         if let Some(version) = version_parts.get(1) {

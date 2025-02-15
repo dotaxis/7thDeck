@@ -28,10 +28,10 @@ fn main() {
 
     let game = with_spinner("Finding FF7...", "Done!", || steam_helper::game::get_game(FF7_APPID, steam_dir.clone()).unwrap());
 
-    let runner = steam_helper::game::get_runner(&game, steam_dir).unwrap();
-    if let Some(name) = runner {
-        config.insert("runner", name);  
-    }
+    // let runner = steam_helper::game::get_runner(&game, steam_dir).unwrap();
+    // if let Some(name) = runner {
+    //     config.insert("runner", name);
+    // }
 
     let toml_string = toml::to_string(&config).expect("Couldn't serialize to TOML!");
     std::fs::write(toml_path, toml_string).unwrap();
@@ -44,7 +44,7 @@ fn main() {
     with_spinner("Rebuilding prefix...", "Done!", || kill("FF7_Launcher"));
 
     let install_path = get_install_path();
-    with_spinner("Installing 7th Heaven...", "Done!", || install_7th(game, exe_path, install_path, "7thHeaven.log"));
+    with_spinner("Installing 7th Heaven...", "Done!", || install_7th(steam_dir, game, exe_path, install_path, "7thHeaven.log"));
 }
 
 fn draw_header() {
@@ -169,8 +169,9 @@ fn kill(pattern: &str){
     log::info!("We made it out of the kill loop!");
 }
 
-fn install_7th(game: SteamGame, exe_path: PathBuf, install_path: PathBuf, log_file: &str) {
-    let proton_versions = steam_helper::proton::find_all_versions().expect("Failed to find any Proton versions!");
+fn install_7th(steam_dir: steamlocate::SteamDir, game: SteamGame, exe_path: PathBuf, install_path: PathBuf, log_file: &str) {
+    // TODO: fix this to use runner stored in 'game' instead of taking steam_dir as param
+    let proton_versions = steam_helper::proton::find_all_versions(steam_dir).expect("Failed to find any Proton versions!");
     let highest_proton_version = steam_helper::proton::find_highest_version(&proton_versions).unwrap();
     let proton = highest_proton_version.path.to_str().expect("Failed to get Proton").to_string();
     log::info!("Proton bin: {}", proton);
