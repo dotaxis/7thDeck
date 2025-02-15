@@ -12,6 +12,7 @@ pub static VERSION: &str = "2.5.0";
 static FF7_APPID: u32 = 39140;
 
 fn main() {
+    // TODO: Break out TOML handling and clean up our flow here
     logging::init();
     let mut config = HashMap::new();
     let current_bin = env::current_exe().expect("Failed to get binary path");
@@ -36,15 +37,22 @@ fn main() {
     let toml_string = toml::to_string(&config).expect("Couldn't serialize to TOML!");
     std::fs::write(toml_path, toml_string).unwrap();
 
-    with_spinner("Killing Steam...", "Done!", steam_helper::kill_steam);
-    with_spinner("Setting Proton version...", "Done!", || steam_helper::game::set_runner(&game, "proton_9").expect("Failed to set runner")); // TODO: Expand this to allow Proton version selection
-    with_spinner("Wiping prefix...", "Done!", || steam_helper::game::wipe_prefix(&game).expect("Failed to wipe prefix"));
-    with_spinner("Setting Launch Options...", "Done!", || steam_helper::game::set_launch_options(&game).expect("Failed to set launch options"));
+    with_spinner("Killing Steam...", "Done!",
+        steam_helper::kill_steam);
+    with_spinner("Setting Proton version...", "Done!", ||
+        steam_helper::game::set_runner(&game, "proton_9").expect("Failed to set runner")); // TODO: Expand this to allow Proton version selection
+    with_spinner("Wiping prefix...", "Done!", ||
+        steam_helper::game::wipe_prefix(&game).expect("Failed to wipe prefix"));
+    with_spinner("Setting Launch Options...", "Done!", ||
+        steam_helper::game::set_launch_options(&game).expect("Failed to set launch options"));
+
     steam_helper::game::launch_game(&game).expect("Failed to launch FF7?");
-    with_spinner("Rebuilding prefix...", "Done!", || kill("FF7_Launcher"));
+    with_spinner("Rebuilding prefix...", "Done!", ||
+        kill("FF7_Launcher"));
 
     let install_path = get_install_path();
-    with_spinner("Installing 7th Heaven...", "Done!", || install_7th(game, exe_path, install_path, "7thHeaven.log"));
+    with_spinner("Installing 7th Heaven...", "Done!", ||
+        install_7th(game, exe_path, install_path, "7thHeaven.log"));
 }
 
 fn draw_header() {
