@@ -1,4 +1,4 @@
-use seventh_deck::{logging, config_handler, steam_helper::{self, game::SteamGame}};
+use seventh_deck::{logging, config_handler, resource_handler, steam_helper::{self, game::SteamGame}};
 use std::{
     collections::HashMap, env, error::Error, fmt::Write, fs::File, path::PathBuf, time::Duration
 };
@@ -175,6 +175,24 @@ fn kill(pattern: &str){
         }
     }
     log::info!("We made it out of the kill loop!");
+}
+
+fn patch_install(install_path: PathBuf, game: SteamGame) {
+    // Send timeout.exe to system32
+    let timeout_exe = resource_handler::as_bytes("timeout.exe".to_string(), game.prefix.join("drive_c/windows/system32"), resource_handler::TIMEOUT_EXE);
+    std::fs::write(&timeout_exe.destination, timeout_exe.contents).unwrap_or_else(|_| panic!("Couldn't write {} to {:?}", timeout_exe.name, timeout_exe.destination));
+
+    // Patch settings.xml and send to install_path
+    let mut settings_xml = resource_handler::as_str("settings.xml".to_string(), install_path.join("7thWorkshop"), resource_handler::SETTINGS_XML);
+    let library_location = &format!("Z:{}", install_path.join("mods").to_str().unwrap().replace("/", "\\"));
+    let ff7_exe = &format!("Z:{}", game.path.join("ff7_en.exe").to_string_lossy().replace("/", "\\"));
+    log::info!("Mods path: {}", library_location);
+    log::info!("FF7 Exe path: {}", ff7_exe);
+    settings_xml.contents = settings_xml.contents
+        .replace("LIBRARY_LOCATION", library_location)
+        .replace("FF7_EXE", ff7_exe);
+
+    std::fs::write(&settings_xml.destination, settings_xml.contents).unwrap_or_else(|_| panic!("Couldn't write {} to {:?}", settings_xml.name, settings_xml.destination));
 }
 
 fn install_7th(game: SteamGame, exe_path: PathBuf, install_path: PathBuf, log_file: &str) {

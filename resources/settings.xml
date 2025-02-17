@@ -28,9 +28,9 @@
       <Name>Sega Catalog</Name>
     </Subscription>
   </Subscriptions>
-  <LibraryLocation>REPLACE_ME</LibraryLocation>
-  <FF7Exe>REPLACE_ME</FF7Exe>
-  <FF7InstalledVersion>Original98</FF7InstalledVersion>
+  <LibraryLocation>LIBRARY_LOCATION</LibraryLocation>
+  <FF7Exe>FF7_EXE</FF7Exe>
+  <FF7InstalledVersion>Steam</FF7InstalledVersion>
   <FFNxUpdateChannel>Stable</FFNxUpdateChannel>
   <AppUpdateChannel>Stable</AppUpdateChannel>
   <Options>
