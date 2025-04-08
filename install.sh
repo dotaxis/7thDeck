@@ -119,7 +119,6 @@ while true; do
   fi
 done
 
-
 # Kill Steam for next steps
 echo "Closing Steam..."
 while pidof "steam" > /dev/null; do
@@ -186,7 +185,6 @@ echo
 # Tweaks to 7th Heaven install directory
 echo "Applying patches to 7th Heaven..."
 mkdir -p "$INSTALL_PATH/7thWorkshop/profiles"
-cp -f "$INSTALL_PATH/Resources/FF7_1.02_Eng_Patch/ff7.exe" "$FF7_DIR/ff7.exe"
 cp -f "deps/7th Heaven.sh" "$INSTALL_PATH/"
 cp -f "deps/functions.sh" "$INSTALL_PATH/"
 cp -f "deps/dxvk.conf" "$INSTALL_PATH/"
@@ -195,7 +193,7 @@ cp -f deps/settings.xml "$INSTALL_PATH/7thWorkshop/"
 sed -i "s|@STEAM_ROOT@|$STEAM_ROOT|" "$INSTALL_PATH/7th Heaven.sh"
 sed -i "s|@STEAMOS@|$IS_STEAMOS|" "$INSTALL_PATH/7th Heaven.sh"
 sed -i "s|<LibraryLocation>REPLACE_ME</LibraryLocation>|<LibraryLocation>Z:$INSTALL_PATH/mods</LibraryLocation>|" "$INSTALL_PATH/7thWorkshop/settings.xml"
-sed -i "s|<FF7Exe>REPLACE_ME</FF7Exe>|<FF7Exe>Z:$FF7_DIR/ff7.exe</FF7Exe>|" "$INSTALL_PATH/7thWorkshop/settings.xml"
+sed -i "s|<FF7Exe>REPLACE_ME</FF7Exe>|<FF7Exe>Z:$FF7_DIR/ff7_en.exe</FF7Exe>|" "$INSTALL_PATH/7thWorkshop/settings.xml"
 echo
 
 # Tweaks to game
@@ -203,22 +201,6 @@ echo "Applying patches to FF7..."
 cp -f "deps/timeout.exe" "$WINEPATH/drive_c/windows/system32/"
 echo "FF7DISC1" > "$WINEPATH/drive_c/.windows-label"
 echo "44000000" > "$WINEPATH/drive_c/.windows-serial"
-# [ ! -d "$FF7_DIR/music/vgmstream" ] && mkdir -p "$FF7_DIR/music/vgmstream"
-# [ -d "$FF7_DIR/data/music_ogg" ] && cp "$FF7_DIR/data/music_ogg/"* "$FF7_DIR/music/vgmstream/"
-# if [ -d "$FF7_DIR/data/lang-en" ]; then
-#   files=(
-#     "battle/camdat0.bin"
-#     "battle/camdat1.bin"
-#     "battle/camdat2.bin"
-#     "battle/co.bin"
-#     "battle/scene.bin"
-#     "kernel/KERNEL.BIN"
-#     "kernel/kernel2.bin"
-#     "kernel/WINDOW.BIN"
-#   )
-#   for file in "${files[@]}"; do
-#     ln -fs "$FF7_DIR/data/lang-en/$file" "$FF7_DIR/data/$file"
-#   done
 fi
 echo
 
