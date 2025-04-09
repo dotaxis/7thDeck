@@ -201,7 +201,6 @@ echo "Applying patches to FF7..."
 cp -f "deps/timeout.exe" "$WINEPATH/drive_c/windows/system32/"
 echo "FF7DISC1" > "$WINEPATH/drive_c/.windows-label"
 echo "44000000" > "$WINEPATH/drive_c/.windows-serial"
-fi
 echo
 
 # SteamOS only
