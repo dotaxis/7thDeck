@@ -49,10 +49,12 @@ fn main() {
         .unwrap_or_else(|e| panic!("Failed to launch FF7: {}", e));
     with_spinner("Rebuilding prefix...", "Done!", ||
         kill("FF7_Launcher"));
-
     let install_path = get_install_path();
     with_spinner("Installing 7th Heaven...", "Done!", ||
         install_7th(game, exe_path, install_path, "7thHeaven.log"));
+    // TODO: patch prefix
+    // TODO: steamOS control scheme + auto-config mod
+    // TODO: create shortcuts
 }
 
 fn draw_header() {
@@ -193,6 +195,8 @@ fn patch_install(install_path: PathBuf, game: SteamGame) {
         .replace("FF7_EXE", ff7_exe);
 
     std::fs::write(&settings_xml.destination, settings_xml.contents).unwrap_or_else(|_| panic!("Couldn't write {} to {:?}", settings_xml.name, settings_xml.destination));
+
+    // TODO: no-CD
 }
 
 fn install_7th(game: SteamGame, exe_path: PathBuf, install_path: PathBuf, log_file: &str) {
