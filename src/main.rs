@@ -25,28 +25,28 @@ fn main() {
 
     let game = with_spinner("Finding FF7...", "Done!", ||
         steam_helper::game::get_game(FF7_APPID, steam_dir.clone())
-        .unwrap_or_else(|e| panic!("Couldn't get FF7: {}", e)));
+        .unwrap_or_else(|e| panic!("Couldn't get FF7: {e}")));
 
     if let Some(runner) = &game.runner {
         log::info!("Runner set for {}: {}", game.name, runner.pretty_name);
         config.insert("runner", runner.name.clone());
     }
 
-    config_handler::write(config).unwrap_or_else(|e| panic!("Failed to write config: {}", e));
+    config_handler::write(config).unwrap_or_else(|e| panic!("Failed to write config: {e}"));
 
     with_spinner("Killing Steam...", "Done!",
         steam_helper::kill_steam);
     with_spinner("Setting Proton version...", "Done!", ||
         steam_helper::game::set_runner(&game, "proton_9") // TODO: Expand this to allow Proton version selection
-        .unwrap_or_else(|e| panic!("Failed to set runner: {}", e)));
+        .unwrap_or_else(|e| panic!("Failed to set runner: {e}")));
     with_spinner("Wiping prefix...", "Done!", ||
         steam_helper::game::wipe_prefix(&game)
-        .unwrap_or_else(|e| panic!("Failed to wipe prefix: {}", e)));
+        .unwrap_or_else(|e| panic!("Failed to wipe prefix: {e}")));
     with_spinner("Setting Launch Options...", "Done!", ||
         steam_helper::game::set_launch_options(&game)
-        .unwrap_or_else(|e| panic!("Failed to set launch options: {}", e)));
+        .unwrap_or_else(|e| panic!("Failed to set launch options: {e}")));
     steam_helper::game::launch_game(&game)
-        .unwrap_or_else(|e| panic!("Failed to launch FF7: {}", e));
+        .unwrap_or_else(|e| panic!("Failed to launch FF7: {e}"));
     with_spinner("Rebuilding prefix...", "Done!", ||
         kill("FF7_Launcher"));
     let install_path = get_install_path();
@@ -162,13 +162,13 @@ fn kill(pattern: &str){
 
         for (pid, process) in sys.processes() {
             if process.name().contains(pattern) {
-                log::info!("Found '{}' with PID: {}", pattern, pid);
+                log::info!("Found '{pattern}' with PID: {pid}");
 
                 if process.kill() {
-                    log::info!("Killed {} successfully.", pattern);
+                    log::info!("Killed {pattern} successfully.");
                     break 'kill;
                 } else {
-                    println!("Failed to kill {}!\nPlease exit {} manually and press Enter to continue.", pattern, pattern);
+                    println!("Failed to kill {pattern}!\nPlease exit {pattern} manually and press Enter to continue.");
                     let mut input = String::new();
                     std::io::stdin().read_line(&mut input).unwrap();
                     continue;
@@ -188,8 +188,8 @@ fn patch_install(install_path: PathBuf, game: SteamGame) {
     let mut settings_xml = resource_handler::as_str("settings.xml".to_string(), install_path.join("7thWorkshop"), resource_handler::SETTINGS_XML);
     let library_location = &format!("Z:{}", install_path.join("mods").to_str().unwrap().replace("/", "\\"));
     let ff7_exe = &format!("Z:{}", game.path.join("ff7_en.exe").to_string_lossy().replace("/", "\\"));
-    log::info!("Mods path: {}", library_location);
-    log::info!("FF7 Exe path: {}", ff7_exe);
+    log::info!("Mods path: {library_location}");
+    log::info!("FF7 Exe path: {ff7_exe}");
     settings_xml.contents = settings_xml.contents
         .replace("LIBRARY_LOCATION", library_location)
         .replace("FF7_EXE", ff7_exe);
@@ -208,7 +208,7 @@ fn install_7th(game: SteamGame, exe_path: PathBuf, install_path: PathBuf, log_fi
 
     match steam_helper::game::launch_exe_in_prefix(exe_path, &game, Some(args)) {
         Ok(_) => log::info!("Ran 7th Heaven installer"),
-        Err(e) => panic!("Couldn't run 7th Heaven installer: {}", e)
+        Err(e) => panic!("Couldn't run 7th Heaven installer: {e}")
     }
 
     let current_bin = env::current_exe().expect("Failed to get binary path");
@@ -217,7 +217,7 @@ fn install_7th(game: SteamGame, exe_path: PathBuf, install_path: PathBuf, log_fi
     std::fs::copy(toml_path, install_path.join("7thDeck.toml")).expect("Failed to copy TOML to install_path");
 
     let profile = if cfg!(debug_assertions) { "debug" } else { "release" };
-    let launcher_path = format!("target/{}/launcher", profile);
+    let launcher_path = format!("target/{profile}/launcher");
     std::fs::copy(launcher_path, install_path.join("Launch 7th Heaven")).expect("Failed to copy launcher to install_path");
 }
 
@@ -258,7 +258,7 @@ fn get_install_path() -> PathBuf {
 
 fn download_latest(repo: &str, destination: PathBuf) -> Result<PathBuf, Box<dyn Error>> {
     let client = reqwest::blocking::Client::new();
-    let release_url = format!("https://api.github.com/repos/{}/releases/latest", repo);
+    let release_url = format!("https://api.github.com/repos/{repo}/releases/latest");
     let response: serde_json::Value = client
         .get(&release_url)
         .header("User-Agent", "rust-client")
@@ -314,7 +314,7 @@ fn with_spinner<F, T>(message: &str, success_message: &str, func: F) -> T where
     pb.set_message(message.to_string());
     pb.enable_steady_tick(Duration::from_millis(100));
 
-    let result = func(); // run the function and store result
+    let result = func();
     pb.finish_and_clear();
     println!("{} {} {}", console::style("✔").green(), message, success_message);
     result
