@@ -1,6 +1,7 @@
-use std::{error::Error, io, path::PathBuf};
+use std::{error::Error, fs::OpenOptions, io, path::{Path, PathBuf}, process::{Command, Stdio}, thread::sleep, time::Duration};
 use dialoguer::theme::ColorfulTheme;
 use sysinfo::System;
+use urlencoding::encode;
 
 pub mod game;
 pub mod proton;
@@ -69,4 +70,54 @@ pub fn kill_steam() {
             break;
         }
     }
+}
+
+pub fn add_nonsteam_game(file: &Path, steam_dir: steamlocate::SteamDir) -> Result<(), Box<dyn Error>> {
+    let file_dir = file.parent().unwrap_or_else(|| panic!("Couldn't get parent of {file:?}"));
+    let uid = users::get_current_uid();
+    let mut tmp = PathBuf::from("/tmp");
+    let mut steam_bin = "steam";
+
+    // Flatpak Steam
+    if steam_dir.path().to_string_lossy().contains("com.valvesoftware.Steam") {
+        steam_bin = "flatpak run com.valvesoftware.Steam";
+        tmp = PathBuf::from(format!("/run/user/{uid}/.flatpak/com.valvesoftware.Steam/tmp"));
+
+        Command::new("flatpak")
+            .args([
+                "override",
+                "--user",
+                &format!("--filesystem={}", file_dir.display()),
+                "com.valvesoftware.Steam",
+            ])
+            .status()?;
+
+        kill_steam();
+    }
+
+    let encoded_url = format!("steam://addnonsteamgame/{}", encode(&file.to_string_lossy()));
+    let _ = OpenOptions::new()
+        .create(true)
+        .write(true)
+        .truncate(true)
+        .open(tmp.join("addnonsteamgamefile"));
+
+    Command::new(steam_bin)
+        .arg(&encoded_url)
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .spawn()?;
+
+    while Command::new("pgrep")
+        .arg("steam")
+        .stdout(Stdio::null())
+        .status()
+        .map(|s| !s.success())
+        .unwrap_or(true)
+    {
+        sleep(Duration::from_secs(1));
+    }
+
+    println!("Added {file:?} to Steam!");
+    Ok(())
 }

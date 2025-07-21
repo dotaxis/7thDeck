@@ -1,4 +1,5 @@
 use seventh_deck::{logging, config_handler, resource_handler, steam_helper::{self, game::SteamGame}};
+use steamlocate::SteamDir;
 use std::{
     collections::HashMap, env, error::Error, fmt::Write, fs::File, path::PathBuf, path::Path, time::Duration
 };
@@ -63,7 +64,10 @@ fn main() {
         patch_install(&install_path, &game));
 
     // TODO: steamOS control scheme + auto-config mod
-    // TODO: create shortcuts
+
+    with_spinner("Creating shortcuts...", "Done!", ||
+        create_shortcuts(&install_path, steam_dir)
+        .unwrap_or_else(|e| panic!("Failed to create shortcuts: {e}")));
 }
 
 fn draw_header() {
@@ -161,6 +165,51 @@ fn draw_header() {
         println!("Understood. Exiting.");
         std::process::exit(0);
     }
+}
+
+fn download_latest(repo: &str, destination: PathBuf) -> Result<PathBuf, Box<dyn Error>> {
+    let client = reqwest::blocking::Client::new();
+    let release_url = format!("https://api.github.com/repos/{repo}/releases/latest");
+    let response: serde_json::Value = client
+        .get(&release_url)
+        .header("User-Agent", "rust-client")
+        .send()?
+        .json()?;
+
+    let assets = response["assets"].as_array().ok_or("No assets found")?;
+    let exe_asset = assets
+        .iter()
+        .find(|a| a["name"].as_str().unwrap_or("").ends_with(".exe"))
+        .ok_or("No .exe asset found")?;
+
+    let download_url = exe_asset["browser_download_url"]
+        .as_str()
+        .ok_or("No download URL")?;
+
+    let size = exe_asset["size"]
+        .as_u64()
+        .unwrap_or(0);
+
+    let pb = ProgressBar::new(size);
+    pb.set_style(ProgressStyle::with_template("{spinner:.green} {msg} [{elapsed_precise}] [{wide_bar:.cyan/blue}] {bytes}/{total_bytes} ({eta})")
+        .unwrap()
+        .with_key("eta", |state: &ProgressState, w: &mut dyn Write| write!(w, "{:.1}s", state.eta().as_secs_f64()).unwrap())
+        .progress_chars("#>-"));
+    pb.set_message(format!("Downloading {}", exe_asset["name"]));
+
+    std::fs::create_dir_all(&destination)?;
+    let file_name = exe_asset["name"].as_str().ok_or("Invalid file name")?;
+    let file_path = destination.join(file_name);
+
+    let mut response = client.get(download_url).send()?;
+    let mut file = File::create(&file_path)?;
+    let mut writer = pb.wrap_write(&mut file);
+    let downloaded = response.copy_to(&mut writer)?;
+    pb.set_position(downloaded);
+    pb.finish_and_clear();
+    pb.println(format!("{} Download complete", console::style("✔").green()));
+
+    Ok(file_path)
 }
 
 fn kill(pattern: &str){
@@ -265,49 +314,54 @@ fn patch_install(install_path: &Path, game: &SteamGame) {
     // TODO: no-CD if necessary
 }
 
-fn download_latest(repo: &str, destination: PathBuf) -> Result<PathBuf, Box<dyn Error>> {
-    let client = reqwest::blocking::Client::new();
-    let release_url = format!("https://api.github.com/repos/{repo}/releases/latest");
-    let response: serde_json::Value = client
-        .get(&release_url)
-        .header("User-Agent", "rust-client")
-        .send()?
-        .json()?;
+fn create_shortcuts(install_path: &Path, steam_dir: SteamDir) -> Result<(), Box<dyn Error>> {
+    let xdg_dirs = xdg::BaseDirectories::with_prefix("applications");
+    let applications_dir = xdg_dirs.place_config_file("7th Heaven.desktop")?;
+    let desktop_dir = home::home_dir().expect("Couldn't get $HOME?").join("Desktop");
+    let shortcut_file = resource_handler::as_str("7th Heaven.desktop".to_string(), applications_dir, resource_handler::SETTINGS_XML);
+    std::fs::write(&shortcut_file.destination, &shortcut_file.contents).unwrap_or_else(|_| panic!("Couldn't write {} to {:?}", shortcut_file.name, shortcut_file.destination));
 
-    let assets = response["assets"].as_array().ok_or("No assets found")?;
-    let exe_asset = assets
-        .iter()
-        .find(|a| a["name"].as_str().unwrap_or("").ends_with(".exe"))
-        .ok_or("No .exe asset found")?;
+    let term = console::Term::stdout();
+    let choices = &["Yes", "No"];
+    let confirm = dialoguer::Select::with_theme(&ColorfulTheme::default())
+    .with_prompt("Do you want to add a shortcut to the Desktop?")
+    .default(0) // Default to "Yes"
+    .items(choices)
+    .interact()
+    .unwrap();
 
-    let download_url = exe_asset["browser_download_url"]
-        .as_str()
-        .ok_or("No download URL")?;
+    match confirm {
+        0 => {
+            term.clear_last_lines(2).unwrap();
+            println!("{} Adding Desktop shortcut.", console::style("!").yellow());
+            let desktop_shortcut_path = desktop_dir.join(&shortcut_file.name);
+            std::fs::write(&desktop_shortcut_path, shortcut_file.contents).unwrap_or_else(|_| panic!("Couldn't write {} to {:?}", shortcut_file.name, desktop_shortcut_path));
+        },
+        _ => {
+            term.clear_last_lines(1).unwrap();
+        }
+    }
 
-    let size = exe_asset["size"]
-        .as_u64()
-        .unwrap_or(0);
+    let choices = &["Yes", "No"];
+    let confirm = dialoguer::Select::with_theme(&ColorfulTheme::default())
+    .with_prompt("Do you want to add a 7th Heaven shortcut to Steam?")
+    .default(0) // Default to "Yes"
+    .items(choices)
+    .interact()
+    .unwrap();
 
-    let pb = ProgressBar::new(size);
-    pb.set_style(ProgressStyle::with_template("{spinner:.green} {msg} [{elapsed_precise}] [{wide_bar:.cyan/blue}] {bytes}/{total_bytes} ({eta})")
-        .unwrap()
-        .with_key("eta", |state: &ProgressState, w: &mut dyn Write| write!(w, "{:.1}s", state.eta().as_secs_f64()).unwrap())
-        .progress_chars("#>-"));
-    pb.set_message(format!("Downloading {}", exe_asset["name"]));
+    match confirm {
+        0 => {
+            term.clear_last_lines(2).unwrap();
+            println!("{} Adding Steam shortcut.", console::style("!").yellow());
+            steam_helper::add_nonsteam_game(&install_path.join("7th Heaven"), steam_dir)?;
+        },
+        _ => {
+            term.clear_last_lines(1).unwrap();
+        }
+    }
 
-    std::fs::create_dir_all(&destination)?;
-    let file_name = exe_asset["name"].as_str().ok_or("Invalid file name")?;
-    let file_path = destination.join(file_name);
-
-    let mut response = client.get(download_url).send()?;
-    let mut file = File::create(&file_path)?;
-    let mut writer = pb.wrap_write(&mut file);
-    let downloaded = response.copy_to(&mut writer)?;
-    pb.set_position(downloaded);
-    pb.finish_and_clear();
-    pb.println(format!("{} Download complete", console::style("✔").green()));
-
-    Ok(file_path)
+    Ok(())
 }
 
 fn with_spinner<F, T>(message: &str, success_message: &str, func: F) -> T where
