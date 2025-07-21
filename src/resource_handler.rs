@@ -26,10 +26,30 @@ pub struct FileAsBytes {
 
 
 pub fn as_bytes(name: String, destination: PathBuf, contents: &[u8]) -> FileAsBytes {
-    FileAsBytes { name, destination, contents: contents.to_vec() }
+    let full_path = destination.join(&name);
+
+    if let Some(parent) = full_path.parent() {
+        std::fs::create_dir_all(parent).expect("Failed to create destination directory");
+    }
+
+    FileAsBytes {
+        name,
+        destination: full_path,
+        contents: contents.to_vec()
+    }
 }
 
 
 pub fn as_str(name: String, destination: PathBuf, contents: &str) -> FileAsStr {
-    FileAsStr { name, destination, contents: contents.to_string() }
+    let full_path = destination.join(&name);
+
+    if let Some(parent) = full_path.parent() {
+        std::fs::create_dir_all(parent).expect("Failed to create destination directory");
+    }
+
+    FileAsStr {
+        name,
+        destination: full_path,
+        contents: contents.to_string()
+    }
 }

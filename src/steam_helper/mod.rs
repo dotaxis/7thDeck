@@ -118,6 +118,6 @@ pub fn add_nonsteam_game(file: &Path, steam_dir: steamlocate::SteamDir) -> Resul
         sleep(Duration::from_secs(1));
     }
 
-    println!("Added {file:?} to Steam!");
+    log::info!("Added {file:?} to Steam!");
     Ok(())
 }

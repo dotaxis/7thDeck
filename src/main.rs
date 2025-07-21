@@ -65,9 +65,11 @@ fn main() {
 
     // TODO: steamOS control scheme + auto-config mod
 
-    with_spinner("Creating shortcuts...", "Done!", ||
-        create_shortcuts(&install_path, steam_dir)
-        .unwrap_or_else(|e| panic!("Failed to create shortcuts: {e}")));
+    create_shortcuts(&install_path, steam_dir)
+        .unwrap_or_else(|e| panic!("Failed to create shortcuts: {e}"));
+
+     println!("{} 7th Heaven successfully installed to '{}'", console::style("✔").green(),
+        console::style(&install_path.display()).bold().underlined().white());
 }
 
 fn draw_header() {
@@ -324,15 +326,15 @@ fn create_shortcuts(install_path: &Path, steam_dir: SteamDir) -> Result<(), Box<
     let term = console::Term::stdout();
     let choices = &["Yes", "No"];
     let confirm = dialoguer::Select::with_theme(&ColorfulTheme::default())
-    .with_prompt("Do you want to add a shortcut to the Desktop?")
-    .default(0) // Default to "Yes"
-    .items(choices)
-    .interact()
-    .unwrap();
+        .with_prompt("Do you want to add a shortcut to the Desktop?")
+        .default(0) // Default to "Yes"
+        .items(choices)
+        .interact()
+        .unwrap();
 
     match confirm {
         0 => {
-            term.clear_last_lines(2).unwrap();
+            term.clear_last_lines(1).unwrap();
             println!("{} Adding Desktop shortcut.", console::style("!").yellow());
             let desktop_shortcut_path = desktop_dir.join(&shortcut_file.name);
             std::fs::write(&desktop_shortcut_path, shortcut_file.contents).unwrap_or_else(|_| panic!("Couldn't write {} to {:?}", shortcut_file.name, desktop_shortcut_path));
@@ -344,17 +346,17 @@ fn create_shortcuts(install_path: &Path, steam_dir: SteamDir) -> Result<(), Box<
 
     let choices = &["Yes", "No"];
     let confirm = dialoguer::Select::with_theme(&ColorfulTheme::default())
-    .with_prompt("Do you want to add a 7th Heaven shortcut to Steam?")
-    .default(0) // Default to "Yes"
-    .items(choices)
-    .interact()
-    .unwrap();
+        .with_prompt("Do you want to add a shortcut to Steam?")
+        .default(0) // Default to "Yes"
+        .items(choices)
+        .interact()
+        .unwrap();
 
     match confirm {
         0 => {
-            term.clear_last_lines(2).unwrap();
+            term.clear_last_lines(1).unwrap();
             println!("{} Adding Steam shortcut.", console::style("!").yellow());
-            steam_helper::add_nonsteam_game(&install_path.join("7th Heaven"), steam_dir)?;
+            steam_helper::add_nonsteam_game(&install_path.join("Launch 7th Heaven"), steam_dir)?;
         },
         _ => {
             term.clear_last_lines(1).unwrap();
