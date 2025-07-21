@@ -7,6 +7,7 @@ pub const CONTROLLER_PROFILE: &str = include_str!("../resources/controller_neptu
 pub const DEFAULT_XML: &str = include_str!("../resources/Default.xml");
 pub const MOD_XML: &str = include_str!("../resources/mod.xml");
 pub const SETTINGS_XML: &str = include_str!("../resources/settings.xml");
+pub const DXVK_CONF: &str = include_str!("../resources/dxvk.conf");
 pub const SHORTCUT_FILE: &str = include_str!("../resources/7th Heaven.desktop");
 
 

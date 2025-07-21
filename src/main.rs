@@ -311,7 +311,11 @@ fn patch_install(install_path: &Path, game: &SteamGame) {
         .replace("LIBRARY_LOCATION", library_location)
         .replace("FF7_EXE", ff7_exe);
 
-    std::fs::write(&settings_xml.destination, settings_xml.contents).unwrap_or_else(|_| panic!("Couldn't write {} to {:?}", settings_xml.name, settings_xml.destination));
+    std::fs::write(&settings_xml.destination, settings_xml.contents).unwrap_or_else(|_| panic!("Couldn't write to {:?}", settings_xml.destination));
+
+    // Send dxvk.conf to install_path
+    let dxvk_conf = resource_handler::as_str("dxvk.conf".to_string(), install_path.to_path_buf(), resource_handler::DXVK_CONF);
+    std::fs::write(&dxvk_conf.destination, dxvk_conf.contents).unwrap_or_else(|_| panic!("Couldn't write to {:?}", dxvk_conf.destination));
 
     // TODO: no-CD if necessary
 }
