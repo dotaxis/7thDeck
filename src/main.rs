@@ -319,10 +319,24 @@ fn patch_install(install_path: &Path, game: &SteamGame) {
 fn create_shortcuts(install_path: &Path, steam_dir: SteamDir) -> Result<(), Box<dyn Error>> {
     let xdg_dirs = xdg::BaseDirectories::with_prefix("applications");
     let applications_dir = xdg_dirs.place_config_file("7th Heaven.desktop")?;
-    let desktop_dir = home::home_dir().expect("Couldn't get $HOME?").join("Desktop");
     let shortcut_file = resource_handler::as_str("7th Heaven.desktop".to_string(), applications_dir, resource_handler::SETTINGS_XML);
     std::fs::write(&shortcut_file.destination, &shortcut_file.contents).unwrap_or_else(|_| panic!("Couldn't write {} to {:?}", shortcut_file.name, shortcut_file.destination));
 
+    // Icon
+    let xdg_cache = xdg::BaseDirectories::new().get_cache_home().unwrap();
+    let logo_png = resource_handler::as_bytes("7th-heaven.png".to_string(), xdg_cache, resource_handler::LOGO_PNG);
+    std::process::Command::new("xdg-icon-resource")
+    .args([
+        "install",
+        logo_png.destination.to_str().unwrap(),
+        "--size",
+        "64",
+        "--novendor"
+    ])
+    .spawn()?
+    .wait()?;
+
+    // Desktop shortcut
     let term = console::Term::stdout();
     let choices = &["Yes", "No"];
     let confirm = dialoguer::Select::with_theme(&ColorfulTheme::default())
@@ -331,10 +345,10 @@ fn create_shortcuts(install_path: &Path, steam_dir: SteamDir) -> Result<(), Box<
         .items(choices)
         .interact()
         .unwrap();
-
     match confirm {
         0 => {
             term.clear_last_lines(1).unwrap();
+            let desktop_dir = home::home_dir().expect("Couldn't get $HOME?").join("Desktop");
             println!("{} Adding Desktop shortcut.", console::style("!").yellow());
             let desktop_shortcut_path = desktop_dir.join(&shortcut_file.name);
             std::fs::write(&desktop_shortcut_path, shortcut_file.contents).unwrap_or_else(|_| panic!("Couldn't write {} to {:?}", shortcut_file.name, desktop_shortcut_path));
@@ -344,6 +358,7 @@ fn create_shortcuts(install_path: &Path, steam_dir: SteamDir) -> Result<(), Box<
         }
     }
 
+    // Non-Steam Game
     let choices = &["Yes", "No"];
     let confirm = dialoguer::Select::with_theme(&ColorfulTheme::default())
         .with_prompt("Do you want to add a shortcut to Steam?")
@@ -351,7 +366,6 @@ fn create_shortcuts(install_path: &Path, steam_dir: SteamDir) -> Result<(), Box<
         .items(choices)
         .interact()
         .unwrap();
-
     match confirm {
         0 => {
             term.clear_last_lines(1).unwrap();
