@@ -1,6 +1,6 @@
 use seventh_deck::{logging, config_handler, resource_handler, steam_helper::{self, game::SteamGame}};
 use std::{
-    collections::HashMap, env, error::Error, fmt::Write, fs::File, path::PathBuf, time::Duration
+    collections::HashMap, env, error::Error, fmt::Write, fs::File, path::PathBuf, path::Path, time::Duration
 };
 use rfd::FileDialog;
 use sysinfo::System;
@@ -36,29 +36,38 @@ fn main() {
 
     with_spinner("Killing Steam...", "Done!",
         steam_helper::kill_steam);
+
     with_spinner("Setting Proton version...", "Done!", ||
         steam_helper::game::set_runner(&game, "proton_9") // TODO: Expand this to allow Proton version selection
         .unwrap_or_else(|e| panic!("Failed to set runner: {e}")));
+
     with_spinner("Wiping prefix...", "Done!", ||
         steam_helper::game::wipe_prefix(&game)
         .unwrap_or_else(|e| panic!("Failed to wipe prefix: {e}")));
+
     with_spinner("Setting Launch Options...", "Done!", ||
         steam_helper::game::set_launch_options(&game)
         .unwrap_or_else(|e| panic!("Failed to set launch options: {e}")));
+
     steam_helper::game::launch_game(&game)
         .unwrap_or_else(|e| panic!("Failed to launch FF7: {e}"));
+
     with_spinner("Rebuilding prefix...", "Done!", ||
         kill("FF7_Launcher"));
+
     let install_path = get_install_path();
     with_spinner("Installing 7th Heaven...", "Done!", ||
-        install_7th(game, exe_path, install_path, "7thHeaven.log"));
-    // TODO: patch prefix
+        install_7th(&game, exe_path, &install_path, "7thHeaven.log"));
+
+    with_spinner("Patching installation...", "Done!", ||
+        patch_install(&install_path, &game));
+
     // TODO: steamOS control scheme + auto-config mod
     // TODO: create shortcuts
 }
 
 fn draw_header() {
-    let title = format!("Welcome to 7thDeck {}", VERSION);
+    let title = format!("Welcome to 7thDeck {VERSION}");
     let description = [
         "This script will:",
         "1. Apply patches to FF7's proton prefix to accommodate 7th Heaven",
@@ -179,48 +188,6 @@ fn kill(pattern: &str){
     log::info!("We made it out of the kill loop!");
 }
 
-fn patch_install(install_path: PathBuf, game: SteamGame) {
-    // Send timeout.exe to system32
-    let timeout_exe = resource_handler::as_bytes("timeout.exe".to_string(), game.prefix.join("drive_c/windows/system32"), resource_handler::TIMEOUT_EXE);
-    std::fs::write(&timeout_exe.destination, timeout_exe.contents).unwrap_or_else(|_| panic!("Couldn't write {} to {:?}", timeout_exe.name, timeout_exe.destination));
-
-    // Patch settings.xml and send to install_path
-    let mut settings_xml = resource_handler::as_str("settings.xml".to_string(), install_path.join("7thWorkshop"), resource_handler::SETTINGS_XML);
-    let library_location = &format!("Z:{}", install_path.join("mods").to_str().unwrap().replace("/", "\\"));
-    let ff7_exe = &format!("Z:{}", game.path.join("ff7_en.exe").to_string_lossy().replace("/", "\\"));
-    log::info!("Mods path: {library_location}");
-    log::info!("FF7 Exe path: {ff7_exe}");
-    settings_xml.contents = settings_xml.contents
-        .replace("LIBRARY_LOCATION", library_location)
-        .replace("FF7_EXE", ff7_exe);
-
-    std::fs::write(&settings_xml.destination, settings_xml.contents).unwrap_or_else(|_| panic!("Couldn't write {} to {:?}", settings_xml.name, settings_xml.destination));
-
-    // TODO: no-CD
-}
-
-fn install_7th(game: SteamGame, exe_path: PathBuf, install_path: PathBuf, log_file: &str) {
-    let args: Vec<String> = vec![
-        "/VERYSILENT".to_string(),
-        format!("/DIR=Z:{}", install_path.to_string_lossy().replace('/', "\\")),
-        format!("/LOG={}", log_file)
-    ];
-
-    match steam_helper::game::launch_exe_in_prefix(exe_path, &game, Some(args)) {
-        Ok(_) => log::info!("Ran 7th Heaven installer"),
-        Err(e) => panic!("Couldn't run 7th Heaven installer: {e}")
-    }
-
-    let current_bin = env::current_exe().expect("Failed to get binary path");
-    let current_dir = current_bin.parent().expect("Failed to get binary directory");
-    let toml_path = current_dir.join("7thDeck.toml");
-    std::fs::copy(toml_path, install_path.join("7thDeck.toml")).expect("Failed to copy TOML to install_path");
-
-    let profile = if cfg!(debug_assertions) { "debug" } else { "release" };
-    let launcher_path = format!("target/{profile}/launcher");
-    std::fs::copy(launcher_path, install_path.join("Launch 7th Heaven")).expect("Failed to copy launcher to install_path");
-}
-
 fn get_install_path() -> PathBuf {
     let term = console::Term::stdout();
     println!("{} Select a destination for 7th Heaven.", console::style("+").yellow());
@@ -254,6 +221,48 @@ fn get_install_path() -> PathBuf {
             }
         }
     }
+}
+
+fn install_7th(game: &SteamGame, exe_path: PathBuf, install_path: &Path, log_file: &str) {
+    let args: Vec<String> = vec![
+        "/VERYSILENT".to_string(),
+        format!("/DIR=Z:{}", install_path.to_string_lossy().replace('/', "\\")),
+        format!("/LOG={}", log_file)
+    ];
+
+    match steam_helper::game::launch_exe_in_prefix(exe_path, game, Some(args)) {
+        Ok(_) => log::info!("Ran 7th Heaven installer"),
+        Err(e) => panic!("Couldn't run 7th Heaven installer: {e}")
+    }
+
+    let current_bin = env::current_exe().expect("Failed to get binary path");
+    let current_dir = current_bin.parent().expect("Failed to get binary directory");
+    let toml_path = current_dir.join("7thDeck.toml");
+    std::fs::copy(toml_path, install_path.join("7thDeck.toml")).expect("Failed to copy TOML to install_path");
+
+    let profile = if cfg!(debug_assertions) { "debug" } else { "release" };
+    let launcher_path = format!("target/{profile}/launcher");
+    std::fs::copy(launcher_path, install_path.join("Launch 7th Heaven")).expect("Failed to copy launcher to install_path");
+}
+
+fn patch_install(install_path: &Path, game: &SteamGame) {
+    // Send timeout.exe to system32
+    let timeout_exe = resource_handler::as_bytes("timeout.exe".to_string(), game.prefix.join("drive_c/windows/system32"), resource_handler::TIMEOUT_EXE);
+    std::fs::write(&timeout_exe.destination, timeout_exe.contents).unwrap_or_else(|_| panic!("Couldn't write {} to {:?}", timeout_exe.name, timeout_exe.destination));
+
+    // Patch settings.xml and send to install_path
+    let mut settings_xml = resource_handler::as_str("settings.xml".to_string(), install_path.join("7thWorkshop"), resource_handler::SETTINGS_XML);
+    let library_location = &format!("Z:{}", install_path.join("mods").to_str().unwrap().replace("/", "\\"));
+    let ff7_exe = &format!("Z:{}", game.path.join("ff7_en.exe").to_string_lossy().replace("/", "\\"));
+    log::info!("Mods path: {library_location}");
+    log::info!("FF7 Exe path: {ff7_exe}");
+    settings_xml.contents = settings_xml.contents
+        .replace("LIBRARY_LOCATION", library_location)
+        .replace("FF7_EXE", ff7_exe);
+
+    std::fs::write(&settings_xml.destination, settings_xml.contents).unwrap_or_else(|_| panic!("Couldn't write {} to {:?}", settings_xml.name, settings_xml.destination));
+
+    // TODO: no-CD if necessary
 }
 
 fn download_latest(repo: &str, destination: PathBuf) -> Result<PathBuf, Box<dyn Error>> {
