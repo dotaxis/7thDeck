@@ -69,7 +69,7 @@ pub fn launch_exe_in_prefix(exe_to_launch: PathBuf, game: &SteamGame, args: Opti
     let mut command = Command::new(proton);
     command
         .env("STEAM_COMPAT_CLIENT_INSTALL_PATH", &game.client_path)
-        .env("STEAM_COMPAT_DATA_PATH", game.prefix.as_path())
+        .env("STEAM_COMPAT_DATA_PATH", game.prefix.parent().unwrap())
         .env("WINEDLLOVERRIDES", "dinput.dll=n,b")
         .stdout(Stdio::null()).stderr(Stdio::null()) // &> /dev/null
         .arg("waitforexitandrun")
