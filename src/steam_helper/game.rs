@@ -71,7 +71,7 @@ pub fn launch_exe_in_prefix(exe_to_launch: PathBuf, game: &SteamGame, args: Opti
         .env("STEAM_COMPAT_CLIENT_INSTALL_PATH", &game.client_path)
         .env("STEAM_COMPAT_DATA_PATH", game.prefix.parent().unwrap())
         .env("WINEDLLOVERRIDES", "dinput.dll=n,b")
-        .stdout(Stdio::null()).stderr(Stdio::null()) // &> /dev/null
+        .stdout(Stdio::null()).stderr(Stdio::null()) // TODO: log this properly
         .arg("waitforexitandrun")
         .arg(&exe_to_launch);
     let args = args.unwrap_or_default();
@@ -154,7 +154,7 @@ pub fn launch_game(game: &SteamGame) -> Result<(), Box<dyn Error>> {
     // nohup steam steam://rungameid/39140 &> /dev/null
     Command::new("steam")
         .arg(steam_command)
-        .stdout(Stdio::null()).stderr(Stdio::null()) // &> /dev/null
+        .stdout(Stdio::null()).stderr(Stdio::null())  // TODO: log this properly
         .spawn()?;
 
     log::info!("Launched {}", game.name);
