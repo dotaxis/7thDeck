@@ -329,6 +329,7 @@ fn create_shortcuts(install_path: &Path, steam_dir: SteamDir) -> Result<(), Box<
     // Icon
     let xdg_cache = xdg::BaseDirectories::new().get_cache_home().unwrap();
     let logo_png = resource_handler::as_bytes("7th-heaven.png".to_string(), xdg_cache, resource_handler::LOGO_PNG);
+    std::fs::write(&logo_png.destination, &logo_png.contents).unwrap_or_else(|_| panic!("Couldn't write {} to {:?}", logo_png.name, logo_png.destination));
     std::process::Command::new("xdg-icon-resource")
     .args([
         "install",
