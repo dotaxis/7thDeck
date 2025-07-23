@@ -293,8 +293,7 @@ fn install_7th(game: &SteamGame, exe_path: PathBuf, install_path: &Path, log_fil
     let toml_path = current_dir.join("7thDeck.toml");
     std::fs::copy(toml_path, install_path.join("7thDeck.toml")).expect("Failed to copy TOML to install_path");
 
-    let profile = if cfg!(debug_assertions) { "debug" } else { "release" };
-    let launcher_path = format!("target/{profile}/launcher");
+    let launcher_path = if cfg!(debug_assertions) { "target/debug/launcher" } else { "launcher" };
     std::fs::copy(launcher_path, install_path.join("Launch 7th Heaven")).expect("Failed to copy launcher to install_path");
 }
 
