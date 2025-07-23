@@ -160,3 +160,37 @@ pub fn launch_game(game: &SteamGame) -> Result<(), Box<dyn Error>> {
     log::info!("Launched {}", game.name);
     Ok(())
 }
+
+pub fn wipe_common(game: &SteamGame) -> Result<(), Box<dyn std::error::Error>> {
+    let common_dir = match metadata(Path::new(&game.path)) {
+        Ok(meta) if meta.is_dir() => Path::new(&game.path),
+        _ => {
+            log::info!("{} doesn't exist. Continuing.", game.path.display());
+            return Ok(())
+        }
+    };
+
+    // Better safe than sorry
+    let pattern = format!("common/{}", &game.name);
+    if !common_dir.to_string_lossy().contains(&pattern) {
+        panic!("{} does not contain {}", common_dir.display(), pattern);
+    }
+
+    log::info!("Deleting path: {}", common_dir.display());
+    std::fs::remove_dir_all(common_dir)?;
+    log::info!("Wiped prefix for app_id: {}", &game.app_id);
+    Ok(())
+ }
+
+pub fn validate_game(game: &SteamGame) -> Result<(), Box<dyn Error>> {
+    let steam_command = format!("steam://validate/{:?}", &game.app_id);
+    log::info!("Running command: steam {}", &steam_command);
+    // nohup steam steam://validate/39140 &> /dev/null
+    Command::new("steam")
+        .arg(steam_command)
+        .stdout(Stdio::null()).stderr(Stdio::null())  // TODO: log this properly
+        .spawn()?;
+
+    log::info!("Launched {}", game.name);
+    Ok(())
+}

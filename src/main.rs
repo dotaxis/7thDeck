@@ -169,6 +169,8 @@ fn draw_header() {
     }
 }
 
+// TODO: offer to wipe common files
+
 fn download_latest(repo: &str, destination: PathBuf) -> Result<PathBuf, Box<dyn Error>> {
     let client = reqwest::blocking::Client::new();
     let release_url = format!("https://api.github.com/repos/{repo}/releases/latest");
