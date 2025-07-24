@@ -1,5 +1,5 @@
 use std::{env, panic};
-use log::LevelFilter;
+use log::{error, LevelFilter};
 use log4rs::{
     append::{console::ConsoleAppender, file::FileAppender},
     config::{Appender, Config, Root},
@@ -55,4 +55,14 @@ pub fn init() -> Result<()> {
     }));
 
     Ok(())
+}
+
+pub fn log_and_return<T>(result: Result<T>) -> Result<T> {
+    if let Err(e) = &result {
+        error!("{e}");
+        for cause in e.chain().skip(1) {
+            error!("Caused by: {cause}");
+        }
+    }
+    result
 }

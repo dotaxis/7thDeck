@@ -13,8 +13,18 @@ use anyhow::{Context, Result};
 pub static VERSION: &str = "3.0.0-alpha";
 static FF7_APPID: u32 = 39140;
 
-fn main() -> Result<()> {
-    logging::init()?;
+fn main() {
+    if let Err(e) = logging::init() {
+        eprintln!("Fatal: {e}");
+        std::process::exit(1);
+    }
+
+    if let Err(e) = logging::log_and_return(seventh_heaven()) {
+        std::process::exit(1);
+    }
+}
+
+fn seventh_heaven() -> Result<()> {
     let mut config = HashMap::new();
 
     draw_header();
@@ -22,12 +32,11 @@ fn main() -> Result<()> {
     let steam_dir = steam_helper::get_library()?;
     config.insert("steam_dir", steam_dir.path().display().to_string());
 
-    let cache_dir = home::home_dir().expect("Couldn't find $HOME?").join(".cache");
+    let cache_dir = home::home_dir().context("Couldn't find $HOME?")?.join(".cache");
     let exe_path = download_asset("tsunamods-codes/7th-Heaven", cache_dir).expect("Failed to download 7th Heaven!");
 
     let game = with_spinner("Finding FF7...", "Done!", ||
-        steam_helper::game::get_game(FF7_APPID, steam_dir.clone())
-        .context("Couldn't find FF7"))?;
+        steam_helper::game::get_game(FF7_APPID, steam_dir.clone()))?;
 
     if let Some(runner) = &game.runner {
         log::info!("Runner set for {}: {}", game.name, runner.pretty_name);

@@ -59,7 +59,7 @@ pub fn get_game(app_id: u32, steam_dir: steamlocate::SteamDir) -> Result<SteamGa
         }
     }
 
-    bail!("Couldn't find app_id {app_id}!");
+    bail!("Couldn't find app_id {app_id}!")
 }
 
 pub fn launch_exe_in_prefix(exe_to_launch: PathBuf, game: &SteamGame, args: Option<Vec<String>>) -> Result<()> {
