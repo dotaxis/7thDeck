@@ -21,57 +21,49 @@ pub struct SteamGame {
 pub fn get_game(app_id: u32, steam_dir: steamlocate::SteamDir) -> Result<SteamGame> {
     let steam_dir_pathbuf = PathBuf::from(steam_dir.path());
     log::info!("Located Steam installation: {}", steam_dir_pathbuf.display());
-    for library in steam_dir.libraries()? {
-        let library = match library {
-            Ok(library) => library,
-            Err(e) => {
-                log::warn!("Couldn't access library: {e}");
-                continue
-            }
-        };
-        for app_result in library.apps() {
-            let app = app_result?;
-            if app.app_id == app_id {
-                let name = app.name.context("No app name?")?;
-                let path = library.path().join(format!("steamapps/common/{name}"));
-                let prefix = library.path().join(format!("steamapps/compatdata/{app_id}/pfx"));
-                let runner = steam_dir.compat_tool_mapping()
-                    .with_context(|| format!("Couldn't get runner for {app_id}"))?
-                    .get(&app_id)
-                    .and_then(|tool| {
-                        let tool_name = tool.name.clone()?;
-                        let proton_versions = proton::find_all_versions(steam_dir.clone()).ok()?;
-                        proton_versions.into_iter()
-                            .find(|runner| runner.name == tool_name)
-                    });
+    let (app, library) = steam_dir.find_app(app_id)?.unwrap();
+    let path = library.resolve_app_dir(&app);
+    let name = app.name.context("No app name?")?.to_string();
+    let prefix = library.path().join(format!("steamapps/compatdata/{app_id}/pfx"));
+    let runner = steam_dir.compat_tool_mapping()
+        .with_context(|| format!("Couldn't get runner for {app_id}"))?
+        .get(&app_id)
+        .and_then(|tool| {
+            let tool_name = tool.name.clone()?;
+            let proton_versions = proton::find_all_versions(steam_dir.clone()).ok()?;
+            proton_versions.into_iter()
+                .find(|runner| runner.name == tool_name)
+        });
 
-                let steam_game = SteamGame {
-                    app_id,
-                    name,
-                    path,
-                    prefix,
-                    client_path: steam_dir_pathbuf,
-                    runner,
-                };
+    let steam_game = SteamGame {
+        app_id,
+        name,
+        path,
+        prefix,
+        client_path: steam_dir_pathbuf,
+        runner,
+    };
 
-                return Ok(steam_game);
-            }
-        }
-    }
-
-    bail!("Couldn't find app_id {app_id}!")
+    Ok(steam_game)
 }
 
 pub fn launch_exe_in_prefix(exe_to_launch: PathBuf, game: &SteamGame, args: Option<Vec<String>>) -> Result<()> {
     let proton = game.runner.clone().with_context(|| format!("Game has no runner? {game:?}"))?.path;
     log::info!("Proton bin: {proton:?}");
 
-    let mut command = Command::new(proton);
+    // TODO: make better
+    let runtime_path = get_game(1628350, steamlocate::SteamDir::from_dir(&game.client_path)?)
+        .context("Failed to get Steam Linux Runtime 3")?.path.join("run");
+    log::info!("Steam Linux Runtime 3 Path: {runtime_path:?}");
+
+    let mut command = Command::new(runtime_path);
     command
         .env("STEAM_COMPAT_CLIENT_INSTALL_PATH", &game.client_path)
         .env("STEAM_COMPAT_DATA_PATH", game.prefix.parent().context("Couldn't get parent of prefix directory")?)
         .env("WINEDLLOVERRIDES", "dinput.dll=n,b")
         .stdout(Stdio::null()).stderr(Stdio::null()) // TODO: log this properly
+        .arg("--")
+        .arg(proton)
         .arg("waitforexitandrun")
         .arg(&exe_to_launch);
     let args = args.unwrap_or_default();
