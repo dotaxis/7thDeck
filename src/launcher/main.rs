@@ -3,6 +3,7 @@ use std::{env, path::Path};
 use anyhow::{bail, Context, Result};
 
 static FF7_APPID: u32 = 39140;
+static SLR_APPID: u32 = 1628350;
 
 fn main() -> Result<()> {
     logging::init()?;
@@ -19,9 +20,10 @@ fn main() -> Result<()> {
     let steam_dir = steamlocate::SteamDir::from_dir(Path::new(steam_dir_str))?;
     log::info!("Steam path: {}", steam_dir.path().display());
 
-    let game = steam_helper::game::get_game(FF7_APPID, steam_dir)?;
+    let game = steam_helper::game::get_game(FF7_APPID, steam_dir.clone())?;
+    let runtime = steam_helper::game::get_game(SLR_APPID, steam_dir)?;
 
-    steam_helper::game::launch_exe_in_prefix(seventh_heaven_exe, &game, None).context("Failed to launch 7th Heaven.")?;
+    steam_helper::game::launch_exe_in_prefix(seventh_heaven_exe, &game, None, Some(runtime)).context("Failed to launch 7th Heaven.")?;
 
     Ok(())
 }

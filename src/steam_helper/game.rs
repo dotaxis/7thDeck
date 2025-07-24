@@ -47,33 +47,47 @@ pub fn get_game(app_id: u32, steam_dir: steamlocate::SteamDir) -> Result<SteamGa
     Ok(steam_game)
 }
 
-pub fn launch_exe_in_prefix(exe_to_launch: PathBuf, game: &SteamGame, args: Option<Vec<String>>) -> Result<()> {
+pub fn launch_exe_in_prefix(exe_to_launch: PathBuf, game: &SteamGame, args: Option<Vec<String>>, use_runtime: Option<SteamGame>) -> Result<()> {
     let proton = game.runner.clone().with_context(|| format!("Game has no runner? {game:?}"))?.path;
     log::info!("Proton bin: {proton:?}");
 
-    // TODO: make better
-    let runtime_path = get_game(1628350, steamlocate::SteamDir::from_dir(&game.client_path)?)
-        .context("Failed to get Steam Linux Runtime 3")?.path.join("run");
-    log::info!("Steam Linux Runtime 3 Path: {runtime_path:?}");
-
-    let mut command = Command::new(runtime_path);
-    command
-        .env("STEAM_COMPAT_CLIENT_INSTALL_PATH", &game.client_path)
-        .env("STEAM_COMPAT_DATA_PATH", game.prefix.parent().context("Couldn't get parent of prefix directory")?)
-        .env("WINEDLLOVERRIDES", "dinput.dll=n,b")
-        .stdout(Stdio::null()).stderr(Stdio::null()) // TODO: log this properly
-        .arg("--")
-        .arg(proton)
-        .arg("waitforexitandrun")
-        .arg(&exe_to_launch);
-    let args = args.unwrap_or_default();
-    for arg in args {
-        log::info!("launch_exe_in_prefix arg: {arg}");
-        command.arg(arg);
+    let mut command: Command;
+    if let Some(runtime) = use_runtime {
+        let runtime_path = runtime.path.join("run");
+        log::info!("{} path: {runtime_path:?}", runtime.name);
+        command = Command::new(runtime_path);
+        command
+            .env("STEAM_COMPAT_CLIENT_INSTALL_PATH", &game.client_path)
+            .env("STEAM_COMPAT_DATA_PATH", game.prefix.parent().context("Couldn't get parent of prefix directory")?)
+            .env("WINEDLLOVERRIDES", "dinput.dll=n,b")
+            .stdout(Stdio::null()).stderr(Stdio::null()) // TODO: log this properly
+            .arg("--")
+            .arg(proton)
+            .arg("waitforexitandrun")
+            .arg(&exe_to_launch);
+        let args = args.unwrap_or_default();
+        for arg in args {
+            log::info!("launch_exe_in_prefix arg: {arg}");
+            command.arg(arg);
+        }
+    } else { // no runtime
+        command = Command::new(proton);
+        command
+            .env("STEAM_COMPAT_CLIENT_INSTALL_PATH", &game.client_path)
+            .env("STEAM_COMPAT_DATA_PATH", game.prefix.parent().context("Couldn't get parent of prefix directory")?)
+            .env("WINEDLLOVERRIDES", "dinput.dll=n,b")
+            .stdout(Stdio::null()).stderr(Stdio::null()) // TODO: log this properly
+            .arg("waitforexitandrun")
+            .arg(&exe_to_launch);
+        let args = args.unwrap_or_default();
+        for arg in args {
+            log::info!("launch_exe_in_prefix arg: {arg}");
+            command.arg(arg);
+        }
     }
     command.spawn()?.wait()?;
-
     log::info!("Launched {}", exe_to_launch.file_name().context("Couldn't get file_name")?.to_string_lossy());
+
     Ok(())
 }
 

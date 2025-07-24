@@ -297,7 +297,7 @@ fn install_7th(game: &SteamGame, exe_path: PathBuf, install_path: &Path, log_fil
         format!("/LOG={}", log_file)
     ];
 
-    steam_helper::game::launch_exe_in_prefix(exe_path, game, Some(args)).context("Couldn't run 7th Heaven installer")?;
+    steam_helper::game::launch_exe_in_prefix(exe_path, game, Some(args), None).context("Couldn't run 7th Heaven installer")?;
 
     let current_bin = env::current_exe().context("Failed to get binary path")?;
     let current_dir = current_bin.parent().context("Failed to get binary directory")?;
