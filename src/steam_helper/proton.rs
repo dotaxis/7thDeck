@@ -1,4 +1,4 @@
-use std::{error::Error, path::PathBuf};
+use std::path::PathBuf;
 
 #[derive(Debug, Clone)]
 pub struct Runner {
@@ -6,13 +6,15 @@ pub struct Runner {
     pub pretty_name: String,
     pub path: PathBuf,
 }
+use anyhow::{bail, Context, Result};
 
-pub fn find_all_versions(steam_dir: steamlocate::SteamDir) -> Result<Vec<Runner>, Box<dyn Error>> {
+
+pub fn find_all_versions(steam_dir: steamlocate::SteamDir) -> Result<Vec<Runner>> {
     // TODO: custom runner support via compatibilitytools.d
     let mut proton_versions: Vec<Runner> = Vec::new();
     for library in (steam_dir.libraries()?).flatten() {
         for app in library.apps().flatten() {
-            let app_name = app.name.as_ref().unwrap();
+            let app_name = app.name.as_ref().context("App name missing.")?;
             if app_name.contains("Proton") {
                 let app_path = library.resolve_app_dir(&app).join("proton");
                 if app_path.is_file() {
@@ -20,7 +22,7 @@ pub fn find_all_versions(steam_dir: steamlocate::SteamDir) -> Result<Vec<Runner>
                         .to_lowercase()
                         .split(".")
                         .next()
-                        .unwrap()
+                        .context("No . found in name")?
                         .replace(" ", "_");
 
                     proton_versions.push(
@@ -31,16 +33,16 @@ pub fn find_all_versions(steam_dir: steamlocate::SteamDir) -> Result<Vec<Runner>
                             }
                         );
                 } else {
-                    log::info!("Does not contain proton bin: {:?}", app_path);
+                    log::info!("Does not contain proton bin: {app_path:?}");
                 }
             }
         }
     }
 
-    proton_versions
-        .is_empty()
-        .then(|| Err("No Proton versions found".into()))
-        .unwrap_or(Ok(proton_versions))
+    if proton_versions.is_empty() {
+        bail!("No Proton versions found")
+    }
+    Ok(proton_versions)
 }
 
 pub fn find_highest_version(versions: &[Runner]) -> Option<&Runner> {

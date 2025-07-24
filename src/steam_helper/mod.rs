@@ -1,12 +1,13 @@
-use std::{error::Error, fs::OpenOptions, io, path::{Path, PathBuf}, process::{Command, Stdio}, thread::sleep, time::Duration};
+use std::{fs::OpenOptions, io, path::{Path, PathBuf}, process::{Command, Stdio}, thread::sleep, time::Duration};
 use dialoguer::theme::ColorfulTheme;
 use sysinfo::System;
 use urlencoding::encode;
+use anyhow::{Context, Result};
 
 pub mod game;
 pub mod proton;
 
-pub fn get_library() -> Result<steamlocate::SteamDir, Box<dyn Error>> {
+pub fn get_library() -> Result<steamlocate::SteamDir> {
     let home_dir = home::home_dir().expect("Couldn't get $HOME?");
     let possible_libraries = vec![
         // Native install directory
@@ -21,7 +22,7 @@ pub fn get_library() -> Result<steamlocate::SteamDir, Box<dyn Error>> {
         .collect();
 
     if libraries.len() == 1 {
-        let library = steamlocate::SteamDir::from_dir(libraries[0].as_path()).unwrap();
+        let library = steamlocate::SteamDir::from_dir(libraries[0].as_path()).context("Couldn't get library")?;
         log::info!("Steam installation located: {}", libraries[0].display());
         return Ok(library);
     }
@@ -39,10 +40,13 @@ pub fn get_library() -> Result<steamlocate::SteamDir, Box<dyn Error>> {
         .default(0)
         .interact()?;
 
-    Ok(steamlocate::SteamDir::from_dir(libraries[selection].as_path()).unwrap())
+    let library = steamlocate::SteamDir::from_dir(libraries[selection].as_path())
+        .context("Failed to get library from dir")?;
+
+    Ok(library)
 }
 
-pub fn kill_steam() {
+pub fn kill_steam() -> Result<()> {
     loop {
         let mut sys = System::new_all();
         sys.refresh_all();
@@ -52,15 +56,15 @@ pub fn kill_steam() {
         for (pid, process) in sys.processes() {
             if process.name() == "steam" {
                 steam_running = true;
-                log::info!("Found 'steam' with PID: {}", pid);
+                log::info!("Found 'steam' with PID: {pid}");
                 if process.kill() {
                     log::info!("Killed Steam successfully.");
-                    return;
+                    return Ok(());
                 } else {
                     // todo: use dialoguer -- or should we leave this?
                     log::error!("Failed to kill Steam! Please exit Steam and press A or Enter to continue.");
                     let mut input = String::new();
-                    io::stdin().read_line(&mut input).unwrap();
+                    io::stdin().read_line(&mut input)?;
                     continue;
                 }
             }
@@ -70,10 +74,11 @@ pub fn kill_steam() {
             break;
         }
     }
+    Ok(())
 }
 
-pub fn add_nonsteam_game(file: &Path, steam_dir: steamlocate::SteamDir) -> Result<(), Box<dyn Error>> {
-    let file_dir = file.parent().unwrap_or_else(|| panic!("Couldn't get parent of {file:?}"));
+pub fn add_nonsteam_game(file: &Path, steam_dir: steamlocate::SteamDir) -> Result<()> {
+    let file_dir = file.parent().with_context(|| format!("Couldn't get parent of {file:?}"))?;
     let uid = users::get_current_uid();
     let mut tmp = PathBuf::from("/tmp");
     let mut steam_bin = "steam";
@@ -92,7 +97,7 @@ pub fn add_nonsteam_game(file: &Path, steam_dir: steamlocate::SteamDir) -> Resul
             ])
             .status()?;
 
-        kill_steam();
+        kill_steam()?;
     }
 
     let encoded_url = format!("steam://addnonsteamgame/{}", encode(&file.to_string_lossy()));

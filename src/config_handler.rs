@@ -1,8 +1,9 @@
-use std::{collections::HashMap, env, error::Error};
+use std::{collections::HashMap, env};
+use anyhow::{Context, Result};
 
 static CONFIG_NAME: &str = "7thDeck.toml";
 
-pub fn write(config: HashMap<&str, String>) -> Result<(), Box<dyn Error>> {
+pub fn write(config: HashMap<&str, String>) -> Result<()> {
     let current_bin = env::current_exe()?;
     let current_dir = current_bin.parent().expect("Failed to get current directory");
     let toml_path = current_dir.join(CONFIG_NAME);
@@ -13,17 +14,19 @@ pub fn write(config: HashMap<&str, String>) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-pub fn read_value(key: &str) -> String {
-    let current_bin = env::current_exe().expect("Failed to get binary path");
-    let current_dir = current_bin.parent().expect("Failed to get binary directory");
+pub fn read_value(key: &str) -> Result<String> {
+    let current_bin = env::current_exe().context("Failed to get binary path")?;
+    let current_dir = current_bin.parent().context("Failed to get binary directory")?;
     let toml_path = current_dir.join(CONFIG_NAME);
 
-    let toml_string = std::fs::read_to_string(toml_path).expect("Couldn't read TOML");
-    let toml_value: toml::Value = toml::from_str(&toml_string).expect("Couldn't deserialize TOML");
+    let toml_string = std::fs::read_to_string(toml_path).context("Couldn't read TOML")?;
+    let toml_value: toml::Value = toml::from_str(&toml_string).context("Couldn't deserialize TOML")?;
     
-    toml_value.get(key)
-        .unwrap_or_else(|| panic!("Couldn't find {} key in {}", key, CONFIG_NAME))
+    let value = toml_value.get(key)
+        .with_context(|| format!("Couldn't find {key} key in {CONFIG_NAME}"))?
         .as_str()
-        .unwrap_or_else(|| panic!("{} value is not a string", key))
-        .to_string()
+        .with_context(|| format!("{key} value is not a string"))?
+        .to_string();
+
+    Ok(value.to_string())
 }
