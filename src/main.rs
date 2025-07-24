@@ -9,7 +9,7 @@ use indicatif::{ProgressBar, ProgressState, ProgressStyle};
 use console::Style;
 use dialoguer::theme::ColorfulTheme;
 
-pub static VERSION: &str = "2.5.0";
+pub static VERSION: &str = "3.0.0-alpha";
 static FF7_APPID: u32 = 39140;
 
 fn main() {
