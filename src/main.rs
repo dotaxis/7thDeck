@@ -19,7 +19,7 @@ fn main() {
         std::process::exit(1);
     }
 
-    if let Err(e) = logging::log_and_return(seventh_heaven()) {
+    if logging::log_and_return(seventh_heaven()).is_err() {
         std::process::exit(1);
     }
 }
