@@ -45,12 +45,18 @@ fn seventh_heaven() -> Result<()> {
 
     config_handler::write(config).context("Failed to write config")?;
 
+    // TODO: offer to wipe common files
+
+    // TODO: verify game files if wiped
+
     with_spinner("Killing Steam...", "Done!",
         steam_helper::kill_steam)?;
 
     with_spinner("Setting Proton version...", "Done!", ||
         steam_helper::game::set_runner(&game, "proton_9") // TODO: Expand this to allow Proton version selection
         .context("Failed to set runner"))?;
+
+    // TODO: back up saves
 
     with_spinner("Wiping prefix...", "Done!", ||
         steam_helper::game::wipe_prefix(&game)
@@ -65,6 +71,8 @@ fn seventh_heaven() -> Result<()> {
 
     with_spinner("Rebuilding prefix...", "Done!", ||
         kill("FF7_Launcher"))?;
+
+    // TODO: restore saves
 
     let install_path = get_install_path()?;
     with_spinner("Installing 7th Heaven...", "Done!", ||
@@ -180,8 +188,6 @@ fn draw_header() {
         std::process::exit(0);
     }
 }
-
-// TODO: offer to wipe common files
 
 fn download_asset(repo: &str, destination: PathBuf) -> Result<PathBuf> {
     let client = reqwest::blocking::Client::new();
