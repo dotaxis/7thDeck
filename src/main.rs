@@ -84,7 +84,7 @@ fn seventh_heaven() -> Result<()> {
     // TODO: steamOS control scheme + auto-config mod
 
     create_shortcuts(&install_path, steam_dir)
-        .context("Failed to create shortcuts: {e}")?;
+        .context("Failed to create shortcuts")?;
 
      println!("{} 7th Heaven successfully installed to '{}'", console::style("✔").green(),
         console::style(&install_path.display()).bold().underlined().white());
