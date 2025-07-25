@@ -57,9 +57,9 @@ fi
 while true; do
   if ! pgrep steam > /dev/null; then nohup $STEAM_BIN &> /dev/null & disown; fi
   while ! pgrep steam > /dev/null; do sleep 1; done
-  PROTON=$(LIBRARY=$(steam_library "$STEAM_ROOT" 2805730) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/Proton 9.0 (Beta)/proton" || echo "NONE")
   echo -n "Checking if Proton 9 is installed... "
-  if [ "$PROTON" = "NONE" ]; then
+  PROTON=$(LIBRARY=$(steam_library "$STEAM_ROOT" 2805730) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/Proton 9.0 (Beta)/proton")
+  if [ -z "$PROTON" ]; then
     echo -e "\nNot found! Launching Steam to install."
     nohup $STEAM_BIN steam://install/2805730 &> /dev/null &
     read -p "Press Enter when Proton 9 is done installing."
@@ -79,9 +79,17 @@ done
 while true; do
   if ! pgrep steam > /dev/null; then nohup $STEAM_BIN &> /dev/null; fi
   while ! pgrep steam > /dev/null; do sleep 1; done
-  RUNTIME=$(LIBRARY=$(steam_library "$STEAM_ROOT" 1628350) && [ -n "$LIBRARY" ] && echo "$LIBRARY/steamapps/common/SteamLinuxRuntime_sniper/run" || echo "NONE")
   echo -n "Checking if Steam Linux Runtime is installed... "
-  if [ "$RUNTIME" = "NONE" ]; then
+  LIBRARY=$(steam_library "$STEAM_ROOT" 1628350)
+  if [ -n "$LIBRARY" ]; then
+    for path in \
+      "$LIBRARY/steamapps/common/SteamLinuxRuntime_sniper/run" \
+      "$LIBRARY/steamapps/common/SteamLinuxRuntime_sniper-arm64/run"
+    do
+      [ -f "$path" ] && RUNTIME="$path" && break
+    done
+  fi
+  if [ -z "$RUNTIME" ]; then
     echo -e "\nNot found! Launching Steam to install."
     nohup $STEAM_BIN steam://install/1628350 &> /dev/null &
     read -p "Press Enter when Steam Linux Runtime 3.0 (sniper) is done installing."
@@ -102,8 +110,8 @@ while true; do
   if ! pgrep steam > /dev/null; then nohup $STEAM_BIN &> /dev/null; fi
   while ! pgrep steam > /dev/null; do sleep 1; done
   echo -n "Checking if FF7 is installed... "
-  FF7_LIBRARY=$(steam_library "$STEAM_ROOT" 39140 || echo "NONE")
-  if [ "$FF7_LIBRARY" = "NONE" ]; then
+  FF7_LIBRARY=$(steam_library "$STEAM_ROOT" 39140)
+  if [ -z "$FF7_LIBRARY" ]; then
     echo -e "\nNot found! Launching Steam to install."
     nohup $STEAM_BIN steam://install/39140 &> /dev/null &
     read -p "Press Enter when FINAL FANTASY VII is done installing."
