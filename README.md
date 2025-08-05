@@ -20,7 +20,7 @@ This script will:
 
 ## Prerequisites
 
-### GNU Awk
+### GNU Awk (Ubuntu-based Distros Only)
 Ubuntu-based distros ship a different version of awk which throws a syntax error when 7thDeck tries to detect FF7/Proton/SLR installation paths. Open the terminal and follow these steps:
 1. Install `gawk`
 ```bash
