@@ -1,4 +1,4 @@
-use std::{env, panic};
+use anyhow::{Context, Result};
 use log::{error, LevelFilter};
 use log4rs::{
     append::{console::ConsoleAppender, file::FileAppender},
@@ -6,11 +6,13 @@ use log4rs::{
     encode::pattern::PatternEncoder,
     filter::threshold::ThresholdFilter,
 };
-use anyhow::{Context, Result};
+use std::{env, panic};
 
 pub fn init() -> Result<()> {
     let current_bin = env::current_exe().context("Failed to get binary path")?;
-    let current_dir = current_bin.parent().context("Failed to get binary directory")?;
+    let current_dir = current_bin
+        .parent()
+        .context("Failed to get binary directory")?;
     let log_path = current_dir.join("7thDeck.log");
 
     let stdout = ConsoleAppender::builder()
@@ -18,11 +20,13 @@ pub fn init() -> Result<()> {
         .build();
 
     let file = FileAppender::builder()
-        .encoder(Box::new(PatternEncoder::new("{d(%Y-%m-%d %H:%M:%S)} [{l}] {t} - {m}{n}")))
+        .encoder(Box::new(PatternEncoder::new(
+            "{d(%Y-%m-%d %H:%M:%S)} [{l}] {t} - {m}{n}",
+        )))
         .append(false)
         .build(log_path)?;
 
-        let config = Config::builder()
+    let config = Config::builder()
         .appender(Appender::builder().build("file", Box::new(file)))
         .appender(
             Appender::builder()
@@ -47,7 +51,8 @@ pub fn init() -> Result<()> {
             "Panic occurred (unknown payload)".to_string()
         };
 
-        let location = panic_info.location()
+        let location = panic_info
+            .location()
             .map(|loc| format!("{}:{}:{}", loc.file(), loc.line(), loc.column()))
             .unwrap_or_else(|| " (location unknown)".to_string());
 

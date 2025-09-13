@@ -1,8 +1,15 @@
-use std::{fs::OpenOptions, io, path::{Path, PathBuf}, process::{Command, Stdio}, thread::sleep, time::Duration};
+use anyhow::{Context, Result};
 use dialoguer::theme::ColorfulTheme;
+use std::{
+    fs::OpenOptions,
+    io,
+    path::{Path, PathBuf},
+    process::{Command, Stdio},
+    thread::sleep,
+    time::Duration,
+};
 use sysinfo::System;
 use urlencoding::encode;
-use anyhow::{Context, Result};
 
 pub mod game;
 pub mod proton;
@@ -22,17 +29,27 @@ pub fn get_library() -> Result<steamlocate::SteamDir> {
         .collect();
 
     if libraries.len() == 1 {
-        let library = steamlocate::SteamDir::from_dir(libraries[0].as_path()).context("Couldn't get library")?;
+        let library = steamlocate::SteamDir::from_dir(libraries[0].as_path())
+            .context("Couldn't get library")?;
         log::info!("Steam installation located: {}", libraries[0].display());
         return Ok(library);
     }
 
     log::warn!("Multiple Steam installations detected. Allowing user to select.");
-    println!("{} Multiple Steam installations detected.", console::style("!").yellow());
+    println!(
+        "{} Multiple Steam installations detected.",
+        console::style("!").yellow()
+    );
 
     let choices = &[
-        format!("Native: {}", console::style(libraries[0].display()).bold().underlined()),
-        format!("Flatpak: {}", console::style(libraries[1].display()).bold().underlined()),
+        format!(
+            "Native: {}",
+            console::style(libraries[0].display()).bold().underlined()
+        ),
+        format!(
+            "Flatpak: {}",
+            console::style(libraries[1].display()).bold().underlined()
+        ),
     ];
     let selection = dialoguer::Select::with_theme(&ColorfulTheme::default())
         .with_prompt("Select a Steam installation to continue:")
@@ -62,7 +79,9 @@ pub fn kill_steam() -> Result<()> {
                     return Ok(());
                 } else {
                     // todo: use dialoguer -- or should we leave this?
-                    log::error!("Failed to kill Steam! Please exit Steam and press A or Enter to continue.");
+                    log::error!(
+                        "Failed to kill Steam! Please exit Steam and press A or Enter to continue."
+                    );
                     let mut input = String::new();
                     io::stdin().read_line(&mut input)?;
                     continue;
@@ -78,15 +97,23 @@ pub fn kill_steam() -> Result<()> {
 }
 
 pub fn add_nonsteam_game(file: &Path, steam_dir: steamlocate::SteamDir) -> Result<()> {
-    let file_dir = file.parent().with_context(|| format!("Couldn't get parent of {file:?}"))?;
+    let file_dir = file
+        .parent()
+        .with_context(|| format!("Couldn't get parent of {file:?}"))?;
     let uid = users::get_current_uid();
     let mut tmp = PathBuf::from("/tmp");
     let mut steam_bin = "steam";
 
     // Flatpak Steam
-    if steam_dir.path().to_string_lossy().contains("com.valvesoftware.Steam") {
+    if steam_dir
+        .path()
+        .to_string_lossy()
+        .contains("com.valvesoftware.Steam")
+    {
         steam_bin = "flatpak run com.valvesoftware.Steam";
-        tmp = PathBuf::from(format!("/run/user/{uid}/.flatpak/com.valvesoftware.Steam/tmp"));
+        tmp = PathBuf::from(format!(
+            "/run/user/{uid}/.flatpak/com.valvesoftware.Steam/tmp"
+        ));
 
         Command::new("flatpak")
             .args([
@@ -100,7 +127,10 @@ pub fn add_nonsteam_game(file: &Path, steam_dir: steamlocate::SteamDir) -> Resul
         kill_steam()?;
     }
 
-    let encoded_url = format!("steam://addnonsteamgame/{}", encode(&file.to_string_lossy()));
+    let encoded_url = format!(
+        "steam://addnonsteamgame/{}",
+        encode(&file.to_string_lossy())
+    );
     let _ = OpenOptions::new()
         .create(true)
         .write(true)

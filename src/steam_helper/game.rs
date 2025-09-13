@@ -1,12 +1,12 @@
+use super::proton::{self, Runner};
+use anyhow::{bail, Context, Result};
+use glob::glob;
+use regex::Regex;
 use std::{
     fs::{self, metadata},
     path::{Path, PathBuf},
     process::{Command, Stdio},
 };
-use regex::Regex;
-use glob::glob;
-use anyhow::{bail, Context, Result};
-use super::proton::{self, Runner};
 
 #[derive(Debug)]
 pub struct SteamGame {
@@ -20,18 +20,25 @@ pub struct SteamGame {
 
 pub fn get_game(app_id: u32, steam_dir: steamlocate::SteamDir) -> Result<SteamGame> {
     let steam_dir_pathbuf = PathBuf::from(steam_dir.path());
-    log::info!("Located Steam installation: {}", steam_dir_pathbuf.display());
+    log::info!(
+        "Located Steam installation: {}",
+        steam_dir_pathbuf.display()
+    );
     let (app, library) = steam_dir.find_app(app_id)?.unwrap();
     let path = library.resolve_app_dir(&app);
     let name = app.name.context("No app name?")?.to_string();
-    let prefix = library.path().join(format!("steamapps/compatdata/{app_id}/pfx"));
-    let runner = steam_dir.compat_tool_mapping()
+    let prefix = library
+        .path()
+        .join(format!("steamapps/compatdata/{app_id}/pfx"));
+    let runner = steam_dir
+        .compat_tool_mapping()
         .with_context(|| format!("Couldn't get runner for {app_id}"))?
         .get(&app_id)
         .and_then(|tool| {
             let tool_name = tool.name.clone()?;
             let proton_versions = proton::find_all_versions(steam_dir.clone()).ok()?;
-            proton_versions.into_iter()
+            proton_versions
+                .into_iter()
                 .find(|runner| runner.name == tool_name)
         });
 
@@ -47,8 +54,17 @@ pub fn get_game(app_id: u32, steam_dir: steamlocate::SteamDir) -> Result<SteamGa
     Ok(steam_game)
 }
 
-pub fn launch_exe_in_prefix(exe_to_launch: PathBuf, game: &SteamGame, args: Option<Vec<String>>, use_runtime: Option<SteamGame>) -> Result<()> {
-    let proton = game.runner.clone().with_context(|| format!("Game has no runner? {game:?}"))?.path;
+pub fn launch_exe_in_prefix(
+    exe_to_launch: PathBuf,
+    game: &SteamGame,
+    args: Option<Vec<String>>,
+    use_runtime: Option<SteamGame>,
+) -> Result<()> {
+    let proton = game
+        .runner
+        .clone()
+        .with_context(|| format!("Game has no runner? {game:?}"))?
+        .path;
     log::info!("Proton bin: {proton:?}");
 
     let mut command: Command;
@@ -58,9 +74,15 @@ pub fn launch_exe_in_prefix(exe_to_launch: PathBuf, game: &SteamGame, args: Opti
         command = Command::new(runtime_path);
         command
             .env("STEAM_COMPAT_CLIENT_INSTALL_PATH", &game.client_path)
-            .env("STEAM_COMPAT_DATA_PATH", game.prefix.parent().context("Couldn't get parent of prefix directory")?)
+            .env(
+                "STEAM_COMPAT_DATA_PATH",
+                game.prefix
+                    .parent()
+                    .context("Couldn't get parent of prefix directory")?,
+            )
             .env("WINEDLLOVERRIDES", "dinput.dll=n,b")
-            .stdout(Stdio::null()).stderr(Stdio::null()) // TODO: log this properly
+            .stdout(Stdio::null())
+            .stderr(Stdio::null()) // TODO: log this properly
             .arg("--")
             .arg(proton)
             .arg("waitforexitandrun")
@@ -70,13 +92,20 @@ pub fn launch_exe_in_prefix(exe_to_launch: PathBuf, game: &SteamGame, args: Opti
             log::info!("launch_exe_in_prefix arg: {arg}");
             command.arg(arg);
         }
-    } else { // no runtime
+    } else {
+        // no runtime
         command = Command::new(proton);
         command
             .env("STEAM_COMPAT_CLIENT_INSTALL_PATH", &game.client_path)
-            .env("STEAM_COMPAT_DATA_PATH", game.prefix.parent().context("Couldn't get parent of prefix directory")?)
+            .env(
+                "STEAM_COMPAT_DATA_PATH",
+                game.prefix
+                    .parent()
+                    .context("Couldn't get parent of prefix directory")?,
+            )
             .env("WINEDLLOVERRIDES", "dinput.dll=n,b")
-            .stdout(Stdio::null()).stderr(Stdio::null()) // TODO: log this properly
+            .stdout(Stdio::null())
+            .stderr(Stdio::null()) // TODO: log this properly
             .arg("waitforexitandrun")
             .arg(&exe_to_launch);
         let args = args.unwrap_or_default();
@@ -86,7 +115,13 @@ pub fn launch_exe_in_prefix(exe_to_launch: PathBuf, game: &SteamGame, args: Opti
         }
     }
     command.spawn()?.wait()?;
-    log::info!("Launched {}", exe_to_launch.file_name().context("Couldn't get file_name")?.to_string_lossy());
+    log::info!(
+        "Launched {}",
+        exe_to_launch
+            .file_name()
+            .context("Couldn't get file_name")?
+            .to_string_lossy()
+    );
 
     Ok(())
 }
@@ -96,7 +131,7 @@ pub fn wipe_prefix(game: &SteamGame) -> Result<()> {
         Ok(meta) if meta.is_dir() => Path::new(&game.prefix),
         _ => {
             log::info!("{} doesn't exist. Continuing.", game.prefix.display());
-            return Ok(())
+            return Ok(());
         }
     };
 
@@ -110,7 +145,7 @@ pub fn wipe_prefix(game: &SteamGame) -> Result<()> {
     std::fs::remove_dir_all(prefix_dir)?;
     log::info!("Wiped prefix for app_id: {}", &game.app_id);
     Ok(())
- }
+}
 
 pub fn set_launch_options(game: &SteamGame) -> Result<()> {
     // Set launch options for Steam injection
@@ -122,7 +157,10 @@ pub fn set_launch_options(game: &SteamGame) -> Result<()> {
         &game.app_id
     );
 
-    for entry in glob(&format!("{}/userdata/*/config/localconfig.vdf", &game.client_path.display()))? {
+    for entry in glob(&format!(
+        "{}/userdata/*/config/localconfig.vdf",
+        &game.client_path.display()
+    ))? {
         let path = entry?;
         log::info!("localconfig.vdf found at {path:?}");
         let content = fs::read_to_string(&path)?;
@@ -150,7 +188,11 @@ pub fn set_runner(game: &SteamGame, runner: &str) -> Result<()> {
     let content = fs::read_to_string(path)?;
     fs::write(path, re.replace(&content, replacement).as_bytes())
         .with_context(|| format!("Couldn't write to {path:?}"))?;
-    log::info!("Succcessfully set runner for {} to {}", &game.app_id, runner);
+    log::info!(
+        "Succcessfully set runner for {} to {}",
+        &game.app_id,
+        runner
+    );
     Ok(())
 }
 
@@ -160,7 +202,8 @@ pub fn launch_game(game: &SteamGame) -> Result<()> {
     // nohup steam steam://rungameid/39140 &> /dev/null
     Command::new("steam")
         .arg(steam_command)
-        .stdout(Stdio::null()).stderr(Stdio::null())  // TODO: log this properly
+        .stdout(Stdio::null())
+        .stderr(Stdio::null()) // TODO: log this properly
         .spawn()?;
 
     log::info!("Launched {}", game.name);
@@ -172,7 +215,7 @@ pub fn wipe_common(game: &SteamGame) -> Result<()> {
         Ok(meta) if meta.is_dir() => Path::new(&game.path),
         _ => {
             log::info!("{} doesn't exist. Continuing.", game.path.display());
-            return Ok(())
+            return Ok(());
         }
     };
 
@@ -186,7 +229,7 @@ pub fn wipe_common(game: &SteamGame) -> Result<()> {
     std::fs::remove_dir_all(common_dir)?;
     log::info!("Wiped prefix for app_id: {}", &game.app_id);
     Ok(())
- }
+}
 
 pub fn validate_game(game: &SteamGame) -> Result<()> {
     let steam_command = format!("steam://validate/{:?}", &game.app_id);
@@ -194,7 +237,8 @@ pub fn validate_game(game: &SteamGame) -> Result<()> {
     // nohup steam steam://validate/39140 &> /dev/null
     Command::new("steam")
         .arg(steam_command)
-        .stdout(Stdio::null()).stderr(Stdio::null())  // TODO: log this properly
+        .stdout(Stdio::null())
+        .stderr(Stdio::null()) // TODO: log this properly
         .spawn()?;
 
     log::info!("Launched {}", game.name);

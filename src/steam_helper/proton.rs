@@ -8,7 +8,6 @@ pub struct Runner {
 }
 use anyhow::{bail, Context, Result};
 
-
 pub fn find_all_versions(steam_dir: steamlocate::SteamDir) -> Result<Vec<Runner>> {
     // TODO: custom runner support via compatibilitytools.d
     let mut proton_versions: Vec<Runner> = Vec::new();
@@ -25,13 +24,11 @@ pub fn find_all_versions(steam_dir: steamlocate::SteamDir) -> Result<Vec<Runner>
                         .context("No . found in name")?
                         .replace(" ", "_");
 
-                    proton_versions.push(
-                            Runner {
-                                name,
-                                pretty_name: app_name.to_string(),
-                                path: app_path,
-                            }
-                        );
+                    proton_versions.push(Runner {
+                        name,
+                        pretty_name: app_name.to_string(),
+                        path: app_path,
+                    });
                 } else {
                     log::info!("Does not contain proton bin: {app_path:?}");
                 }
