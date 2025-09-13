@@ -366,8 +366,6 @@ fn patch_install(install_path: &Path, game: &SteamGame) -> Result<()> {
     std::fs::write(&dxvk_conf.destination, dxvk_conf.contents)
         .with_context(|| format!("Couldn't write to {:?}", dxvk_conf.destination))?;
 
-    // TODO: no-CD if necessary
-
     Ok(())
 }
 
