@@ -40,6 +40,35 @@ pub fn get_game(app_id: u32, steam_dir: steamlocate::SteamDir) -> Result<SteamGa
             proton_versions
                 .into_iter()
                 .find(|runner| runner.name == tool_name)
+        })
+        .or_else(|| {
+            log::info!(
+                "No runner configured for app {}, setting highest version",
+                app_id
+            );
+            let proton_versions = proton::find_all_versions(steam_dir.clone()).ok()?;
+            let highest_runner = proton::find_highest_version(&proton_versions)?;
+
+            let temp_game = SteamGame {
+                app_id,
+                name: name.clone(),
+                path: path.clone(),
+                prefix: prefix.clone(),
+                client_path: steam_dir_pathbuf.clone(),
+                runner: None,
+            };
+
+            if set_runner(&temp_game, &highest_runner.name).is_ok() {
+                log::info!(
+                    "Set runner to '{}' for app {}",
+                    highest_runner.pretty_name,
+                    app_id
+                );
+                Some(highest_runner.clone())
+            } else {
+                log::warn!("Failed to set runner for app {}", app_id);
+                None
+            }
         });
 
     let steam_game = SteamGame {

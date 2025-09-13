@@ -52,32 +52,20 @@ fn seventh_heaven() -> Result<()> {
 
     config_handler::write(config).context("Failed to write config")?;
 
-    // TODO: offer to wipe common files
-
-    // TODO: verify game files if wiped
-
     with_spinner("Killing Steam...", "Done!", steam_helper::kill_steam)?;
 
-    with_spinner("Setting Proton version...", "Done!", || {
-        steam_helper::game::set_runner(&game, "proton_9") // TODO: Expand this to allow Proton version selection
-            .context("Failed to set runner")
-    })?;
-
-    // TODO: back up saves
-
-    with_spinner("Wiping prefix...", "Done!", || {
-        steam_helper::game::wipe_prefix(&game).context("Failed to wipe prefix")
-    })?;
+    // TODO: "Clean install"
+    // Wipe common files
+    // Verify game files
+    // Back up saves
+    // Set proton version
+    // Wipe prefix
+    // Rebuild prefix
+    // Restore saves
 
     with_spinner("Setting Launch Options...", "Done!", || {
         steam_helper::game::set_launch_options(&game).context("Failed to set launch options")
     })?;
-
-    steam_helper::game::launch_game(&game).context("Failed to launch FF7")?;
-
-    with_spinner("Rebuilding prefix...", "Done!", || kill("FF7_Launcher"))?;
-
-    // TODO: restore saves
 
     let install_path = get_install_path()?;
     with_spinner("Installing 7th Heaven...", "Done!", || {
@@ -243,32 +231,6 @@ fn download_asset(repo: &str, destination: PathBuf) -> Result<PathBuf> {
     pb.println(format!("{} Download complete", console::style("✔").green()));
 
     Ok(file_path)
-}
-
-fn kill(pattern: &str) -> Result<()> {
-    log::info!("Waiting for prefix to rebuild.");
-    'kill: loop {
-        let mut sys = System::new_all();
-        sys.refresh_all();
-
-        for (pid, process) in sys.processes() {
-            if process.name().contains(pattern) {
-                log::info!("Found '{pattern}' with PID: {pid}");
-
-                if process.kill() {
-                    log::info!("Killed {pattern} successfully.");
-                    break 'kill;
-                } else {
-                    println!("Failed to kill {pattern}!\nPlease exit {pattern} manually and press Enter to continue.");
-                    let mut input = String::new();
-                    std::io::stdin().read_line(&mut input)?;
-                    continue;
-                }
-            }
-        }
-    }
-    log::info!("We made it out of the kill loop!");
-    Ok(())
 }
 
 fn get_install_path() -> Result<PathBuf> {

@@ -44,22 +44,28 @@ pub fn find_all_versions(steam_dir: steamlocate::SteamDir) -> Result<Vec<Runner>
 
 pub fn find_highest_version(versions: &[Runner]) -> Option<&Runner> {
     versions.iter().max_by_key(|proton| {
-        let version_parts: Vec<&str> = proton.name.split_whitespace().collect();
-        if let Some(version) = version_parts.get(1) {
-            match version.parse::<f64>() {
-                Ok(n) => (n as i64, 0), // Numeric version
+        let pretty_name = &proton.pretty_name;
+        let version_parts: Vec<&str> = pretty_name.split_whitespace().collect();
+        if version_parts.len() >= 2 && version_parts[0] == "Proton" {
+            let version_str = version_parts[1]
+                .split('-')
+                .next()
+                .unwrap_or(version_parts[1]);
+            match version_str.parse::<f64>() {
+                Ok(n) => ((n * 1000.0) as i64, 0), // Numeric version gets priority
                 Err(_) => {
-                    if version.contains("Experimental") {
-                        (2, 0) // Treat "Experimental" as Proton 2.0
-                    } else if version.contains("Hotfix") {
-                        (1, 0) // Treat "Hotfix" as Proton 1.0
+                    // Non-numeric versions like "Experimental" get lower priority
+                    if version_str.to_lowercase().contains("experimental") {
+                        (0, 2) // Treat "Experimental" as Proton 2.0
+                    } else if version_str.to_lowercase().contains("hotfix") {
+                        (0, 1) // Treat "Hotfix" as Proton 1.0
                     } else {
-                        (0, 0) // Non-numeric versions or special cases not handled above
+                        (0, 0) // Lowest priority for other non-numeric versions
                     }
                 }
             }
         } else {
-            (0, 0) // Default for non-parsable or missing version numbers
+            (0, 0) // Default for unparseable names
         }
     })
 }
