@@ -46,6 +46,11 @@ sudo apparmor_parser /etc/apparmor.d/bwrap-userns-restrict
 
 <br>
 
+### NixOS
+1. Run `nix develop` to enter the shell with necessary dependencies
+2. Install 7th Heaven using steam-run: `steam-run ./install.sh`
+4. Launch 7th Heaven through Steam (desktop entry does not work due to non-FHS system)
+
 ## Usage
 1. Download and extract to a folder of your choosing
 2. Run install.sh (Right-click -> Run in Konsole)
